@@ -1,11 +1,13 @@
-import College from './components/College';
 
-function App() {
+import "./index.css"
+import Colleges from './pages/Colleges';
+import Header from "./components/Header";
+
+const App = () => {
   return (
-    <div className="App bg-red-300">
-      <College />
-    </div>
-  );
+    <Header>
+      <Colleges />
+    </Header>);
 }
 
 export default App;
