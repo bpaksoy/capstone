@@ -1,6 +1,10 @@
-import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
-import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import { NavLink } from 'react-router-dom'
+import { useContext, useEffect } from 'react';
+import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
+import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { NavLink } from 'react-router-dom';
+import { LoginContext } from '../App';
+import { images } from "../constants";
+
 
 const navigation = [
     { name: 'Home', href: '/', current: true },
@@ -14,6 +18,11 @@ function classNames(...classes) {
 }
 
 export default function Header(props) {
+    const [loggedIn, setLoggedIn] = useContext(LoginContext);
+    useEffect(() => {
+        // console.log("logged in", loggedIn);
+    }, []);
+
     return (
         <>
             <Disclosure as="nav" className="bg-gray-800">
@@ -32,7 +41,7 @@ export default function Header(props) {
                             <div className="flex flex-shrink-0 items-center">
                                 <img
                                     alt="Your Company"
-                                    src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500"
+                                    src={images.logo}
                                     className="h-8 w-auto"
                                 />
                             </div>
@@ -57,6 +66,22 @@ export default function Header(props) {
                                             {item.name}
                                         </NavLink>
                                     ))}
+                                    {loggedIn ?
+                                        <NavLink to={'/login'}
+                                            onClick={() => {
+                                                console.log("logout");
+                                                setLoggedIn(false);
+                                                localStorage.clear();
+                                            }}
+                                            className="px-3 py-2 rounded-md text-sm font-medium no-underline text-gray-300 hover:text-white">
+                                            Logout
+                                        </NavLink>
+                                        :
+                                        <NavLink to={'/login'}
+                                            className="px-3 py-2 rounded-md text-sm font-medium no-underline text-gray-300 hover:text-white">
+                                            Login
+                                        </NavLink>
+                                    }
                                 </div>
                             </div>
                         </div>
@@ -98,9 +123,22 @@ export default function Header(props) {
                                         </a>
                                     </MenuItem>
                                     <MenuItem>
-                                        <a href="#" className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100">
-                                            Sign out
-                                        </a>
+                                        {loggedIn ?
+                                            <a href={'/login'}
+                                                onClick={() => {
+                                                    console.log("logout");
+                                                    setLoggedIn(false);
+                                                    localStorage.clear();
+                                                }}
+                                                className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100" >
+                                                Logout
+                                            </a> :
+                                            <a href={'/login'}
+                                                onClick={() => <NavLink to={'/login'} />}
+                                                className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100" >
+                                                Login
+                                            </a>
+                                        }
                                     </MenuItem>
                                 </MenuItems>
                             </Menu>
@@ -128,7 +166,7 @@ export default function Header(props) {
                 </DisclosurePanel>
             </Disclosure>
             <div className="bg-gray-300 min-h-screen">
-                <div className="max-w-7xl mx-auto min-h-screen px-3 p-2">
+                <div className="max-w-7xl mx-auto min-h-screen px-3">
                     {props.children}
                 </div>
             </div>

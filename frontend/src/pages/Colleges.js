@@ -1,8 +1,16 @@
 import '../index.css';
-import { useState } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useState, useEffect, useContext } from 'react';
+import { LoginContext } from '../App';
 import College from '../components/College';
+import NotFound from '../components/NotFound';
+import { baseUrl } from '../shared';
+import Search from '../components/Search';
+import axios from "axios";
+
 
 const Colleges = () => {
+    const [loggedIn, setLoggedIn] = useContext(LoginContext);
     const [colleges, setColleges] = useState([
         {
             id: 1,
@@ -41,31 +49,107 @@ const Colleges = () => {
             img: 'https://assets.simpleviewinc.com/simpleview/image/upload/c_fill,h_768,q_50,w_1024/v1/clients/princetonnj/princeton_university_main_building_at_front_gate_geraldine_scull_209cbd93-c4fc-4485-a274-66b4076c71e0.jpg',
         },
     ]);
+    const [sampleColleges, setSampleColleges] = useState([]);
+    //console.log("sampleColleges here", sampleColleges);
+    const { search } = useParams();
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    const [searchResult, setSearchResult] = useState([]);
+    const [isLoading, setLoading] = useState(false);
+    const [searchError, setSearchError] = useState(null);
+    const [notFound, setNotFound] = useState(false);
+    const url = baseUrl + 'api/colleges/';
+
+    const handleSearch = async () => {
+        setLoading(true)
+        setSearchResult([])
+
+        try {
+
+            const options = {
+                method: "GET",
+                url: url,
+            }
+            const response = await axios.request(options, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('access')}`
+                }
+            });
+            if (response.status === 404) {
+                setNotFound(true);
+            }
+            else if (response.status === 401) {
+                navigate("/login/", {
+                    state: {
+                        previousUrl: location.pathname
+                    }
+                });
+            }
+            setSearchResult(response.data.colleges);
+            setSampleColleges(response.data.colleges);
+            //console.log("RESPONSE", response.data);
+
+        } catch (error) {
+            setSearchError(error);
+            console.log(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        handleSearch()
+    }, [])
 
 
     const showColleges = true;
+
+    // if (loading) return <p>Loading...</p>;
+    // if (error) return <p>Error here : {error.message}</p>;
+
     return (
-        <div className="bg-primary min-h-screen">
-            {showColleges ? (
-                <>
-                    <div className="flex flex-wrap justify-center">
-                        {colleges.map((college) => {
-                            return (
-                                <College
-                                    key={college.id}
-                                    id={college.id}
-                                    name={college.name}
-                                    city={college.city}
-                                    img={college.img}
-                                />
-                            );
-                        })}
+        <>
+            {loggedIn &&
+                <div>
+                    {notFound && <NotFound />}
+                    <div className="bg-primary min-h-screen rounded">
+                        <Search />
+                        {showColleges ? (
+                            <>
+                                <div className="flex flex-wrap justify-center">
+
+                                    {sampleColleges.map((college) => {
+                                        const name = college["name"];
+                                        const city = college["city"];
+                                        const state = college["state"];
+                                        const cost_of_attendance = college["cost_of_attendance"]
+                                        const acceptance_rate = college["admission_rate"]
+                                        const average_sat = college["sat_score"]
+
+                                        return (
+                                            <College
+                                                key={college.id}
+                                                id={college.id}
+                                                name={name}
+                                                city={city}
+                                                state={state}
+                                                acceptance_rate={acceptance_rate}
+                                                average_sat={average_sat}
+                                                cost_of_attendance={cost_of_attendance}
+                                                img={college.img}
+                                            />
+                                        );
+                                    })}
+                                </div>
+                            </>
+                        ) : null}
+
                     </div>
-                </>
-            ) : (
-                <p>You cannot see the colleges</p>
-            )}
-        </div>
+                </div>
+            }
+        </>
     );
 }
 
