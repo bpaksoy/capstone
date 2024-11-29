@@ -15,10 +15,47 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
-from collegetracker import views    
+from django.urls import path, include
+from collegetracker import views
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
+from graphene_django.views import GraphQLView
+from django.views.decorators.csrf import csrf_exempt
+from .views import UploadApiView
+from .views import RegisterView, LoginView, CollegeListView, CommentListView, CommentDetailView, PostDetailView, CurrentUserView, PostListView, BookmarkToggleView, BookmarkedCollegesView, ReplyCreateView, ReplyListView, CommentCountView, PostCommentCountsView, UserUpdateView, UserCommentsView, UserPostsView
+from django.conf.urls.static import static
+from django.conf import settings
 
 urlpatterns = [
+    path("api/user/", CurrentUserView.as_view(), name="user"),
+    path("api/user/update/", UserUpdateView.as_view(), name="user-update"),
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     path('admin/', admin.site.urls),
-    path('', views.colleges, name='colleges'),
-]
+    path('api/colleges/', views.colleges, name='colleges'),
+    path('api/colleges/<int:id>/', views.college, name='college'),
+    path('api/colleges/page=<int:id>&page_size=10', CollegeListView.as_view()),
+    path('api/colleges/<int:college_pk>/bookmark/',
+         BookmarkToggleView.as_view(), name='bookmark-toggle'),
+    path('api/bookmarks/', BookmarkedCollegesView.as_view(), name='user-bookmarks'),
+    path('api/register/', RegisterView.as_view(), name='register'),
+    path('api/login/', LoginView.as_view(), name='login'),
+    path('api/search/<str:name>/', views.search, name='search'),
+    path('api/posts/<int:post_pk>/comments/', CommentListView.as_view()),
+    path('api/comments/<int:pk>/', CommentDetailView.as_view()),
+    path('api/users/<int:user_id>/comments/',
+         UserCommentsView.as_view(), name='user-comments'),
+    path('api/users/<int:user_id>/posts/',
+         UserPostsView.as_view(), name='user-posts'),
+    path('api/comments/<int:pk>/replies/',
+         ReplyListView.as_view(), name='reply-list'),
+    path('api/comments/<int:pk>/replies/create/',
+         ReplyCreateView.as_view(), name='reply-create'),
+    path('api/comment_counts/', CommentCountView.as_view(), name='comment-counts'),
+    path('api/posts/<int:pk>/comment_counts/',
+         PostCommentCountsView.as_view(), name='post-comment-counts'),
+    path('api/posts/', PostListView.as_view()),
+    path('api/posts/<int:pk>/', views.post_detail),
+    path('graphql/', csrf_exempt(GraphQLView.as_view(graphiql=True))),
+    path('upload/', UploadApiView.as_view(), name='upload_file'),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

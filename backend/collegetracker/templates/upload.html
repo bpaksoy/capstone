@@ -1,0 +1,20 @@
+
+{% block content %} 
+Upload Excel File
+
+{% if messages %}
+    
+        {% for message in messages %}
+            {{ message }}
+        {% endfor %}
+    
+{% endif %}
+
+<form action="{% url 'upload_file' %}" method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input class="btn btn-primary" type="submit" value="Upload">
+</form>
+
+
+{% endblock  %} 
