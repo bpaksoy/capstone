@@ -1,7 +1,7 @@
-from .models import College, Comment, Post, Bookmark, Reply
+from .models import College, Comment, Post, Bookmark, Reply, Like
 from django.http import JsonResponse, Http404
 from django.db import IntegrityError
-from .serializers import CollegeSerializer, UserSerializer, UploadFileSerializer, LoginSerializer, CommentSerializer, PostSerializer, BookmarkSerializer, ReplySerializer
+from .serializers import CollegeSerializer, UserSerializer, UploadFileSerializer, LoginSerializer, CommentSerializer, PostSerializer, BookmarkSerializer, ReplySerializer, LikeSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -10,7 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework_simplejwt.tokens import RefreshToken
 import pandas as pd
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect,  get_object_or_404
 from django.contrib import messages
 from .forms import UploadFileForm
 from datetime import datetime
@@ -21,6 +21,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Count, Sum
 from rest_framework.parsers import MultiPartParser, FormParser
+from django.contrib.contenttypes.models import ContentType
 
 
 api_view(['GET', 'POST'])
@@ -238,6 +239,53 @@ class LoginView(APIView):
         }
 
         return Response(tokens, status=status.HTTP_201_CREATED)
+    
+
+class LikeListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        content_type = request.GET.get('content_type')
+        object_id = request.GET.get('object_id')
+        user_id = request.GET.get('user')
+
+        if content_type and object_id and user_id:
+            try:
+                content_type_obj = ContentType.objects.get(model=content_type)
+                likes = Like.objects.filter(
+                    content_type=content_type_obj,
+                    object_id=object_id,
+                    user_id=user_id,
+                )
+                return Response({'count': likes.count(), 'is_liked': likes.exists()})
+            except ContentType.DoesNotExist:
+                return Response({'error': 'Invalid content type'}, status=status.HTTP_400_BAD_REQUEST)
+            except Exception as e:
+                return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({'error': 'Missing parameters'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LikeCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, format=None):
+        serializer = LikeSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LikeDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, like_id, format=None):
+        like = get_object_or_404(Like, pk=like_id)
+        if like.user == request.user:
+            like.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({"error": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
+
 
 
 @api_view(['GET', 'POST'])

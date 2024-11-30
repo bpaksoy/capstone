@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import College
 from django.contrib.auth import authenticate
-from .models import Comment, Post, Bookmark, Reply, User
+from .models import Comment, Post, Bookmark, Reply, User, Like
 
 
 class CollegeSerializer(serializers.ModelSerializer):
@@ -30,7 +30,7 @@ class UserSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         return user
-    
+
     def update(self, instance, validated_data):
         if 'image' in validated_data:
             instance.image = validated_data['image']
@@ -58,10 +58,20 @@ class UploadFileSerializer(serializers.Serializer):
 
 class PostSerializer(serializers.ModelSerializer):
     author = UserSerializer(read_only=True)
+    comments_count = serializers.SerializerMethodField()
+    likes_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
-        fields = '__all__'
+        fields = ('id', 'author', 'title', 'content', 'created_at',
+                  'updated_at', 'comments_count', 'likes_count')
+        depth = 1
+
+    def get_comments_count(self, obj):
+        return obj.comments.count()
+
+    def get_likes_count(self, obj):
+        return obj.likes.count()
 
     def create(self, validated_data):
         # Retrieve the current user from the context
@@ -74,11 +84,20 @@ class PostSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     author = UserSerializer(read_only=True)
     post = PostSerializer(read_only=True)
+    replies_count = serializers.SerializerMethodField()
+    likes_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
-        fields = ['id', 'post', 'author',
-                  'content', 'created_at', 'updated_at']
+        fields = ('id', 'post', 'author', 'content', 'created_at',
+                  'updated_at', 'replies_count', 'likes_count')
+        depth = 1
+
+    def get_replies_count(self, obj):
+        return obj.replies.count()
+
+    def get_likes_count(self, obj):
+        return obj.likes.count()
 
 
 class CommentCountsSerializer(serializers.Serializer):
@@ -100,3 +119,10 @@ class BookmarkSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bookmark
         fields = '__all__'  # Include all fields (user, post, created_at)
+
+
+class LikeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Like
+        fields = ('id', 'user', 'content_object',
+                  'content_type', 'object_id', 'created_at')
