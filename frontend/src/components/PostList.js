@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { images } from "../constants";
 import CommentModal from '../utils/CommentModal';
 import Comment from './Comment';
+import LikeButton from '../utils/LikeButton';
 
 
 function PostList({ posts, onAddPost }) {
-
+    
     const [lastUpdatedComment, setLastUpdatedComment] = useState(null);
 
     const updateComments = (time) => {
@@ -59,6 +60,7 @@ function PostList({ posts, onAddPost }) {
                                     </svg>
                                     <span>42 Likes</span>
                                 </button>
+                                <LikeButton contentType="post" objectId={post.id} />
                             </div>
                             <button className="flex justify-center items-center gap-2 px-2 hover:bg-gray-50 rounded-full p-1">
                                 <svg width="22px" height="22px" viewBox="0 0 24 24" className="w-5 h-5 fill-current" xmlns="http://www.w3.org/2000/svg">
@@ -76,7 +78,7 @@ function PostList({ posts, onAddPost }) {
                             <p className="text-gray-800 font-semibold px-1">Comment</p>
                             <CommentModal postId={post.id} onAddComment={updateComments} />
                         </div>
-                        <Comment postId={post.id} lastUpdatedComment={lastUpdatedComment} onAddPost={onAddPost}/>
+                        <Comment postId={post.id} lastUpdatedComment={lastUpdatedComment} onAddPost={onAddPost} />
                     </div>
                 ))}
             </div>
