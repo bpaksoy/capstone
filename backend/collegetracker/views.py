@@ -379,6 +379,31 @@ class PostListView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class EditPostView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, pk, format=None):
+        post = get_object_or_404(Post, pk=pk)
+        if post.author != request.user:
+            return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+        serializer = PostSerializer(post, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class DeletePostView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, pk, format=None):
+        post = get_object_or_404(Post, pk=pk)
+        if post.author != request.user:
+            return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+        post.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 class PostDetailView(APIView):
     permission_classes = [IsAuthenticated]
 

@@ -2,16 +2,66 @@ import React, { useState, useEffect } from 'react';
 import { images } from "../constants";
 import CommentModal from '../utils/CommentModal';
 import Comment from './Comment';
+import EditDeleteModal from '../utils/EditDeleteModal';
 import LikeButton from '../utils/LikeButton';
 import timeSince from '../utils/TimeStamp';
+import { useCurrentUser } from '../UserProvider/UserProvider';
 import { baseUrl } from '../shared';
+import axios from 'axios';
 
 const PostList = ({ posts, onAddPost }) => {
+    const { user, fetchUser } = useCurrentUser();
+
+    useEffect(() => {
+        fetchUser();
+    }, [])
+
+
     const [postLikes, setPostLikes] = useState({}); // State to track likes for each post
 
     const updateLikeStatus = (postId, isLiked) => {
         setPostLikes((prevPostLikes) => ({ ...prevPostLikes, [postId]: isLiked }));
         onAddPost(); // Update the post list when a like status changes
+    };
+
+    const [modalIsOpen, setModalIsOpen] = useState(null);
+    const [postIdToDelete, setPostIdToDelete] = useState(null);
+    const [postIdToEdit, setPostIdToEdit] = useState(null);
+
+    const handleOpenModal = (postId) => {
+        setModalIsOpen(postId);
+    };
+
+    const handleCloseModal = () => {
+        setModalIsOpen(null);
+    };
+
+    const handleEditPost = (postId) => {
+        console.log('Editing post:', postId);
+        setPostIdToEdit(postId);
+        handleCloseModal();
+        window.location.href = `/edit/${postId}`;
+    };
+
+    const handleDeletePost = (postId) => {
+        setPostIdToDelete(postId);
+        handleCloseModal();
+    };
+
+    const handleConfirmDelete = async () => {
+        try {
+            await axios.delete(`${baseUrl}api/posts/${postIdToDelete}/delete`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('access')}`,
+                },
+            });
+            onAddPost(); // Update the post list when a post is deleted
+            alert("Post deleted successfully!");
+        } catch (error) {
+            console.error('Error deleting post:', error);
+        } finally {
+            setPostIdToDelete(null);
+        }
     };
 
     const [lastUpdatedComment, setLastUpdatedComment] = useState(null);
@@ -26,7 +76,7 @@ const PostList = ({ posts, onAddPost }) => {
             <h1 className="text-3xl font-bold mb-4 text-gray-800">Trending</h1>
             <div className="bg-gray-200 min-h-screen flex flex-col items-center rounded-lg">
                 {posts?.map((post) => (
-                    <div key={post.id} className="bg-white p-8 rounded-lg shadow-md max-w-xl mb-2 mt-3">
+                    <div key={post.id} className="bg-white p-8 rounded-lg shadow-md max-w-xl mb-2 mt-3 relative">
 
                         <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-2">
@@ -38,13 +88,16 @@ const PostList = ({ posts, onAddPost }) => {
                             </div>
                             <div className="text-gray-500 cursor-pointer">
 
-                                <button className="hover:bg-gray-50 rounded-full p-1">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <circle cx="12" cy="7" r="1" />
-                                        <circle cx="12" cy="12" r="1" />
-                                        <circle cx="12" cy="17" r="1" />
-                                    </svg>
-                                </button>
+                                {post.author.id === user?.id && (
+                                    <button onClick={() => handleOpenModal(post.id)} className="hover:bg-gray-50 rounded-full p-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <circle cx="12" cy="7" r="1" />
+                                            <circle cx="12" cy="12" r="1" />
+                                            <circle cx="12" cy="17" r="1" />
+                                        </svg>
+                                    </button>
+                                )}
+                                <EditDeleteModal isOpen={modalIsOpen === post.id} onClose={handleCloseModal} onEdit={() => handleEditPost(post.id)} onDelete={() => handleDeletePost(post.id)} itemId={post.id} itemType="post" handleConfirmDelete={handleConfirmDelete} contentIdToDelete={postIdToDelete} handleCloseModal={handleCloseModal} />
                             </div>
                         </div>
 
