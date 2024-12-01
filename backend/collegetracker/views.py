@@ -239,41 +239,69 @@ class LoginView(APIView):
         }
 
         return Response(tokens, status=status.HTTP_201_CREATED)
-    
+
 
 class LikeListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
-        content_type = request.GET.get('content_type')
-        object_id = request.GET.get('object_id')
-        user_id = request.GET.get('user')
+        content_type_param = request.GET.get('content_type')
+        object_id_param = request.GET.get('object_id')
+        user_id_param = request.user.id
 
-        if content_type and object_id and user_id:
-            try:
-                content_type_obj = ContentType.objects.get(model=content_type)
-                likes = Like.objects.filter(
-                    content_type=content_type_obj,
-                    object_id=object_id,
-                    user_id=user_id,
-                )
-                return Response({'count': likes.count(), 'is_liked': likes.exists()})
-            except ContentType.DoesNotExist:
-                return Response({'error': 'Invalid content type'}, status=status.HTTP_400_BAD_REQUEST)
-            except Exception as e:
-                return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        return Response({'error': 'Missing parameters'}, status=status.HTTP_400_BAD_REQUEST)
+        if not all([content_type_param, object_id_param, user_id_param]):
+            return Response({'error': 'Missing content_type, object_id, or user parameters'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            object_id = int(object_id_param)
+        except ValueError:
+            return Response({'error': 'Invalid object_id (must be an integer)'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            content_type = ContentType.objects.get(model=content_type_param)
+            like = Like.objects.filter(
+                content_type=content_type,
+                object_id=object_id,
+                user_id=user_id_param,
+            ).first()
+
+            if like:
+                return Response({'count': Like.objects.filter(content_type=content_type, object_id=object_id).count(), 'is_liked': True, 'like_id': like.id})
+            else:
+                return Response({'count': Like.objects.filter(content_type=content_type, object_id=object_id).count(), 'is_liked': False, 'like_id': None})
+
+        except ContentType.DoesNotExist:
+            return Response({'error': f'Invalid content type: {content_type_param}'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': f'An unexpected error occurred: {e}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class LikeCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, format=None):
-        serializer = LikeSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(user=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            content_type_str = request.data.get('content_type')
+            object_id_str = request.data.get('object_id')
+
+            if not content_type_str or not object_id_str:
+                return Response({'error': 'content_type and object_id are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+            content_type = ContentType.objects.get(model=content_type_str)
+            object_id = int(object_id_str)
+
+            Like.objects.create(user=request.user,
+                                content_type=content_type, object_id=object_id)
+            return Response({'message': 'Like created successfully'}, status=status.HTTP_201_CREATED)
+
+        except ContentType.DoesNotExist:
+            return Response({'error': f"Invalid content type: {content_type_str}"}, status=status.HTTP_400_BAD_REQUEST)
+        except ValueError:
+            return Response({'error': f"Invalid object_id: {object_id_str}"}, status=status.HTTP_400_BAD_REQUEST)
+        except IntegrityError:
+            return Response({'error': 'User already liked this item'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': f'Server Error: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class LikeDeleteView(APIView):
@@ -285,7 +313,6 @@ class LikeDeleteView(APIView):
             like.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response({"error": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
-
 
 
 @api_view(['GET', 'POST'])
@@ -388,6 +415,7 @@ class PostDetailView(APIView):
             return Response({'error': 'You cannot delete this post'}, status=status.HTTP_403_FORBIDDEN)
         post.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class UserPostsView(APIView):
     permission_classes = [IsAuthenticated]

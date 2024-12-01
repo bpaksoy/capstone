@@ -42,9 +42,10 @@ const useLike = (contentType, objectId, token) => {
     }, [user?.id, contentType, objectId, token]);
 
     const handleLike = async () => {
+        console.log("contentType", contentType, "objectId", objectId);
         try {
             setLoading(true);
-            await axios.post(`${baseUrl}likes/create`, { content_type: contentType, object_id: objectId }, {
+            await axios.post(`${baseUrl}likes/create/`, { content_type: contentType, object_id: objectId }, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -60,19 +61,24 @@ const useLike = (contentType, objectId, token) => {
     const handleUnlike = async () => {
         try {
             setLoading(true);
-            //Find the id of the like
             const response = await axios.get(`${baseUrl}likes/`, {
                 params: {
                     content_type: contentType,
                     object_id: objectId,
-                    user: user?.id,
+                    user: user.id,
                 },
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
             });
-            const likeId = response.data[0].id;
-
+    
+            const likeId = response.data.like_id;
+    
+            if (!likeId) {
+                setIsLiked(false);
+                return;
+            }
+    
             await axios.delete(`${baseUrl}likes/${likeId}/`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -85,7 +91,7 @@ const useLike = (contentType, objectId, token) => {
             setLoading(false);
         }
     };
-
+    
     return { isLiked, loading, error, handleLike, handleUnlike };
 };
 

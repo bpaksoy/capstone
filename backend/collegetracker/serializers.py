@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import College
 from django.contrib.auth import authenticate
 from .models import Comment, Post, Bookmark, Reply, User, Like
+from django.contrib.contenttypes.models import ContentType
 
 
 class CollegeSerializer(serializers.ModelSerializer):
@@ -121,7 +122,11 @@ class BookmarkSerializer(serializers.ModelSerializer):
         fields = '__all__'  # Include all fields (user, post, created_at)
 
 
-class LikeSerializer(serializers.ModelSerializer):
+class LikeSerializer(serializers.Serializer):  # Example Serializer
+    content_type = serializers.CharField()
+    object_id = serializers.IntegerField()
+    user = UserSerializer(read_only=True)
+
     class Meta:
         model = Like
         fields = ('id', 'user', 'content_object',

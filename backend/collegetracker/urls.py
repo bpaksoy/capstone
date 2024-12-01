@@ -57,7 +57,7 @@ urlpatterns = [
     path('api/posts/', PostListView.as_view()),
     path('api/posts/<int:pk>/', views.post_detail),
     path('api/likes/', views.LikeListView.as_view(), name='like-list'),
-    path('api/likes/create', views.LikeCreateView.as_view(), name='like-create'),
+    path('api/likes/create/', views.LikeCreateView.as_view(), name='like-create'),
     path('api/likes/<int:like_id>/',
          views.LikeDeleteView.as_view(), name='like-delete'),
     path('graphql/', csrf_exempt(GraphQLView.as_view(graphiql=True))),
