@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useCurrentUser } from '../UserProvider/UserProvider';
 
+
 const useLike = (contentType, objectId, token) => {
 
     const { user, fetchUser } = useCurrentUser();
@@ -9,6 +10,7 @@ const useLike = (contentType, objectId, token) => {
         fetchUser();
     }, [])
 
+   
     const [isLiked, setIsLiked] = useState(false);
     //console.log("isLiked", isLiked)
     const [loading, setLoading] = useState(false);
@@ -51,6 +53,7 @@ const useLike = (contentType, objectId, token) => {
                 },
             });
             setIsLiked(true);
+          
         } catch (error) {
             setError(error);
         } finally {
@@ -71,14 +74,14 @@ const useLike = (contentType, objectId, token) => {
                     Authorization: `Bearer ${token}`,
                 },
             });
-    
+
             const likeId = response.data.like_id;
-    
+
             if (!likeId) {
                 setIsLiked(false);
                 return;
             }
-    
+
             await axios.delete(`${baseUrl}likes/${likeId}/`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -91,7 +94,7 @@ const useLike = (contentType, objectId, token) => {
             setLoading(false);
         }
     };
-    
+
     return { isLiked, loading, error, handleLike, handleUnlike };
 };
 

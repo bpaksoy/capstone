@@ -3,19 +3,22 @@ import { images } from "../constants";
 import CommentModal from '../utils/CommentModal';
 import Comment from './Comment';
 import LikeButton from '../utils/LikeButton';
+import timeSince from '../utils/TimeStamp';
+import { baseUrl } from '../shared';
 
 const PostList = ({ posts, onAddPost }) => {
     const [postLikes, setPostLikes] = useState({}); // State to track likes for each post
 
     const updateLikeStatus = (postId, isLiked) => {
         setPostLikes((prevPostLikes) => ({ ...prevPostLikes, [postId]: isLiked }));
+        onAddPost(); // Update the post list when a like status changes
     };
 
     const [lastUpdatedComment, setLastUpdatedComment] = useState(null);
 
     const updateComments = (time) => {
         setLastUpdatedComment(time);
-        onAddPost();
+        onAddPost(); // Update the post list when a comment is added
     };
 
     return (
@@ -27,10 +30,10 @@ const PostList = ({ posts, onAddPost }) => {
 
                         <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-2">
-                                <img src={images.profile} alt="User Avatar" className="w-8 h-8 rounded-full" />
+                                <img src={post.author.image ? `${baseUrl}${post.author.image}` : images.profile} alt="User Avatar" className="w-8 h-8 rounded-full" />
                                 <div>
                                     <p className="text-gray-800 font-semibold">{post.author.username}</p>
-                                    <p className="text-gray-500 text-sm">Posted 2 hours ago</p>
+                                    <p className="text-gray-500 text-sm">{timeSince(post.created_at)}</p>
                                 </div>
                             </div>
                             <div className="text-gray-500 cursor-pointer">
@@ -62,7 +65,7 @@ const PostList = ({ posts, onAddPost }) => {
                                     <svg className={`w-5 h-5 fill-current ${postLikes[post.id] ? 'fill-pink-500' : ''}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                                         <path d="M12 21.35l-1.45-1.32C6.11 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-4.11 6.86-8.55 11.54L12 21.35z" />
                                     </svg>
-                                    <span>{post.likes_count} Likes</span>
+                                    <span>{post.likes_count} Like</span>
                                 </button>
                                 <LikeButton contentType="post" objectId={post.id} onLikeStatusChange={updateLikeStatus} />
                             </div>
