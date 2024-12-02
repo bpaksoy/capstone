@@ -8,6 +8,7 @@ import timeSince from '../utils/TimeStamp';
 import { useCurrentUser } from '../UserProvider/UserProvider';
 import { baseUrl } from '../shared';
 import axios from 'axios';
+import EditPostModal from '../utils/EditPostModal';
 
 const PostList = ({ posts, onAddPost }) => {
     const { user, fetchUser } = useCurrentUser();
@@ -15,7 +16,6 @@ const PostList = ({ posts, onAddPost }) => {
     useEffect(() => {
         fetchUser();
     }, [])
-
 
     const [postLikes, setPostLikes] = useState({}); // State to track likes for each post
 
@@ -27,21 +27,33 @@ const PostList = ({ posts, onAddPost }) => {
     const [modalIsOpen, setModalIsOpen] = useState(null);
     const [postIdToDelete, setPostIdToDelete] = useState(null);
     const [postIdToEdit, setPostIdToEdit] = useState(null);
+    const [postToEdit, setPostToEdit] = useState(null);
 
     const handleOpenModal = (postId) => {
         setModalIsOpen(postId);
     };
 
-    const handleCloseModal = () => {
-        setModalIsOpen(null);
+    const handleEditPost = async (postId) => {
+        try {
+            const response = await axios.get(`${baseUrl}api/posts/${postId}/`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('access')}`,
+                },
+            });
+            setPostIdToEdit(postId);
+            setPostToEdit(response.data);
+            console.log('Post to edit:', response.data);
+            setModalIsOpen(true);
+        } catch (error) {
+            console.error('Error fetching post:', error);
+        }
     };
 
-    const handleEditPost = (postId) => {
-        console.log('Editing post:', postId);
-        setPostIdToEdit(postId);
-        handleCloseModal();
-        window.location.href = `/edit/${postId}`;
+    const handleCloseModal = () => {
+        setModalIsOpen(false);
+        setPostToEdit(null);
     };
+
 
     const handleDeletePost = (postId) => {
         setPostIdToDelete(postId);
@@ -98,6 +110,9 @@ const PostList = ({ posts, onAddPost }) => {
                                     </button>
                                 )}
                                 <EditDeleteModal isOpen={modalIsOpen === post.id} onClose={handleCloseModal} onEdit={() => handleEditPost(post.id)} onDelete={() => handleDeletePost(post.id)} itemId={post.id} itemType="post" handleConfirmDelete={handleConfirmDelete} contentIdToDelete={postIdToDelete} handleCloseModal={handleCloseModal} />
+                                {postIdToEdit &&
+                                    <EditPostModal post={postToEdit} isOpen={modalIsOpen} onClose={handleCloseModal} onAddPost={onAddPost} /> 
+                                }
                             </div>
                         </div>
 

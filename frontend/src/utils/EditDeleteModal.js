@@ -9,11 +9,11 @@ const EditDeleteModal = ({ isOpen, onClose, onEdit, onDelete, itemId, itemType, 
                     <div className="flex flex-col">
                         <div className="flex items-center mb-2">
                             <span className="mr-2">•</span>
-                            <button onClick={onEdit}>Edit {itemType}</button>
+                            <button onClick={onEdit} className="hover:bg-gray-200 rounded px-1">Edit {itemType}</button>
                         </div>
-                        <div className="flex items-center">
+                        <div className="flex items-center mb-2">
                             <span className="mr-2">•</span>
-                            <button onClick={onDelete}>Delete {itemType}</button>
+                            <button onClick={onDelete} className="hover:bg-gray-200 rounded px-1">Delete {itemType}</button>
                         </div>
                         <div className="flex items-center">
                             <button onClick={onClose} className="bg-gray-200 hover:bg-gray-300 text-gray-600 font-medium py-1 px-2 rounded">

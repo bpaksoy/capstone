@@ -407,39 +407,15 @@ class DeletePostView(APIView):
 class PostDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get_object(self, pk):
+    def get(self, request, pk, format=None):
         try:
-            return Post.objects.get(pk=pk)
-        except Post.DoesNotExist:
-            return None
-
-    def get(self, request, pk):
-        post = self.get_object(pk)
-        if post is None:
+            post = get_object_or_404(Post, pk=pk)
+            serializer = PostSerializer(post)
+            return Response(serializer.data)
+        except Http404:
             return Response({'error': 'Post not found'}, status=status.HTTP_404_NOT_FOUND)
-        serializer = PostSerializer(post)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def put(self, request, pk):
-        post = self.get_object(pk)
-        if post is None:
-            return Response({'error': 'Post not found'}, status=status.HTTP_404_NOT_FOUND)
-        if post.author != request.user:
-            return Response({'error': 'You cannot edit this post'}, status=status.HTTP_403_FORBIDDEN)
-        serializer = PostSerializer(post, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, pk):
-        post = self.get_object(pk)
-        if post is None:
-            return Response({'error': 'Post not found'}, status=status.HTTP_404_NOT_FOUND)
-        if post.author != request.user:
-            return Response({'error': 'You cannot delete this post'}, status=status.HTTP_403_FORBIDDEN)
-        post.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class UserPostsView(APIView):
