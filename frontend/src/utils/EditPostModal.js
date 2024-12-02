@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { icons } from "../constants";
 import axios from 'axios';
 import { baseUrl } from '../shared';
-import { on } from 'process';
 
 function EditPostModal({ onAddPost, post, isOpen, onClose }) {
     const [title, setTitle] = useState('');
@@ -33,8 +31,8 @@ function EditPostModal({ onAddPost, post, isOpen, onClose }) {
                     Authorization: `Bearer ${accessToken}`,
                 },
             });
-            console.log("response", response);
-            console.log("response.data", response.data);
+
+            //console.log("response.data", response.data);
             setIsLoading((prevIsLoading) => !prevIsLoading);
             console.log('Post updated successfully:', response.data);
             onAddPost();

@@ -42,7 +42,7 @@ const PostList = ({ posts, onAddPost }) => {
             });
             setPostIdToEdit(postId);
             setPostToEdit(response.data);
-            console.log('Post to edit:', response.data);
+            //console.log('Post to edit:', response.data);
             setModalIsOpen(true);
         } catch (error) {
             console.error('Error fetching post:', error);
