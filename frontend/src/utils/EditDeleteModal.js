@@ -23,14 +23,6 @@ const EditDeleteModal = ({ isOpen, onClose, onEdit, onDelete, itemId, itemType, 
                             </button>
                         </div>
                     </div>
-
-                    {postIdToDelete === itemId && (
-                        <div>
-                            <p>Are you sure you want to delete this {itemType}?</p>
-                            <button onClick={handleConfirmDelete}>Confirm</button>
-                            <button onClick={handleCloseModal}>Cancel</button>
-                        </div>
-                    )}
                 </div>
             )}
         </>

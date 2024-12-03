@@ -57,18 +57,20 @@ const PostList = ({ posts, onAddPost }) => {
 
     const handleDeletePost = (postId) => {
         setPostIdToDelete(postId);
+        console.log('Post to delete:', postId);
         handleCloseModal();
     };
 
     const handleConfirmDelete = async () => {
+        console.log('Deleting post');
         try {
-            await axios.delete(`${baseUrl}api/posts/${postIdToDelete}/delete`, {
+            await axios.delete(`${baseUrl}api/posts/${postIdToDelete}/delete/`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('access')}`,
                 },
             });
             onAddPost(); // Update the post list when a post is deleted
-            alert("Post deleted successfully!");
+            // alert("Post deleted successfully!");
         } catch (error) {
             console.error('Error deleting post:', error);
         } finally {
@@ -109,9 +111,9 @@ const PostList = ({ posts, onAddPost }) => {
                                         </svg>
                                     </button>
                                 )}
-                                <EditDeleteModal isOpen={modalIsOpen === post.id} onClose={handleCloseModal} onEdit={() => handleEditPost(post.id)} onDelete={() => handleDeletePost(post.id)} itemId={post.id} itemType="post" handleConfirmDelete={handleConfirmDelete} contentIdToDelete={postIdToDelete} handleCloseModal={handleCloseModal} />
+                                <EditDeleteModal isOpen={modalIsOpen === post.id} onClose={handleCloseModal} onEdit={() => handleEditPost(post.id)} onDelete={() => handleDeletePost(post.id)} itemId={post.id} itemType="post" handleConfirmDelete={handleConfirmDelete} postIdToDelete={postIdToDelete} handleCloseModal={handleCloseModal} />
                                 {postIdToEdit &&
-                                    <EditPostModal post={postToEdit} isOpen={modalIsOpen} onClose={handleCloseModal} onAddPost={onAddPost} /> 
+                                    <EditPostModal post={postToEdit} isOpen={modalIsOpen} onClose={handleCloseModal} onAddPost={onAddPost} />
                                 }
                             </div>
                         </div>
@@ -157,6 +159,19 @@ const PostList = ({ posts, onAddPost }) => {
                     </div>
                 ))}
             </div>
+            {postIdToDelete && (
+                <div className="fixed inset-0 flex items-center justify-center z-50 bg-gray-500 bg-opacity-75">
+                    <div className="bg-primary border border-black text-black px-4 py-3 rounded relative" role="alert">
+                        <strong className="font-bold">Confirmation Required</strong><br />
+                        <span className="block sm:inline">Are you sure you want to delete this {posts.find(post => post.id === postIdToDelete)?.itemType}?</span>
+                        <div className="flex justify-end mt-2">
+                            <button className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded mr-2" onClick={handleConfirmDelete}>Confirm</button>
+                            <button className="bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-2 px-4 rounded" onClick={() => setPostIdToDelete(null)}>Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>);
 }
 
