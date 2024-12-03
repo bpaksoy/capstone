@@ -3,14 +3,14 @@ import axios from 'axios';
 import { useCurrentUser } from '../UserProvider/UserProvider';
 
 
-const useLike = (contentType, objectId, token) => {
+const useLike = (contentType, objectId, token, refetchComments) => {
 
     const { user, fetchUser } = useCurrentUser();
     useEffect(() => {
         fetchUser();
     }, [])
 
-   
+
     const [isLiked, setIsLiked] = useState(false);
     //console.log("isLiked", isLiked)
     const [loading, setLoading] = useState(false);
@@ -53,7 +53,8 @@ const useLike = (contentType, objectId, token) => {
                 },
             });
             setIsLiked(true);
-          
+            refetchComments();
+
         } catch (error) {
             setError(error);
         } finally {
@@ -88,6 +89,7 @@ const useLike = (contentType, objectId, token) => {
                 },
             });
             setIsLiked(false);
+            refetchComments();
         } catch (error) {
             setError(error);
         } finally {

@@ -7,7 +7,6 @@ import { images } from "../constants";
 import { useCurrentUser } from '../UserProvider/UserProvider';
 import { baseUrl } from '../shared';
 
-
 const navigation = [
     { name: 'Home', href: '/', current: true },
     { name: 'Bookmarks', href: '/bookmarks', current: false },
@@ -49,8 +48,9 @@ export default function Header(props) {
                             <div className="flex flex-shrink-0 items-center">
                                 <img
                                     alt="Your Company"
-                                    src={images.logo}
+                                    src={images.logo6}
                                     className="h-8 w-auto"
+
                                 />
                             </div>
                             <div className="hidden sm:ml-6 sm:block">
@@ -110,11 +110,11 @@ export default function Header(props) {
                                         <span className="absolute -inset-1.5" />
                                         <span className="sr-only">Open user menu</span>
                                         {user &&
-                                        <img
-                                            alt=""
-                                            src={user.image ? baseUrl + user.image : images.profile}
-                                            className="h-8 w-8 rounded-full"
-                                        />
+                                            <img
+                                                alt=""
+                                                src={user.image ? baseUrl + user.image : images.profile}
+                                                className="h-8 w-8 rounded-full"
+                                            />
                                         }
                                     </MenuButton>
                                 </div>

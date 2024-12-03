@@ -55,7 +55,7 @@ function AddReplyModal({ commentId, onAddReply }) {
                 </div>
             )}
             <div className='flex justify-end'>
-                <button onClick={handleOpenModal} className="hover:bg-gray-300 text-black font-regular py-2 px-4 rounded underline decoration-solid">
+                <button onClick={handleOpenModal} className="hover:bg-gray-300 text-black font-regular p-2 rounded underline decoration-solid">
                     Reply
                 </button>
             </div>

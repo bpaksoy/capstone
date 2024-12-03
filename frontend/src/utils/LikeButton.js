@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import useLike from '../hooks/UseLike';
 
-const LikeButton = ({ contentType, objectId, onLikeStatusChange }) => {
+const LikeButton = ({ contentType, objectId, onLikeStatusChange, refetchComments }) => {
     const token = localStorage.getItem('access');
-    const { isLiked, loading, error, handleLike, handleUnlike } = useLike(contentType, objectId, token);
+    const { isLiked, loading, error, handleLike, handleUnlike } = useLike(contentType, objectId, token, refetchComments);
 
     const handleClick = () => {
         if (isLiked) {
@@ -22,7 +22,7 @@ const LikeButton = ({ contentType, objectId, onLikeStatusChange }) => {
     if (error) return <div>Error: {error.message}</div>;
 
     return (
-        <button onClick={handleClick}>
+        <button onClick={handleClick} className="underline decoration-solid rounded hover:bg-gray-300 p-2">
             {isLiked ? 'Unlike' : 'Like'}
         </button>
     );

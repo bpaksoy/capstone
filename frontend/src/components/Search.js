@@ -17,7 +17,7 @@ function Search() {
             }}
         >
             <input
-                className="shrink min-w-0 px-2 py-1 rounded"
+                className="shrink min-w-0 px-2 py-1 rounded focus:outline-none focus:ring-2 focus:ring-gray-400"
                 placeholder="Search for a college"
                 type="text"
                 onChange={(e) => {
