@@ -5,7 +5,7 @@ const EditDeleteModal = ({ isOpen, onClose, onEdit, onDelete, itemId, itemType, 
     return (
         <>
             {isOpen && (
-                <div className="absolute z-50 bg-white rounded shadow-lg p-4 top-16 right-0" style={{ transform: 'translateY(-100%)' }}>
+                <div className="absolute z-50 bg-white rounded shadow-lg p-4 top-16 right-0 w-40" style={{ transform: 'translateY(-100%)' }}>
                     <div className="flex flex-col">
                         <div className="flex items-center mb-2">
                             <span className="mr-2">•</span>

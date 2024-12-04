@@ -12,6 +12,7 @@ function AddReplyModal({ commentId, onAddReply }) {
 
     const handleOpenModal = () => {
         setIsOpen(true);
+        console.log("handleOpenModal", isOpen);
         setError(null)
     };
 

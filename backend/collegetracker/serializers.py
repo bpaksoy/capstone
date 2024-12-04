@@ -3,6 +3,7 @@ from .models import College
 from django.contrib.auth import authenticate
 from .models import Comment, Post, Bookmark, Reply, User, Like
 from django.contrib.contenttypes.models import ContentType
+from rest_framework.validators import UniqueTogetherValidator
 
 
 class CollegeSerializer(serializers.ModelSerializer):
@@ -61,11 +62,12 @@ class PostSerializer(serializers.ModelSerializer):
     author = UserSerializer(read_only=True)
     comments_count = serializers.SerializerMethodField()
     likes_count = serializers.SerializerMethodField()
+    image = serializers.ImageField(required=False, allow_null=True)
 
     class Meta:
         model = Post
         fields = ('id', 'author', 'title', 'content', 'created_at',
-                  'updated_at', 'comments_count', 'likes_count')
+                  'updated_at', 'comments_count', 'likes_count', 'image')
         depth = 1
 
     def get_comments_count(self, obj):
@@ -75,11 +77,17 @@ class PostSerializer(serializers.ModelSerializer):
         return obj.likes.count()
 
     def create(self, validated_data):
-        # Retrieve the current user from the context
         user = self.context['request'].user
-        # Create the post and assign the user as author
-        post = Post.objects.create(author=user, **validated_data)
-        return post
+        if 'image' in validated_data:
+            # Remove image from validated_data, to avoid passing it to Post.objects.create
+            image = validated_data.pop('image')
+            post = Post.objects.create(author=user, **validated_data)
+            post.image = image
+            post.save()
+            return post
+        else:
+            post = Post.objects.create(author=user, **validated_data)
+            return post
 
 
 class CommentSerializer(serializers.ModelSerializer):

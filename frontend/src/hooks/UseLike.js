@@ -53,7 +53,10 @@ const useLike = (contentType, objectId, token, refetchComments) => {
                 },
             });
             setIsLiked(true);
-            refetchComments();
+            if (contentType === 'comment') { // Only refetch if it's a comment
+                refetchComments(objectId);
+            }
+
 
         } catch (error) {
             setError(error);
@@ -89,7 +92,9 @@ const useLike = (contentType, objectId, token, refetchComments) => {
                 },
             });
             setIsLiked(false);
-            refetchComments();
+            if (contentType === 'comment') { // Only refetch if it's a comment
+                refetchComments(objectId);
+            }
         } catch (error) {
             setError(error);
         } finally {

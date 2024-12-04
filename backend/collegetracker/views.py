@@ -18,7 +18,7 @@ from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import AccessToken
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db.models import Count, Sum
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.contrib.contenttypes.models import ContentType
@@ -361,6 +361,7 @@ def post_detail(request, pk):
 
 class PostListView(APIView):
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
 
     def get(self, request):
         posts = Post.objects.all()
@@ -368,15 +369,18 @@ class PostListView(APIView):
         # print("posts:", serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def post(self, request):
-        serializer = PostSerializer(
-            data=request.data, context={'request': request})
-        print("Post: request.data!!!!", request.data)
-
-        if serializer.is_valid():
+    def post(self, request, format=None):
+        try:
+            # print("request.data", request.data)
+            serializer = PostSerializer(
+                data=request.data, context={'request': request})
+            serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except ValidationError as e:
+            return Response({'error': e.detail}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class EditPostView(APIView):

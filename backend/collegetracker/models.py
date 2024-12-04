@@ -60,7 +60,9 @@ class Post(models.Model):
         User, null=True, blank=True, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    likes = GenericRelation('Like', related_query_name='posts') #
+    likes = GenericRelation('Like', related_query_name='posts')
+    image = models.ImageField(upload_to='post_images/', blank=True, null=True,
+                              validators=[FileExtensionValidator(['png', 'jpg', 'jpeg'])])
 
     # @cached_property
     # def author_username(self):

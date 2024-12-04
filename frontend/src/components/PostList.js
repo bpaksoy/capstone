@@ -86,13 +86,12 @@ const PostList = ({ posts, onAddPost }) => {
     };
 
     return (
-        <div className="container p-4">
-            <h1 className="text-3xl font-bold mb-4 text-gray-800">Trending</h1>
-            <div className="bg-gray-200 min-h-screen flex flex-col items-center rounded-lg">
+        <div className="container mx-auto p-4">
+            <h1 className="text-3xl font-bold mb-4 text-gray-800 text-center">Trending</h1>
+            <div className="flex flex-col items-center">
                 {posts?.map((post) => (
-                    <div key={post.id} className="bg-white p-8 rounded-lg shadow-md max-w-xl mb-2 mt-3 relative">
-
-                        <div className="flex items-center justify-between">
+                    <div key={post.id} className="bg-white p-4 rounded-lg shadow-md max-w-2xl w-full mb-4 relative">
+                        <div className="flex justify-between items-center mb-2">
                             <div className="flex items-center space-x-2">
                                 <img src={post.author.image ? `${baseUrl}${post.author.image}` : images.profile} alt="User Avatar" className="w-8 h-8 rounded-full" />
                                 <div>
@@ -111,7 +110,9 @@ const PostList = ({ posts, onAddPost }) => {
                                         </svg>
                                     </button>
                                 )}
-                                <EditDeleteModal isOpen={modalIsOpen === post.id} onClose={handleCloseModal} onEdit={() => handleEditPost(post.id)} onDelete={() => handleDeletePost(post.id)} itemId={post.id} itemType="post" handleConfirmDelete={handleConfirmDelete} postIdToDelete={postIdToDelete} handleCloseModal={handleCloseModal} />
+                                <div className="absolute px-2 top-0 right-0">
+                                    <EditDeleteModal isOpen={modalIsOpen === post.id} onClose={handleCloseModal} onEdit={() => handleEditPost(post.id)} onDelete={() => handleDeletePost(post.id)} itemId={post.id} itemType="post" handleConfirmDelete={handleConfirmDelete} postIdToDelete={postIdToDelete} handleCloseModal={handleCloseModal} />
+                                </div>
                                 {postIdToEdit &&
                                     <EditPostModal post={postToEdit} isOpen={modalIsOpen} onClose={handleCloseModal} onAddPost={onAddPost} />
                                 }
@@ -119,17 +120,16 @@ const PostList = ({ posts, onAddPost }) => {
                         </div>
 
                         <div className="mb-4">
-                            <p className="text-gray-800 text-lg font-semibold">{post.title}<a href="" className="text-blue-600">#LaunchPost</a>
-                                <a href="" className="text-blue-600">#Launch</a>
-                            </p>
+                            <p className="text-gray-800 text-lg font-semibold">{post.title}</p>
                             <p className="text-gray-800">{post.content}</p>
                         </div>
+                        {post.image && (
+                            <div className="mb-4">
+                                <img src={baseUrl + post.image} alt="Post Image" className="w-full h-48 object-cover rounded-md" />
+                            </div>
+                        )}
 
-                        <div className="mb-4">
-                            <img src={images.thumbnail} alt="Post Image" className="w-full h-48 object-cover rounded-md" />
-                        </div>
-
-                        <div className="flex items-center justify-between text-gray-500">
+                        <div className="flex items-center justify-between text-gray-500 mb-2">
                             <div className="flex items-center space-x-2">
                                 <button className="flex justify-center items-center gap-2 px-2 hover:bg-gray-50 rounded-full p-1">
                                     <svg className={`w-5 h-5 fill-current ${postLikes[post.id] ? 'fill-pink-500' : ''}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -172,7 +172,8 @@ const PostList = ({ posts, onAddPost }) => {
                 </div>
             )}
 
-        </div>);
+        </div>
+    );
 }
 
 export default PostList;

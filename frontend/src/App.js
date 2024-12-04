@@ -12,9 +12,10 @@ import NotFound from "./components/NotFound";
 import College from "./components/College";
 import SearchResults from "./components/SearchResults";
 import { UserProvider } from "./UserProvider/UserProvider";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { baseUrl } from './shared';
 import PrivateRoute from "./pages/PrivateRoute";
+
 
 export const LoginContext = createContext();
 

@@ -8,6 +8,7 @@ function AddPostModal({ onAddPost }) {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [error, setError] = useState(null);
+    const [imageFile, setImageFile] = useState(null);
 
     const handleOpenModal = () => {
         setIsOpen(true);
@@ -20,32 +21,44 @@ function AddPostModal({ onAddPost }) {
         setContent('');
     };
 
+    const handleImageChange = (e) => {
+        setImageFile(e.target.files[0]);
+    };
+
+
     const handleSubmit = async (event) => {
         event.preventDefault();
         const accessToken = localStorage.getItem('access');
+        console.log('Submitting data:', { title, content, imageFile });
 
         try {
-            const response = await axios.post(`${baseUrl}api/posts/`, {
-                title,
-                content,
-            }, {
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('content', content);
+            if (imageFile) {
+                formData.append('image', imageFile);
+            }
+
+            const response = await axios.post(`${baseUrl}api/posts/`, formData, { // Send FormData
                 headers: {
-                    'Authorization': `Bearer ${accessToken}`
-                }
+                    'Content-Type': 'multipart/form-data', // Important: Set the correct header
+                    'Authorization': `Bearer ${accessToken}`,
+                },
             });
 
             console.log('Post created successfully:', response.data);
             setTitle('');
             setContent('');
+            setImageFile(null); // Clear image state after upload
             onAddPost();
-
         } catch (err) {
             setError(err.response.data.detail || 'Error creating post');
-            console.log("err", err)
+            console.error("err", err);
         }
         console.log('Submitting post:', { title, content });
         handleCloseModal();
     };
+
 
     return (
         <div>
@@ -70,7 +83,7 @@ function AddPostModal({ onAddPost }) {
                             <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                                 <div className="sm:flex sm:items-start">
                                     <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
-                                        {/* Icon or image here */}
+                                        <img src={icons.plus} alt="add post" className="" />
                                     </div>
                                     <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                                         <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-headline">
@@ -99,6 +112,18 @@ function AddPostModal({ onAddPost }) {
                                                         id="content"
                                                         value={content}
                                                         onChange={(e) => setContent(e.target.value)}
+                                                    />
+                                                </div>
+                                                <div className="mb-4">
+                                                    <label htmlFor="image" className="block text-gray-700 text-sm font-bold mb-2">
+                                                        Upload Image?
+                                                    </label>
+                                                    <input
+                                                        type="file"
+                                                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                                        id="image"
+                                                        accept="image/*"
+                                                        onChange={handleImageChange}
                                                     />
                                                 </div>
                                                 <div className="flex justify-end">
