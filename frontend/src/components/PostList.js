@@ -125,7 +125,7 @@ const PostList = ({ posts, onAddPost }) => {
                         </div>
                         {post.image && (
                             <div className="mb-4">
-                                <img src={baseUrl + post.image} alt="Post Image" className="w-full h-48 object-cover rounded-md" />
+                                <img src={baseUrl + post.image} alt="Post Image" className="w-full h-[300px] object-cover rounded-md" />
                             </div>
                         )}
 
@@ -155,7 +155,7 @@ const PostList = ({ posts, onAddPost }) => {
                             <p className="text-gray-800 font-semibold px-1">Comment</p>
                             <CommentModal postId={post.id} onAddComment={updateComments} />
                         </div>
-                        <Comment postId={post.id} lastUpdatedComment={lastUpdatedComment} onAddPost={onAddPost} />
+                        <Comment postId={post.id} lastUpdatedComment={lastUpdatedComment} onAddPost={onAddPost} user={user}/>
                     </div>
                 ))}
             </div>

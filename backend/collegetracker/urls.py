@@ -43,6 +43,10 @@ urlpatterns = [
     path('api/search/<str:name>/', views.search, name='search'),
     path('api/posts/<int:post_pk>/comments/', CommentListView.as_view()),
     path('api/comments/<int:pk>/', CommentDetailView.as_view()),
+    path('api/comments/<int:pk>/edit/',
+         views.EditCommentView.as_view(), name='edit-comment'),
+    path('api/comments/<int:pk>/delete/',
+         views.DeleteCommentView.as_view(), name='delete-comment'),
     path('api/users/<int:user_id>/comments/',
          UserCommentsView.as_view(), name='user-comments'),
     path('api/users/<int:user_id>/posts/',
@@ -64,6 +68,6 @@ urlpatterns = [
     path('api/likes/create/', views.LikeCreateView.as_view(), name='like-create'),
     path('api/likes/<int:like_id>/',
          views.LikeDeleteView.as_view(), name='like-delete'),
-    path('graphql/', csrf_exempt(GraphQLView.as_view(graphiql=True))),
+    #     path('graphql/', csrf_exempt(GraphQLView.as_view(graphiql=True))),
     path('upload/', UploadApiView.as_view(), name='upload_file'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

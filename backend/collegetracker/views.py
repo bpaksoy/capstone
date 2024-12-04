@@ -458,42 +458,68 @@ class CommentListView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class CommentDetailView(APIView):
+class EditCommentView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get_object(self, comment_pk):
-        try:
-            return Comment.objects.get(pk=comment_pk)
-        except Comment.DoesNotExist:
-            return None
-
-    def get(self, request, comment_pk):
-        comment = self.get_object(comment_pk)
-        if comment is None:
-            return Response({'error': 'Comment not found'}, status=status.HTTP_404_NOT_FOUND)
-        serializer = CommentSerializer(comment)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def put(self, request, comment_pk):
-        comment = self.get_object(comment_pk)
-        if comment is None:
-            return Response({'error': 'Comment not found'}, status=status.HTTP_404_NOT_FOUND)
+    def put(self, request, pk, format=None):
+        comment = get_object_or_404(Comment, pk=pk)
         if comment.author != request.user:
-            return Response({'error': 'You cannot edit this comment'}, status=status.HTTP_403_FORBIDDEN)
-        serializer = CommentSerializer(comment, data=request.data)
+            return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+        serializer = CommentSerializer(
+            comment, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, comment_pk):
-        comment = self.get_object(comment_pk)
-        if comment is None:
-            return Response({'error': 'Comment not found'}, status=status.HTTP_404_NOT_FOUND)
+
+class DeleteCommentView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, pk, format=None):
+        comment = get_object_or_404(Comment, pk=pk)
         if comment.author != request.user:
-            return Response({'error': 'You cannot delete this comment'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
         comment.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class CommentDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self, pk):
+        try:
+            return Comment.objects.get(pk=pk)
+        except Comment.DoesNotExist:
+            return None
+
+    def get(self, request, pk):
+        comment = self.get_object(pk)
+        if comment is None:
+            return Response({'error': 'Comment not found'}, status=status.HTTP_404_NOT_FOUND)
+        serializer = CommentSerializer(comment)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    # def put(self, request, comment_pk):
+    #     comment = self.get_object(comment_pk)
+    #     if comment is None:
+    #         return Response({'error': 'Comment not found'}, status=status.HTTP_404_NOT_FOUND)
+    #     if comment.author != request.user:
+    #         return Response({'error': 'You cannot edit this comment'}, status=status.HTTP_403_FORBIDDEN)
+    #     serializer = CommentSerializer(comment, data=request.data)
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response(serializer.data, status=status.HTTP_200_OK)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    # def delete(self, request, comment_pk):
+    #     comment = self.get_object(comment_pk)
+    #     if comment is None:
+    #         return Response({'error': 'Comment not found'}, status=status.HTTP_404_NOT_FOUND)
+    #     if comment.author != request.user:
+    #         return Response({'error': 'You cannot delete this comment'}, status=status.HTTP_403_FORBIDDEN)
+    #     comment.delete()
+    #     return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class UserCommentsView(APIView):
