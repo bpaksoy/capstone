@@ -40,8 +40,14 @@ export default function Register() {
         setLoggedIn(false);
     }, []);
 
-    function register(e) {
+
+
+    const register = (e) => {
         e.preventDefault();
+
+        if (!firstName || !lastName || !username || !email || !password) {
+            return alert('Name, Username, email, and password are required.');
+        }
         const url = baseUrl + 'api/register/';
         fetch(url, {
             method: 'POST',
@@ -49,7 +55,6 @@ export default function Register() {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                name: person,
                 first_name: firstName,
                 last_name: lastName,
                 email: email,
@@ -58,10 +63,15 @@ export default function Register() {
             }),
         })
             .then((response) => {
-                console.log("response", response)
+                if (!response.ok) {
+                    return response.json().then((errorData) => {
+                        throw new Error(errorData.detail || 'Registration failed.');
+                    });
+                }
                 return response.json();
             })
             .then((data) => {
+
                 localStorage.setItem('access', data.access);
                 localStorage.setItem('refresh', data.refresh);
                 setLoggedIn(true);
@@ -70,6 +80,10 @@ export default function Register() {
                         ? location.state.previousUrl
                         : '/'
                 );
+            })
+            .catch((error) => {
+                console.error('Registration error:', error);
+                alert('Registration failed. Please try again later.');
             });
     }
 

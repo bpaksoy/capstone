@@ -109,7 +109,6 @@ function Comment({ postId, lastUpdatedComment, onAddPost, user }) {
     };
 
 
-
     if (postId === undefined || postId === null) {
         return <div>Loading comments... </div>;
     }

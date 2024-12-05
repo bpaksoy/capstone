@@ -3,7 +3,7 @@ import axios from 'axios';
 import { baseUrl } from '../shared';
 import { icons } from '../constants';
 
-const AddBioModal = ({ initialValues = {} }) => {
+const AddBioModal = ({ initialValues = {}, fetchUser }) => {
 
     const [bio, setBio] = useState(initialValues.bio || '');
     const [isOpen, setIsOpen] = useState(false);
@@ -42,7 +42,7 @@ const AddBioModal = ({ initialValues = {} }) => {
             });
 
             console.log('User bio updated successfully:', response.data);
-
+            fetchUser();
 
         } catch (err) {
             setError(err.response.data.detail || 'Error updating bio');

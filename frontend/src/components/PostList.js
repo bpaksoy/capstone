@@ -85,6 +85,8 @@ const PostList = ({ posts, onAddPost }) => {
         onAddPost(); // Update the post list when a comment is added
     };
 
+    
+
     return (
         <div className="container mx-auto p-4">
             <h1 className="text-3xl font-bold mb-4 text-gray-800 text-center">Trending</h1>
@@ -153,7 +155,7 @@ const PostList = ({ posts, onAddPost }) => {
                         <hr className="mt-2 mb-2" />
                         <div className="flex flex-row items-center">
                             <p className="text-gray-800 font-semibold px-1">Comment</p>
-                            <CommentModal postId={post.id} onAddComment={updateComments} />
+                            <CommentModal postId={post.id} onAddComment={updateComments}/>
                         </div>
                         <Comment postId={post.id} lastUpdatedComment={lastUpdatedComment} onAddPost={onAddPost} user={user}/>
                     </div>

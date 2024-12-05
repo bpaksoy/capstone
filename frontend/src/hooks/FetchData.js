@@ -7,10 +7,11 @@ const useFetch = (options = {}, token) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const fetchData = useCallback(async (url) => {
+    const fetchData = useCallback(async (url, method) => {
         try {
             setLoading(true);
             const res = await axios(url, {
+                method,
                 ...options,
                 headers: {
                     ...options.headers,

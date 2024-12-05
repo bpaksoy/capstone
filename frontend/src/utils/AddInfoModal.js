@@ -3,7 +3,7 @@ import axios from 'axios';
 import { baseUrl } from '../shared';
 import { icons } from '../constants';
 
-const AddInfoModal = ({ initialValues = {} }) => {
+const AddInfoModal = ({ initialValues = {}, fetchUser }) => {
     const [city, setCity] = useState(initialValues.city || '');
     const [state, setState] = useState(initialValues.state || '');
     const [country, setCountry] = useState(initialValues.state || '');
@@ -29,6 +29,7 @@ const AddInfoModal = ({ initialValues = {} }) => {
         const data = {
             city: city,
             state: state,
+            country: country,
             major: major,
             education: education,
         };
@@ -45,7 +46,7 @@ const AddInfoModal = ({ initialValues = {} }) => {
             });
 
             console.log('User information updated successfully:', response.data);
-
+            fetchUser();
 
         } catch (err) {
             setError(err.response.data.detail || 'Error creating post');
