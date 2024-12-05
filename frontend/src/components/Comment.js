@@ -6,6 +6,7 @@ import axios from 'axios';
 import { baseUrl } from '../shared';
 import LikeButton from '../utils/LikeButton';
 import EditDeleteModal from '../utils/EditDeleteModal';
+import EditCommentModal from '../utils/EditCommentModal';
 
 function Comment({ postId, lastUpdatedComment, onAddPost, user }) {
 
@@ -16,6 +17,7 @@ function Comment({ postId, lastUpdatedComment, onAddPost, user }) {
     const [modalIsOpen, setModalIsOpen] = useState(null);
     const [commentIdToDelete, setCommentIdToDelete] = useState(null);
     const [commentToEdit, setCommentToEdit] = useState(null);
+    const [commentIdToEdit, setCommentIdToEdit] = useState(null);
 
     const updateLikeStatus = (commentId, isLiked) => {
         setCommentLikes((prevCommentLikes) => ({ ...prevCommentLikes, [commentId]: isLiked }));
@@ -78,6 +80,7 @@ function Comment({ postId, lastUpdatedComment, onAddPost, user }) {
                 },
             });
             setCommentToEdit(response.data);
+            setCommentIdToEdit(commentId);
             setModalIsOpen(true);
         } catch (error) {
             console.error('Error fetching comment data:', error);
@@ -164,6 +167,9 @@ function Comment({ postId, lastUpdatedComment, onAddPost, user }) {
                                         handleCloseModal={handleCloseModal}
                                     />
                                 </div>
+                                {commentIdToEdit &&
+                                    <EditCommentModal comment={commentToEdit} isOpen={modalIsOpen} onClose={handleCloseModal} onAddPost={onAddPost} refetchComments={refetchComments} />
+                                }
 
                             </div>
                             <Reply commentId={comment.id} lastUpdatedReply={lastUpdatedReply} onAddPost={onAddPost} />
@@ -173,6 +179,18 @@ function Comment({ postId, lastUpdatedComment, onAddPost, user }) {
                     <p className="text-gray-500 text-center p-4">No comments yet.</p>
                 )}
             </div>
+            {commentIdToDelete && (
+                <div className="fixed inset-0 flex items-center justify-center z-50 bg-gray-500 bg-opacity-75">
+                    <div className="bg-primary border border-black text-black px-4 py-3 rounded relative" role="alert">
+                        <strong className="font-bold">Confirmation Required</strong><br />
+                        <span className="block sm:inline">Are you sure you want to delete this {comments.find(comment => comment.id === commentIdToDelete)?.itemType}?</span>
+                        <div className="flex justify-end mt-2">
+                            <button className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded mr-2" onClick={handleConfirmDelete}>Confirm</button>
+                            <button className="bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-2 px-4 rounded" onClick={() => setCommentIdToDelete(null)}>Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>)
 }
 
