@@ -1,4 +1,4 @@
-from .models import College, Comment, Post, Bookmark, Reply, Like
+from .models import User, College, Comment, Post, Bookmark, Reply, Like, Friendship
 from django.http import JsonResponse, Http404
 from django.db import IntegrityError
 from .serializers import CollegeSerializer, UserSerializer, UploadFileSerializer, LoginSerializer, CommentSerializer, PostSerializer, BookmarkSerializer, ReplySerializer, LikeSerializer
@@ -14,7 +14,7 @@ from django.shortcuts import render, redirect,  get_object_or_404
 from django.contrib import messages
 from .forms import UploadFileForm
 from datetime import datetime
-from django.contrib.auth.models import User
+# from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import AccessToken
@@ -25,6 +25,42 @@ from django.contrib.contenttypes.models import ContentType
 
 
 api_view(['GET', 'POST'])
+
+class RegisterView(APIView):
+    def post(self, request):
+        # print("request is here", request.body)
+        # print("request data", request.data)
+        if User.objects.filter(email=request.data['email']).exists():
+            return Response({'error': 'Email already registered'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            refresh = RefreshToken.for_user(user)
+            tokens = {
+                'refresh': str(refresh),
+                'access': str(refresh.access_token)
+            }
+            return Response(tokens, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LoginView(APIView):
+    serializer_class = LoginSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(
+            data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+
+        refresh = RefreshToken.for_user(user)
+        tokens = {
+            'refresh': str(refresh),
+            'access': str(refresh.access_token)
+        }
+
+        return Response(tokens, status=status.HTTP_201_CREATED)
 
 
 class CurrentUserView(APIView):
@@ -203,42 +239,6 @@ class UploadApiView(APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-
-class RegisterView(APIView):
-    def post(self, request):
-        # print("request is here", request.body)
-        # print("request data", request.data)
-        if User.objects.filter(email=request.data['email']).exists():
-            return Response({'error': 'Email already registered'}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            serializer = UserSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            refresh = RefreshToken.for_user(user)
-            tokens = {
-                'refresh': str(refresh),
-                'access': str(refresh.access_token)
-            }
-            return Response(tokens, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class LoginView(APIView):
-    serializer_class = LoginSerializer
-
-    def post(self, request):
-        serializer = self.serializer_class(
-            data=request.data, context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
-
-        refresh = RefreshToken.for_user(user)
-        tokens = {
-            'refresh': str(refresh),
-            'access': str(refresh.access_token)
-        }
-
-        return Response(tokens, status=status.HTTP_201_CREATED)
 
 
 class LikeListView(APIView):
@@ -500,27 +500,6 @@ class CommentDetailView(APIView):
         serializer = CommentSerializer(comment)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    # def put(self, request, comment_pk):
-    #     comment = self.get_object(comment_pk)
-    #     if comment is None:
-    #         return Response({'error': 'Comment not found'}, status=status.HTTP_404_NOT_FOUND)
-    #     if comment.author != request.user:
-    #         return Response({'error': 'You cannot edit this comment'}, status=status.HTTP_403_FORBIDDEN)
-    #     serializer = CommentSerializer(comment, data=request.data)
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         return Response(serializer.data, status=status.HTTP_200_OK)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    # def delete(self, request, comment_pk):
-    #     comment = self.get_object(comment_pk)
-    #     if comment is None:
-    #         return Response({'error': 'Comment not found'}, status=status.HTTP_404_NOT_FOUND)
-    #     if comment.author != request.user:
-    #         return Response({'error': 'You cannot delete this comment'}, status=status.HTTP_403_FORBIDDEN)
-    #     comment.delete()
-    #     return Response(status=status.HTTP_204_NO_CONTENT)
-
 
 class UserCommentsView(APIView):
     permission_classes = [IsAuthenticated]
@@ -650,3 +629,60 @@ class BookmarkedCollegesView(generics.ListAPIView):
         colleges = [bookmark.college for bookmark in queryset]  # Process here
         serializer = self.get_serializer(colleges, many=True)
         return Response(serializer.data)
+
+
+class FriendRequestCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, friend_id, format=None):
+        try:
+            friend = get_object_or_404(User, pk=friend_id)
+            friendship, created = Friendship.objects.get_or_create(
+                user1=request.user,
+                user2=friend,
+            )
+            if created:
+                return Response({'message': 'Friend request sent'}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({'message': 'Friend request already exists'}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class FriendRequestDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, friend_id, format=None):
+        try:
+            friend = get_object_or_404(User, pk=friend_id)
+            friendship = Friendship.objects.get(
+                user1=request.user, user2=friend)
+            friendship.delete()
+            return Response({'message': 'Friend request deleted'}, status=status.HTTP_204_NO_CONTENT)
+        except Friendship.DoesNotExist:
+            return Response({'error': 'Friend request not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class FriendRequestRespondView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, friend_id, format=None, action=None):
+        try:
+            friend = get_object_or_404(User, pk=friend_id)
+            friendship = get_object_or_404(
+                Friendship, user2=request.user, user1=friend)
+
+            if action == 'accept':
+                friendship.status = 'accepted'
+                friendship.save()
+                return Response({'message': 'Friend request accepted'}, status=status.HTTP_200_OK)
+            elif action == 'reject':
+                friendship.delete()
+                return Response({'message': 'Friend request rejected'}, status=status.HTTP_204_NO_CONTENT)
+            else:
+                return Response({'error': 'Invalid action'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

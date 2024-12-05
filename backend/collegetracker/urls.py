@@ -28,6 +28,12 @@ from django.conf import settings
 urlpatterns = [
     path("api/user/", CurrentUserView.as_view(), name="user"),
     path("api/user/update/", UserUpdateView.as_view(), name="user-update"),
+    path('api/users/<int:friend_id>/friend-request/',
+         views.FriendRequestCreateView.as_view(), name='friend-request-create'),
+    path('api/users/<int:friend_id>/friend-request/',
+         views.FriendRequestDeleteView.as_view(), name='friend-request-delete'),
+    path('api/users/<int:friend_id>/friend-request/<str:action>/',
+         views.FriendRequestRespondView.as_view(), name='friend-request-respond'),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),

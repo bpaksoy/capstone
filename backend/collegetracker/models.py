@@ -13,7 +13,7 @@ from django.contrib.contenttypes.models import ContentType
 
 class User(AbstractUser):
     image = models.ImageField('image', upload_to='user_images', blank=True, null=True,
-                              validators=[FileExtensionValidator(['png', 'jpg', 'jpeg'])],  default='image')
+                              validators=[FileExtensionValidator(['png', 'jpg', 'jpeg'])])
     city = models.CharField(max_length=100, blank=True, null=True)
     state = models.CharField(max_length=100, blank=True, null=True)
     country = models.CharField(max_length=100, blank=True, null=True)
