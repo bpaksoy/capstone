@@ -9,13 +9,39 @@ import { useCurrentUser } from '../UserProvider/UserProvider';
 import { baseUrl } from '../shared';
 import axios from 'axios';
 import EditPostModal from '../utils/EditPostModal';
+import { useNavigate } from 'react-router-dom';
 
 const PostList = ({ posts, onAddPost }) => {
     const { user, fetchUser } = useCurrentUser();
+    const navigate = useNavigate();
+    const [otherUser, setOtherUser] = useState(null);
 
     useEffect(() => {
         fetchUser();
-    }, [])
+    }, []);
+
+    const handleNavigateToProfile = async (authorId) => {
+        try {
+            const response = await axios.get(`${baseUrl}api/users/${authorId}/`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('access')}`,
+                },
+            });
+            if (authorId !== user.id) {
+                setOtherUser(response.data);
+                console.log('Other user reponse:', response.data);
+            }
+
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+        }
+    };
+
+    useEffect(() => {
+        if (otherUser) {
+            navigate(`/profile/${otherUser.id}`, { state: { otherUser } });
+        }
+    }, [otherUser])
 
     const [postLikes, setPostLikes] = useState({}); // State to track likes for each post
 
@@ -85,7 +111,7 @@ const PostList = ({ posts, onAddPost }) => {
         onAddPost(); // Update the post list when a comment is added
     };
 
-    
+
 
     return (
         <div className="container mx-auto p-4">
@@ -94,10 +120,15 @@ const PostList = ({ posts, onAddPost }) => {
                 {posts?.map((post) => (
                     <div key={post.id} className="bg-white p-4 rounded-lg shadow-md max-w-2xl w-full mb-4 relative">
                         <div className="flex justify-between items-center mb-2">
-                            <div className="flex items-center space-x-2">
+                            <div className="flex items-center space-x-2 cursor-pointer" onClick={() => {
+                                if (post.author.id !== user.id) { handleNavigateToProfile(post.author.id) }
+                                else {
+                                    navigate('/profile/')
+                                }
+                            }}>
                                 <img src={post.author.image ? `${baseUrl}${post.author.image}` : images.profile} alt="User Avatar" className="w-8 h-8 rounded-full" />
                                 <div>
-                                    <p className="text-gray-800 font-semibold">{post.author.username}</p>
+                                    <p className="text-gray-800 font-semibold underline hover:bg-gray-200 rounded px-2">{post.author.username}</p>
                                     <p className="text-gray-500 text-sm">{timeSince(post.created_at)}</p>
                                 </div>
                             </div>
@@ -155,9 +186,9 @@ const PostList = ({ posts, onAddPost }) => {
                         <hr className="mt-2 mb-2" />
                         <div className="flex flex-row items-center">
                             <p className="text-gray-800 font-semibold px-1">Comment</p>
-                            <CommentModal postId={post.id} onAddComment={updateComments}/>
+                            <CommentModal postId={post.id} onAddComment={updateComments} />
                         </div>
-                        <Comment postId={post.id} lastUpdatedComment={lastUpdatedComment} onAddPost={onAddPost} user={user}/>
+                        <Comment postId={post.id} lastUpdatedComment={lastUpdatedComment} onAddPost={onAddPost} user={user} />
                     </div>
                 ))}
             </div>

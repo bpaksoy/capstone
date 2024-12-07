@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import College
 from django.contrib.auth import authenticate
-from .models import Comment, Post, Bookmark, Reply, User, Like
+from .models import Comment, Post, Bookmark, Reply, User, Like, Friendship
 from django.contrib.contenttypes.models import ContentType
 from rest_framework.validators import UniqueTogetherValidator
 
@@ -155,3 +155,12 @@ class LikeSerializer(serializers.Serializer):  # Example Serializer
         model = Like
         fields = ('id', 'user', 'content_object',
                   'content_type', 'object_id', 'created_at')
+
+
+class FriendshipSerializer(serializers.ModelSerializer):
+    user1 = UserSerializer(read_only=True)
+    user2 = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Friendship
+        fields = '__all__'

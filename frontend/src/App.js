@@ -12,9 +12,10 @@ import NotFound from "./components/NotFound";
 import College from "./components/College";
 import SearchResults from "./components/SearchResults";
 import { UserProvider } from "./UserProvider/UserProvider";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { baseUrl } from './shared';
 import PrivateRoute from "./pages/PrivateRoute";
+import PublicProfile from "./components/PublicProfile";
 
 
 export const LoginContext = createContext();
@@ -72,6 +73,7 @@ const App = () => {
                 <Route path="/bookmarks" element={<Bookmarks />} />
                 <Route path="/trending" element={<Trending />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/profile/:userId" element={<PublicProfile />} />
                 <Route path="/search/:query" element={<SearchResults key={new Date().getTime()} />} />
                 <Route path="/404" element={<NotFound />} />
                 <Route path="*" element={<NotFound />} />

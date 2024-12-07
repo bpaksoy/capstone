@@ -1,12 +1,12 @@
 from .models import User, College, Comment, Post, Bookmark, Reply, Like, Friendship
 from django.http import JsonResponse, Http404
 from django.db import IntegrityError
-from .serializers import CollegeSerializer, UserSerializer, UploadFileSerializer, LoginSerializer, CommentSerializer, PostSerializer, BookmarkSerializer, ReplySerializer, LikeSerializer
+from .serializers import CollegeSerializer, UserSerializer, UploadFileSerializer, LoginSerializer, CommentSerializer, PostSerializer, BookmarkSerializer, ReplySerializer, LikeSerializer, FriendshipSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status, generics, serializers
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework_simplejwt.tokens import RefreshToken
 import pandas as pd
@@ -25,6 +25,7 @@ from django.contrib.contenttypes.models import ContentType
 
 
 api_view(['GET', 'POST'])
+
 
 class RegisterView(APIView):
     def post(self, request):
@@ -81,6 +82,20 @@ class CurrentUserView(APIView):
         }
 
         return self.request.user
+
+
+class UserDetailView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get(self, request, user_id, format=None):
+        try:
+            user = get_object_or_404(User, pk=user_id)
+            serializer = UserSerializer(user)
+            return Response(serializer.data)
+        except Http404:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class UserUpdateView(APIView):
@@ -238,7 +253,6 @@ class UploadApiView(APIView):
             return Response({'message': 'File uploaded successfully'}, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 class LikeListView(APIView):
@@ -527,10 +541,16 @@ class CommentCountView(APIView):
 
 
 class PostCommentCountsView(APIView):
-    def get(self, request, pk):
-        comment_count = Comment.objects.filter(post_id=pk).count()
-        reply_count = Reply.objects.filter(comment__post_id=pk).count()
-        return Response({'comment_count': comment_count, 'reply_count': reply_count})
+    def get(self, request, pk, format=None):
+        try:
+            post = get_object_or_404(Post, pk=pk)
+            comment_count = Comment.objects.filter(post_id=pk).count()
+            reply_count = Reply.objects.filter(comment__post_id=pk).count()
+            return Response({'comment_count': comment_count, 'reply_count': reply_count})
+        except Http404:
+            return Response({'error': 'Post not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class ReplyListView(generics.ListAPIView):
@@ -669,11 +689,16 @@ class FriendRequestDeleteView(APIView):
 class FriendRequestRespondView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def put(self, request, friend_id, format=None, action=None):
+    def put(self, request, action, format=None):
         try:
-            friend = get_object_or_404(User, pk=friend_id)
-            friendship = get_object_or_404(
-                Friendship, user2=request.user, user1=friend)
+            request_id = request.data.get('id')
+            if not request_id:
+                return Response({'error': 'Request ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+            friendship = get_object_or_404(Friendship, pk=request_id)
+
+            if friendship.user2 != request.user:
+                return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
 
             if action == 'accept':
                 friendship.status = 'accepted'
@@ -684,5 +709,53 @@ class FriendRequestRespondView(APIView):
                 return Response({'message': 'Friend request rejected'}, status=status.HTTP_204_NO_CONTENT)
             else:
                 return Response({'error': 'Invalid action'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class PendingFriendRequestsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        try:
+            pending_requests = Friendship.objects.filter(
+                user2=request.user, status='pending')
+            serializer = FriendshipSerializer(pending_requests, many=True)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class FriendsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, user_id, format=None):
+        try:
+            user = get_object_or_404(User, pk=user_id)
+            friendships = Friendship.objects.filter(
+                user1=user,
+                status='accepted',
+            ) | Friendship.objects.filter(
+                user2=user,
+                status='accepted',
+            )
+
+            friends = [friendship.user1 for friendship in friendships if friendship.user1 != user] + \
+                      [friendship.user2 for friendship in friendships if friendship.user2 != user]
+
+            current_user = request.user
+            is_friend = Friendship.objects.filter(
+                user1=user,
+                user2=current_user,
+                status='accepted',
+            ).exists() | Friendship.objects.filter(
+                user1=current_user,
+                user2=user,
+                status='accepted',
+            ).exists()
+
+            serializer = UserSerializer(friends, many=True)
+            return Response({'friends': serializer.data, 'is_friend': is_friend})
+
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

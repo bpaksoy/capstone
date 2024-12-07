@@ -3,4 +3,23 @@
 @tailwind components;
 @tailwind utilities;
 
+.sharpened-image {
+    filter: sharpen(2);
+  }
 
+
+.less-blurry-image {
+    filter: blur(0.5px) sharpen(1.5); 
+}
+
+.high-contrast-image {
+    filter: contrast(1.2); 
+}
+
+.brighter-image {
+    filter: brightness(1.1); 
+}
+
+.enhanced-image {
+    filter: contrast(1.1) sharpen(1.5);
+}

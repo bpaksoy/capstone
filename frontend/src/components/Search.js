@@ -21,7 +21,6 @@ function Search() {
                 placeholder="Search for a college"
                 type="text"
                 onChange={(e) => {
-                    console.log(e.target.value)
                     setQuery(e.target.value);
                 }}
             />
