@@ -68,6 +68,28 @@ export default function Header(props) {
     }, []);
 
 
+    useEffect(() => {
+        const handleUpdateCount = () => {
+            setFriendRequestCount(friendRequests.filter(request => request.status === 'pending').length);
+        }
+        handleUpdateCount()
+    }, [friendRequests]);
+
+
+    const handleClosePopup = async () => {
+        setShowPopup(false);
+        await Promise.all(friendRequests.map(async (request) => {
+            if (request.status === 'accepted') {
+                await axios.put(`${baseUrl}api/friend-requests/${request.id}/read/`, {}, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('access')}`,
+                    },
+                });
+            }
+        }))
+        setAcceptedFriendRequestCount(0);
+    };
+
     return (
         <>
             <Disclosure as="nav" className="bg-gray-800">
@@ -146,7 +168,7 @@ export default function Header(props) {
                                     </span>
                                 )}
                                 {acceptedFriendRequestCount > 0 && (
-                                    <span className="absolute top-0 right-6 inline-flex items-center justify-center w-4 h-4 rounded-full bg-green-600 text-white">
+                                    <span className="absolute top-0 right-5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-green-600 text-white">
                                         {acceptedFriendRequestCount}
                                     </span>
                                 )}
@@ -156,14 +178,14 @@ export default function Header(props) {
                                     {friendRequests.map((request) => (
                                         <div key={request.id} className="flex justify-between items-center mb-2">
                                             <p className="text-gray-800 font-medium">
-                                                {request.status === 'pending'
-                                                    ? `Friend request from ${request.user1.username}`
-                                                    : `Friend request from ${request.user1.username} accepted`
+                                                {request.user1.id === user.id ?  // Check if the current user is the sender or receiver of the friend request
+                                                    (request.status === 'pending' ? `Friend request sent to ${request.user2.username}` : `Friend request sent to ${request.user2.username} accepted`)
+                                                    : (request.status === 'pending' ? `Friend request from ${request.user1.username}` : `Friend request from ${request.user1.username} accepted`)
                                                 }
                                             </p>
                                         </div>
                                     ))}
-                                    <button onClick={() => setShowPopup(false)} className="mt-2 bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-1 px-2 rounded">Close</button>
+                                    <button onClick={handleClosePopup} className="mt-2 bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-1 px-2 rounded">Close</button>
                                 </div>
                             )}
 

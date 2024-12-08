@@ -37,6 +37,7 @@ class Friendship(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=[('pending', 'Pending'), (
         'accepted', 'Accepted'), ('rejected', 'Rejected')], default='pending')
+    read = models.BooleanField(default=False) 
 
     class Meta:
         unique_together = ('user1', 'user2')

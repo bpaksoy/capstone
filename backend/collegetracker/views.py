@@ -814,3 +814,16 @@ class FriendRequestsView(APIView):
         friend_requests = Friendship.objects.filter(user2=request.user).order_by('-created_at')
         serializer = FriendshipSerializer(friend_requests, many=True)
         return Response(serializer.data)
+    
+
+class FriendRequestReadView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, request_id, format=None):
+        try:
+            friendship = get_object_or_404(Friendship, pk=request_id)
+            friendship.read = True
+            friendship.save()
+            return Response({'message': 'Friend request read'})
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

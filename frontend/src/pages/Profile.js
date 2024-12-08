@@ -119,26 +119,6 @@ const Profile = () => {
 
 
 
-    // const handleSave = async () => {
-    //     try {
-    //         await axios.put(
-    //             'http://127.0.0.1:8000/api/user/',
-    //             userData
-    //         );
-    //         setIsEditing(false);
-    //     } catch (error) {
-    //         console.error('Error saving user data:', error);
-    //     }
-    // };
-
-    // const handleChange = (e) => {
-    //     setUserData({
-    //         ...userData,
-    //         [e.target.name]: e.target.value,
-    //     });
-    // };
-
-
     const handleFriendRequestResponse = async (requestId, action) => {
         try {
             const response = await axios.put(`${baseUrl}api/users/friend-request/${action}/`, { id: requestId }, {
@@ -315,7 +295,7 @@ const Profile = () => {
                                         </p>
 
                                         <AddBioModal initialValues={{ bio: user?.bio }} fetchUser={fetchUser} />
-                                        <a href="#pablo" className="font-normal text-pink-500">Show more</a>
+                                        {/* <a href="#pablo" className="font-normal text-pink-500">Show more</a> */}
                                     </div>
                                 </div>
                             </div>
@@ -328,4 +308,3 @@ const Profile = () => {
 };
 
 export default Profile;
-

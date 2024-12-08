@@ -38,6 +38,8 @@ urlpatterns = [
          views.FriendRequestDeleteView.as_view(), name='friend-request-delete'),
     path('api/users/friend-request/<str:action>/',
          views.FriendRequestRespondView.as_view(), name='friend-request-respond'),
+    path('api/friend-requests/<int:request_id>/read/',
+         views.FriendRequestReadView.as_view(), name='friend-request-read'),
     path('api/users/<int:friend_id>/unfriend/',
          views.UnfriendView.as_view(), name='unfriend'),
     path('api/users/<int:user_id>/friends/',

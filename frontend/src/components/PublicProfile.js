@@ -147,7 +147,7 @@ const PublicProfile = () => {
                                         <p className="mb-4 text-lg leading-relaxed text-blueGray-700">
                                             {otherUser?.bio}
                                         </p>
-                                        <a href="#pablo" className="font-normal text-pink-500">Show more</a>
+                                        {/* <a href="#pablo" className="font-normal text-pink-500">Show more</a> */}
                                     </div>
                                 </div>
                             </div>
