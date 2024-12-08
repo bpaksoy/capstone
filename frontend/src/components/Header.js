@@ -1,4 +1,4 @@
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { NavLink } from 'react-router-dom';
@@ -6,6 +6,7 @@ import { LoginContext } from '../App';
 import { images } from "../constants";
 import { useCurrentUser } from '../UserProvider/UserProvider';
 import { baseUrl } from '../shared';
+import axios from 'axios';
 
 const navigation = [
     { name: 'Home', href: '/', current: true },
@@ -26,9 +27,46 @@ export default function Header(props) {
     }, []);
 
     const [loggedIn, setLoggedIn] = useContext(LoginContext);
+    const [friendRequestCount, setFriendRequestCount] = useState(0);
+    const [acceptedFriendRequestCount, setAcceptedFriendRequestCount] = useState(0);
+    const [showPopup, setShowPopup] = useState(false);
+    const [friendRequests, setFriendRequests] = useState([]);
+
     useEffect(() => {
-        // console.log("logged in", loggedIn);
+        const fetchFriendRequestCount = async () => {
+            try {
+                const response = await axios.get(`${baseUrl}api/friend-request-count/`, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('access')}`,
+                    },
+                });
+                setFriendRequestCount(response.data.pending_count);
+                setAcceptedFriendRequestCount(response.data.accepted_count);
+            } catch (error) {
+                console.error('Error fetching friend request count:', error);
+            }
+        };
+
+        fetchFriendRequestCount();
     }, []);
+
+
+    useEffect(() => {
+        const fetchFriendRequests = async () => {
+            try {
+                const response = await axios.get(`${baseUrl}api/friend-requests/`, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('access')}`,
+                    },
+                });
+                setFriendRequests(response.data);
+            } catch (error) {
+                console.error("Error fetching friend requests:", error);
+            }
+        };
+        fetchFriendRequests();
+    }, []);
+
 
     return (
         <>
@@ -96,12 +134,38 @@ export default function Header(props) {
                         <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
                             <button
                                 type="button"
+                                onClick={() => setShowPopup(!showPopup)}
                                 className="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
                             >
                                 <span className="absolute -inset-1.5" />
                                 <span className="sr-only">View notifications</span>
                                 <BellIcon aria-hidden="true" className="h-6 w-6" />
+                                {friendRequestCount > 0 && (
+                                    <span className="absolute top-0 right-0 inline-flex items-center justify-center w-4 h-4 rounded-full bg-red-600 text-white">
+                                        {friendRequestCount}
+                                    </span>
+                                )}
+                                {acceptedFriendRequestCount > 0 && (
+                                    <span className="absolute top-0 right-6 inline-flex items-center justify-center w-4 h-4 rounded-full bg-green-600 text-white">
+                                        {acceptedFriendRequestCount}
+                                    </span>
+                                )}
                             </button>
+                            {showPopup && (
+                                <div className="absolute z-50 bg-white rounded shadow-lg p-4 top-12 right-2">
+                                    {friendRequests.map((request) => (
+                                        <div key={request.id} className="flex justify-between items-center mb-2">
+                                            <p className="text-gray-800 font-medium">
+                                                {request.status === 'pending'
+                                                    ? `Friend request from ${request.user1.username}`
+                                                    : `Friend request from ${request.user1.username} accepted`
+                                                }
+                                            </p>
+                                        </div>
+                                    ))}
+                                    <button onClick={() => setShowPopup(false)} className="mt-2 bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-1 px-2 rounded">Close</button>
+                                </div>
+                            )}
 
                             {/* Profile dropdown */}
                             <Menu as="div" className="relative ml-3">

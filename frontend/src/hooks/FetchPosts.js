@@ -15,7 +15,7 @@ const usePosts = () => {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const response = await axios.get(`${baseUrl}api/posts/?updated_since=${lastUpdated}`, {
+                const response = await axios.get(`${baseUrl}api/posts/`, {
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${localStorage.getItem('access')}`

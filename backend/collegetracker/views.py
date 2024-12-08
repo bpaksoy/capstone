@@ -754,8 +754,63 @@ class FriendsView(APIView):
                 status='accepted',
             ).exists()
 
+            is_pending = Friendship.objects.filter(
+                user1=current_user,
+                user2=user,
+                status='pending',
+            ).exists() | Friendship.objects.filter(
+                user1=user,
+                user2=current_user,
+                status='pending',
+            ).exists()
+
             serializer = UserSerializer(friends, many=True)
-            return Response({'friends': serializer.data, 'is_friend': is_friend})
+            return Response({'friends': serializer.data, 'is_friend': is_friend, 'is_pending': is_pending})
 
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class UnfriendView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, friend_id, format=None):
+        try:
+            friend = get_object_or_404(User, pk=friend_id)
+            friendships = Friendship.objects.filter(
+                user1=request.user,
+                user2=friend,
+                status='accepted',
+            ) | Friendship.objects.filter(
+                user1=friend,
+                user2=request.user,
+                status='accepted',
+            )
+
+            if friendships.exists():
+                friendships.delete()
+                return Response({'message': 'Friend removed'}, status=status.HTTP_204_NO_CONTENT)
+            else:
+                return Response({'error': 'Friendship not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class FriendRequestCountView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        pending_count = Friendship.objects.filter(
+            user2=request.user, status='pending').count()
+        accepted_count = Friendship.objects.filter(
+            user2=request.user, status='accepted').count()
+        return Response({'pending_count': pending_count, 'accepted_count': accepted_count})
+
+
+class FriendRequestsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        friend_requests = Friendship.objects.filter(user2=request.user).order_by('-created_at')
+        serializer = FriendshipSerializer(friend_requests, many=True)
+        return Response(serializer.data)
