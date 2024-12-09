@@ -1,11 +1,12 @@
 import { useState, useEffect, useContext } from 'react';
 import { baseUrl } from '../shared';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { LoginContext } from '../App';
 import graduation from '../assets/images/graduation.jpg';
+import { useCurrentUser } from '../UserProvider/UserProvider';
 
 export default function Register() {
-    const [loggedIn, setLoggedIn] = useContext(LoginContext);
+    const { user, loading, loggedIn, updateLoggedInStatus } = useCurrentUser();
+
     const [person, setPerson] = useState({
         firstName: '',
         lastName: '',
@@ -37,7 +38,7 @@ export default function Register() {
 
     useEffect(() => {
         localStorage.clear();
-        setLoggedIn(false);
+        updateLoggedInStatus(false);
     }, []);
 
 
@@ -74,7 +75,7 @@ export default function Register() {
 
                 localStorage.setItem('access', data.access);
                 localStorage.setItem('refresh', data.refresh);
-                setLoggedIn(true);
+                updateLoggedInStatus(true);
                 navigate(
                     location?.state?.previousUrl
                         ? location.state.previousUrl
@@ -88,14 +89,13 @@ export default function Register() {
     }
 
     return (
-        <>
-
-            <div className="mx-auto">
+        <div className="py-16">
+            <div className="flex bg-white rounded-lg shadow-lg overflow-hidden mx-auto max-d-md lg:max-w-6xl">
                 <div className="flex justify-center px-6 py-12">
 
                     <div className="w-full xl:w-3/4 lg:w-11/12 flex">
 
-                        <img className="hidden lg:block lg:w-1/2 bg-cover"
+                        <img className="hidden lg:block lg:w-1/2 bg-cover rounded-lg"
                             src={graduation} alt="graduation" />
 
                         <div className="w-full lg:w-7/12 bg-white dark:bg-gray-700 p-5 rounded-lg lg:rounded-l-none">
@@ -179,7 +179,7 @@ export default function Register() {
                                 </div>
                                 <div className="mb-6 text-center">
                                     <button
-                                        className="w-full px-4 py-2 font-bold text-white bg-blue-500 rounded-full hover:bg-blue-700 dark:bg-blue-700 dark:text-white dark:hover:bg-blue-900 focus:outline-none focus:shadow-outline"
+                                        className="bg-gray-700 text-white font-bold py-2 px-4 w-full rounded-lg hover:bg-gray-600"
                                     >
                                         Register Account
                                     </button>
@@ -202,6 +202,6 @@ export default function Register() {
                     </div>
                 </div>
             </div>
-        </>
+        </div>
     );
 }

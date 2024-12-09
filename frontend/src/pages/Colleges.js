@@ -1,16 +1,17 @@
 import '../index.css';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect, useContext } from 'react';
-import { LoginContext } from '../App';
 import College from '../components/College';
 import NotFound from '../components/NotFound';
 import { baseUrl } from '../shared';
 import Search from '../components/Search';
 import axios from "axios";
-
+import { useCurrentUser } from '../UserProvider/UserProvider';
 
 const Colleges = () => {
-    const [loggedIn, setLoggedIn] = useContext(LoginContext);
+    const { user, loading, loggedIn } = useCurrentUser();
+    console.log("user", user);
+    console.log("loggedIn", loggedIn)
     const [colleges, setColleges] = useState([
         {
             id: 1,

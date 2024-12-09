@@ -11,10 +11,11 @@ const PublicProfile = () => {
     const { userId } = useParams();
     const [isFriend, setIsFriend] = useState(false);
     const [isPending, setIsPending] = useState(false);
+    console.log("isFriend", isFriend);
+    console.log("isPending", isPending);
     const [pendingRequests, setPendingRequests] = useState([]);
     const [otherUserData, setOtherUserData] = useState(otherUser);
     const token = localStorage.getItem('access');
-
 
     const { data: friendsData, loading: friendsLoading, error: friendsError, fetchData: fetchFriendsData } = useFetch({}, token);
     console.log("friendsData Public", friendsData)
@@ -122,10 +123,10 @@ const PublicProfile = () => {
                             <div className="flex flex-wrap justify-center">
                                 <div className="w-full lg:w-3/12 px-4 lg:order-2 flex justify-center">
                                     <div className="relative">
-                                        {otherUser && (
+                                        {otherUserData && (
                                             <img
                                                 alt="..."
-                                                src={otherUser.image ? baseUrl + otherUser.image : images.avatar}
+                                                src={otherUserData.image ? baseUrl + otherUserData.image : images.avatar}
                                                 className="shadow-xl rounded-full h-auto align-middle border-none relative -m-16 -ml-2 lg:-ml-0 max-w-150-px absolute inset-0"
                                             />
                                         )}
@@ -141,7 +142,7 @@ const PublicProfile = () => {
                                 <div className="w-full lg:w-4/12 px-4 lg:order-1">
                                     <div className="flex justify-center py-4 lg:pt-4 pt-8">
                                         <div className="mr-4 p-3 text-center">
-                                            <span className="text-xl font-bold block uppercase tracking-wide text-blueGray-600">{friendsData?.friends?.length}</span><span className="text-sm text-blueGray-400">Friends</span>
+                                            <span className="text-xl font-bold block uppercase tracking-wide text-blueGray-600">{otherUserData?.friends?.length}</span><span className="text-sm text-blueGray-400">Friends</span>
                                         </div>
                                         <div className="lg:mr-4 p-3 text-center">
                                             <span className="text-xl font-bold block uppercase tracking-wide text-blueGray-600">
@@ -159,12 +160,12 @@ const PublicProfile = () => {
                             </div>
                             <div className="text-center mt-16">
                                 <h3 className="text-4xl font-semibold leading-normal mb-2 text-blueGray-700 mb-2">
-                                    {otherUser?.username}
+                                    {otherUserData?.username}
                                 </h3>
                                 <div className="text-sm leading-normal mt-0 mb-2 text-blueGray-400 font-bold uppercase">
                                     <i className="fas fa-map-marker-alt mr-2 text-lg text-blueGray-400"></i>
-                                    {otherUser?.city || otherUser?.state || otherUser?.country ? (
-                                        [otherUser?.city, otherUser?.state, otherUser?.country]
+                                    {otherUserData?.city || otherUserData?.state || otherUserData?.country ? (
+                                        [otherUserData?.city, otherUserData?.state, otherUserData?.country]
                                             .filter(item => item)
                                             .join(', ')
                                     ) : (
@@ -172,17 +173,17 @@ const PublicProfile = () => {
                                     )}
                                 </div>
                                 <div className="mb-2 text-blueGray-600 mt-6">
-                                    <i className="fas fa-briefcase mr-2 text-lg text-blueGray-400"></i>{otherUser?.major}
+                                    <i className="fas fa-briefcase mr-2 text-lg text-blueGray-400"></i>{otherUserData?.major}
                                 </div>
                                 <div className="mb-2 text-blueGray-600">
-                                    <i className="fas fa-university mr-2 text-lg text-blueGray-400"></i>{otherUser?.education}
+                                    <i className="fas fa-university mr-2 text-lg text-blueGray-400"></i>{otherUserData?.education}
                                 </div>
                             </div>
                             <div className="mt-10 py-10 border-t border-blueGray-200 text-center">
                                 <div className="flex flex-wrap justify-center">
                                     <div className="w-full lg:w-9/12 px-4">
                                         <p className="mb-4 text-lg leading-relaxed text-blueGray-700">
-                                            {otherUser?.bio}
+                                            {otherUserData?.bio}
                                         </p>
                                         {/* <a href="#pablo" className="font-normal text-pink-500">Show more</a> */}
                                     </div>

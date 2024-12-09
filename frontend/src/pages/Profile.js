@@ -11,8 +11,9 @@ import { useLocation } from 'react-router-dom';
 
 const Profile = () => {
 
-    const { user, fetchUser } = useCurrentUser();
+    const { user, fetchUser, loading } = useCurrentUser();
     console.log("user", user);
+    console.log("loading", loading);
     const token = localStorage.getItem('access');
     const location = useLocation();
     const [isFriend, setIsFriend] = useState(false);

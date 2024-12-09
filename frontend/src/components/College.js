@@ -2,7 +2,7 @@ import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import React, { useState, useEffect, useContext } from 'react';
 import NotFound from './NotFound';
 import { baseUrl } from '../shared';
-import { LoginContext } from '../App';
+import { useCurrentUser } from '../UserProvider/UserProvider'
 import { images } from "../constants";
 import axios from 'axios';
 
@@ -12,7 +12,7 @@ const formatter = new Intl.NumberFormat('en-US', {
 })
 
 const College = ({ id: collegeId, name, city, state, acceptance_rate, average_sat, cost_of_attendance }) => {
-    const [loggedIn, setLoggedIn] = useContext(LoginContext);
+    const { user, loading, loggedIn } = useCurrentUser();
     // const { id } = useParams();
     //console.log("collegeId", collegeId);
     const navigate = useNavigate();

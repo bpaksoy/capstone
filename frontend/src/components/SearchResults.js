@@ -7,19 +7,20 @@ import { useState, useEffect, useContext } from 'react';
 import { baseUrl } from '../shared';
 import { LoginContext } from '../App';
 import axios from "axios";
+import { useCurrentUser } from '../UserProvider/UserProvider';
 
 
 
 function SearchResults() {
     let { query } = useParams();
     //console.log("query in Search Results", query);
-    const [loggedIn, setLoggedIn] = useContext(LoginContext);
+    const { loggedIn, updateLoggedInStatus } = useCurrentUser();
     const [searchResult, setSearchResult] = useState([]);
     const [isLoading, setLoading] = useState(false);
     const [searchError, setSearchError] = useState(null);
     const [notFound, setNotFound] = useState(false);
     const [errorStatus, setErrorStatus] = useState();
-    
+
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -43,7 +44,7 @@ function SearchResults() {
             setNotFound(true);
             navigate("/404");
         } else if (response.status === 401) {
-            setLoggedIn(false);
+            updateLoggedInStatus(false);
             navigate("/login", {
                 state: {
                     previousUrl: location.pathname

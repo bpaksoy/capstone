@@ -2,7 +2,6 @@ import { useContext, useEffect, useState } from 'react';
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { NavLink } from 'react-router-dom';
-import { LoginContext } from '../App';
 import { images } from "../constants";
 import { useCurrentUser } from '../UserProvider/UserProvider';
 import { baseUrl } from '../shared';
@@ -19,14 +18,9 @@ function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
 }
 
-export default function Header(props) {
 
-    const { user, fetchUser } = useCurrentUser();
-    useEffect(() => {
-        fetchUser();
-    }, []);
-
-    const [loggedIn, setLoggedIn] = useContext(LoginContext);
+const Header = (props) => {
+    const { user, handleLogout, loading, loggedIn } = useCurrentUser();
     const [friendRequestCount, setFriendRequestCount] = useState(0);
     const [acceptedFriendRequestCount, setAcceptedFriendRequestCount] = useState(0);
     const [showPopup, setShowPopup] = useState(false);
@@ -35,31 +29,34 @@ export default function Header(props) {
     useEffect(() => {
         const fetchFriendRequestCount = async () => {
             try {
-                const response = await axios.get(`${baseUrl}api/friend-request-count/`, {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('access')}`,
-                    },
-                });
-                setFriendRequestCount(response.data.pending_count);
-                setAcceptedFriendRequestCount(response.data.accepted_count);
+                if (loggedIn) { // Only fetch if logged in
+                    const response = await axios.get(`${baseUrl}api/friend-request-count/`, {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem('access')}`,
+                        },
+                    });
+                    setFriendRequestCount(response.data.pending_count);
+                    setAcceptedFriendRequestCount(response.data.accepted_count);
+                }
             } catch (error) {
                 console.error('Error fetching friend request count:', error);
             }
         };
 
         fetchFriendRequestCount();
-    }, [setFriendRequestCount, setAcceptedFriendRequestCount]);
-
+    }, []);
 
     useEffect(() => {
         const fetchFriendRequests = async () => {
             try {
-                const response = await axios.get(`${baseUrl}api/friend-requests/`, {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('access')}`,
-                    },
-                });
-                setFriendRequests(response.data);
+                if (loggedIn) { // Only fetch if logged in
+                    const response = await axios.get(`${baseUrl}api/friend-requests/`, {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem('access')}`,
+                        },
+                    });
+                    setFriendRequests(response.data);
+                }
             } catch (error) {
                 console.error("Error fetching friend requests:", error);
             }
@@ -86,9 +83,10 @@ export default function Header(props) {
                     },
                 });
             }
-        }))
+        }));
         setAcceptedFriendRequestCount(0);
     };
+
 
     return (
         <>
@@ -137,9 +135,9 @@ export default function Header(props) {
                                     {loggedIn ?
                                         <NavLink to={'/login'}
                                             onClick={() => {
+                                                handleLogout();
                                                 console.log("logout");
-                                                setLoggedIn(false);
-                                                localStorage.clear();
+
                                             }}
                                             className="px-3 py-2 rounded-md text-sm font-medium no-underline text-gray-300 hover:text-white">
                                             Logout
@@ -222,9 +220,8 @@ export default function Header(props) {
                                         {loggedIn ?
                                             <a href={'/login'}
                                                 onClick={() => {
+                                                    handleLogout();
                                                     console.log("logout");
-                                                    setLoggedIn(false);
-                                                    localStorage.clear();
                                                 }}
                                                 className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100" >
                                                 Logout
@@ -261,11 +258,14 @@ export default function Header(props) {
                     </div>
                 </DisclosurePanel>
             </Disclosure>
-            <div className="bg-gray-300 min-h-screen">
-                <div className="max-w-7xl mx-auto min-h-screen px-3">
+            <div className="bg-gray-300">
+                <div className="max-w-7xl mx-auto  px-3">
                     {props.children}
                 </div>
             </div>
         </>
+
     )
 }
+
+export default Header;
