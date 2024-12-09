@@ -22,6 +22,7 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db.models import Count, Sum
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.contrib.contenttypes.models import ContentType
+from django.db.models import Q
 
 
 api_view(['GET', 'POST'])
@@ -766,7 +767,6 @@ class FriendsView(APIView):
 
             serializer = UserSerializer(friends, many=True)
             return Response({'friends': serializer.data, 'is_friend': is_friend, 'is_pending': is_pending})
-
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -811,10 +811,11 @@ class FriendRequestsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        friend_requests = Friendship.objects.filter(user2=request.user).order_by('-created_at')
+        friend_requests = Friendship.objects.filter(
+            user2=request.user).order_by('-created_at')
         serializer = FriendshipSerializer(friend_requests, many=True)
         return Response(serializer.data)
-    
+
 
 class FriendRequestReadView(APIView):
     permission_classes = [IsAuthenticated]

@@ -112,7 +112,6 @@ const Profile = () => {
 
     useEffect(() => {
         if (friendsData) {
-            // setFriends(friendsData.friends);
             setIsFriend(friendsData.is_friend);
         }
     }, [friendsData])
@@ -128,7 +127,6 @@ const Profile = () => {
             });
             alert(response.data.message);
             fetchFriendsData(`${baseUrl}api/users/${user.id}/friends/`);
-            fetchUser();
             const response2 = await axios.get(`${baseUrl}api/users/pending-requests/`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('access')}`,
@@ -138,7 +136,7 @@ const Profile = () => {
 
         } catch (error) {
             console.error('Error responding to friend request:', error);
-            alert('Error responding to friend request.');
+            alert(`Error responding to friend request: ${error.message}`);
         }
     };
 

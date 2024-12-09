@@ -15,6 +15,7 @@ const PostList = ({ posts, onAddPost }) => {
     const { user, fetchUser } = useCurrentUser();
     const navigate = useNavigate();
     const [otherUser, setOtherUser] = useState(null);
+    console.log("otherUser", otherUser);
 
     useEffect(() => {
         fetchUser();
