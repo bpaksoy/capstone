@@ -166,7 +166,12 @@ const College = ({ id: collegeId, name, city, state, acceptance_rate, average_sa
                         {`Average SAT score: ${average_sat}`}
                     </p>
                     <p className="block font-sans text-base antialiased font-light leading-relaxed text-gray-700">
-                        {`Average Cost of Attendance per Academic Year: \n ${formatter.format(cost_of_attendance).replace(/(\.|,)00$/g, '')}`}
+                        Average Cost of Attendance per Academic Year:<br />
+                        {cost_of_attendance > 0 ? (
+                            <span>{formatter.format(cost_of_attendance).replace(/(\.|,)00$/g, '')}</span>
+                        ) : (
+                            <span>N/A</span>
+                        )}
                     </p>
                     <div className="inline-flex flex-wrap items-center gap-3 mt-8 group">
                         <span

@@ -8,7 +8,6 @@ import { baseUrl } from '../shared';
 import useFetch from '../hooks/FetchData';
 import { useLocation } from 'react-router-dom';
 
-
 const Profile = () => {
 
     const { user, fetchUser, loading } = useCurrentUser();

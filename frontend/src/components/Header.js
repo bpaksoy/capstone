@@ -20,7 +20,7 @@ function classNames(...classes) {
 
 
 const Header = (props) => {
-    const { user, handleLogout, loading, loggedIn } = useCurrentUser();
+    const { user, handleLogout, loading, loggedIn, forceFetchFriendRequests, setForceFetchFriendRequests } = useCurrentUser();
     const [friendRequestCount, setFriendRequestCount] = useState(0);
     console.log("friendRequestCount", friendRequestCount);
     const [acceptedFriendRequestCount, setAcceptedFriendRequestCount] = useState(0);
@@ -32,7 +32,7 @@ const Header = (props) => {
     useEffect(() => {
         const fetchFriendRequestCount = async () => {
             try {
-                if (loggedIn) { // Only fetch if logged in
+                if (loggedIn) {
                     const response = await axios.get(`${baseUrl}api/friend-request-count/`, {
                         headers: {
                             Authorization: `Bearer ${localStorage.getItem('access')}`,
@@ -47,32 +47,30 @@ const Header = (props) => {
         };
 
         fetchFriendRequestCount();
-    }, []);
+    }, [loggedIn, forceFetchFriendRequests]);
 
     useEffect(() => {
         const fetchFriendRequests = async () => {
             try {
-                if (loggedIn) { // Only fetch if logged in
+                if (loggedIn) {
                     const response = await axios.get(`${baseUrl}api/friend-requests/`, {
                         headers: {
                             Authorization: `Bearer ${localStorage.getItem('access')}`,
                         },
                     });
                     setFriendRequests(response.data);
+
                 }
             } catch (error) {
                 console.error("Error fetching friend requests:", error);
             }
         };
         fetchFriendRequests();
-    }, []);
+    }, [loggedIn, forceFetchFriendRequests]);
 
 
     useEffect(() => {
-        const handleUpdateCount = () => {
-            setFriendRequestCount(friendRequests.filter(request => request.status === 'pending').length);
-        }
-        handleUpdateCount()
+        setFriendRequestCount(friendRequests.filter(request => request.status === 'pending').length);
     }, [friendRequests]);
 
 

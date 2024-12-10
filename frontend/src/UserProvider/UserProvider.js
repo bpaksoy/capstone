@@ -11,7 +11,8 @@ export const UserProvider = ({ children }) => {
     const [forceFetch, setForceFetch] = useState(false);
     const [refreshTokenInterval, setRefreshTokenInterval] = useState(null);
     const [appLoading, setAppLoading] = useState(true);
-
+    const [forceFetchFriendRequests, setForceFetchFriendRequests] = useState(false);
+    const [friendRequests, setFriendRequests] = useState([]);
 
     const fetchUser = useCallback(async () => {
         setLoading(true);
@@ -84,7 +85,30 @@ export const UserProvider = ({ children }) => {
         setForceFetch(true);
     };
 
-    const value = { user, loading, loggedIn, fetchUser, handleLogout, updateLoggedInStatus, appLoading };
+    const fetchFriendRequests = useCallback(async () => {
+        try {
+            if (loggedIn) {
+                const response = await axios.get(`${baseUrl}api/friend-requests/`, {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('access')}` },
+                });
+                setFriendRequests(response.data);
+            }
+        } catch (error) {
+            console.error("Error fetching friend requests:", error);
+        }
+    }, [loggedIn]);
+
+    useEffect(() => {
+        if (forceFetchFriendRequests) {
+            fetchFriendRequests();
+        }
+    }, [forceFetchFriendRequests, fetchFriendRequests]);
+
+
+    const value = {
+        user, loading, loggedIn, fetchUser, handleLogout, updateLoggedInStatus, appLoading, forceFetchFriendRequests,
+        setForceFetchFriendRequests, friendRequests, setFriendRequests
+    };
 
     return (
         <UserContext.Provider value={value}>

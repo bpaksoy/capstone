@@ -115,7 +115,7 @@ const Colleges = () => {
             {loggedIn &&
                 <div>
                     {notFound && <NotFound />}
-                    <div className="bg-primary min-h-screen rounded">
+                    <div className="bg-primary min-h-screen">
                         <Search />
                         {showColleges ? (
                             <>
