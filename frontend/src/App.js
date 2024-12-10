@@ -1,5 +1,4 @@
 import "./index.css";
-import { useEffect } from 'react';
 import Colleges from './pages/Colleges';
 import Header from "./components/Header";
 import Bookmarks from "./pages/Bookmarks";
@@ -12,39 +11,11 @@ import College from "./components/College";
 import SearchResults from "./components/SearchResults";
 import { UserProvider } from "./UserProvider/UserProvider";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { baseUrl } from './shared';
 import PrivateRoute from "./pages/PrivateRoute";
 import PublicProfile from "./components/PublicProfile";
 
 
 const App = () => {
-  // useEffect(() => {
-  //   const refreshTokens = () => {
-  //     if (localStorage.refresh) {
-  //       const url = baseUrl + 'api/token/refresh/';
-  //       fetch(url, {
-  //         method: 'POST',
-  //         headers: {
-  //           'Content-Type': 'application/json',
-  //         },
-  //         body: JSON.stringify({
-  //           refresh: localStorage.refresh,
-  //         }),
-  //       })
-  //         .then((response) => {
-  //           return response.json();
-  //         })
-  //         .then((data) => {
-  //           localStorage.access = data.access;
-  //           localStorage.refresh = data.refresh;
-  //         });
-  //     }
-  //   }
-
-  //   const minute = 1000 * 60;
-  //   refreshTokens();
-  //   setInterval(refreshTokens, minute * 3);
-  // }, []);
 
   return (
     <UserProvider>

@@ -8,13 +8,13 @@ import axios from "axios";
 
 export default function Login() {
     const { loggedIn, updateLoggedInStatus } = useCurrentUser();
+    console.log("loggedIn!!!!", loggedIn)
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState(null);
     const location = useLocation();
     const navigate = useNavigate();
     const [isLoggingIn, setIsLoggingIn] = useState(false);
-
 
     const login = async (e) => {
         e.preventDefault();
@@ -29,63 +29,11 @@ export default function Login() {
         } catch (error) {
             setError(error.response?.data?.detail || "An error occurred.");
             console.error("Login error:", error);
+            updateLoggedInStatus(false);
         } finally {
             setIsLoggingIn(false);
         }
     };
-
-
-    // ... rest of the component code ...
-
-    // Check for token in localStorage on component mount
-    // useEffect(() => {
-    //     const token = localStorage.getItem('access');
-    //     if (token) {
-    //         // If token exists, redirect to home page
-    //         navigate('/');
-    //     }
-    // }, []); // Add navigate to dependency array
-
-    // const login = (e) => {
-    //     e.preventDefault();
-    //     try {
-
-    //         const url = baseUrl + 'api/login/';
-    //         fetch(url, {
-    //             method: 'POST',
-    //             headers: {
-    //                 'Content-Type': 'application/json',
-    //             },
-    //             body: JSON.stringify({
-    //                 username: username,
-    //                 password: password,
-    //             }),
-    //         })
-    //             .then((response) => {
-    //                return response.json();
-    //             })
-    //             .then((data) => {
-    //                 //console.log("data access in the login", data.access)
-    //                 localStorage.setItem('access', data.access);
-    //                 localStorage.setItem('refresh', data.refresh);
-    //                 console.log("localStorage", localStorage.getItem('access'));
-    //                 setLoggedIn(true);
-    //                 navigate(
-    //                     location?.state?.previousUrl
-    //                         ? location.state.previousUrl
-    //                         : '/'
-    //                 );
-    //             });
-    //     } catch (error) {
-    //         alert("Invalid username or password")
-    //         setError(error.response.data.detail);
-    //         if (error.response.status === 401) {
-    //             // Redirect to login page
-    //             navigate('/login');
-    //         }
-    //     }
-    // }
-
 
     return (
         <>

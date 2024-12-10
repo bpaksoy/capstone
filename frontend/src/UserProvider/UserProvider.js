@@ -10,6 +10,7 @@ export const UserProvider = ({ children }) => {
     const [loggedIn, setLoggedIn] = useState(false);
     const [forceFetch, setForceFetch] = useState(false);
     const [refreshTokenInterval, setRefreshTokenInterval] = useState(null);
+    const [appLoading, setAppLoading] = useState(true);
 
 
     const fetchUser = useCallback(async () => {
@@ -33,6 +34,7 @@ export const UserProvider = ({ children }) => {
         } finally {
             setLoading(false);
             setForceFetch(false);
+            setAppLoading(false);
         }
     }, []);
 
@@ -71,6 +73,7 @@ export const UserProvider = ({ children }) => {
 
 
     const handleLogout = () => {
+        clearInterval(refreshTokenInterval);
         localStorage.clear();
         setUser(null);
         setLoggedIn(false);
@@ -78,10 +81,10 @@ export const UserProvider = ({ children }) => {
 
     const updateLoggedInStatus = (isLoggedIn) => {
         setLoggedIn(isLoggedIn);
-        setForceFetch(true); // Trigger a fetch when login status changes
+        setForceFetch(true);
     };
 
-    const value = { user, loading, loggedIn, fetchUser, handleLogout, updateLoggedInStatus };
+    const value = { user, loading, loggedIn, fetchUser, handleLogout, updateLoggedInStatus, appLoading };
 
     return (
         <UserContext.Provider value={value}>
