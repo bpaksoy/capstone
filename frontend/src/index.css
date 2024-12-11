@@ -23,3 +23,28 @@
 .enhanced-image {
     filter: contrast(1.1) sharpen(1.5);
 }
+
+.scroll-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* More explicit minmax */
+    grid-gap: 10px;
+}
+
+.college-item {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+   
+}
+
+
+.infinite-scroll-component__outerdiv {
+    display: flex !important; 
+}
+
+.infinite-scroll-component {
+    display: flex; 
+    flex-wrap: wrap; 
+    gap: 10px;     
+    justify-content: center; /* Center horizontally */
+}

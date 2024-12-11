@@ -12,8 +12,7 @@ import { useCurrentUser } from '../UserProvider/UserProvider';
 const Colleges = () => {
     const { user, loading, loggedIn } = useCurrentUser();
     // console.log("user", user);
-    // console.log("loggedIn", loggedIn)
-
+    // console.log("loggedIn", loggedIn);
     const [sampleColleges, setSampleColleges] = useState([]);
     //console.log("sampleColleges here", sampleColleges);
     const { search } = useParams();
@@ -37,7 +36,7 @@ const Colleges = () => {
     };
 
     const renderCollege = (college, index) => (
-        <div key={college.id} >
+        <div key={college.id}>
             <College {...college} />
         </div>
     );
@@ -104,32 +103,9 @@ const Colleges = () => {
                                         renderItem={renderCollege}
                                         fetchColleges={fetchColleges}
                                         keyExtractor={college => college.id} />
-                                    {/* {sampleColleges.map((college) => {
-                                        const name = college["name"];
-                                        const city = college["city"];
-                                        const state = college["state"];
-                                        const cost_of_attendance = college["cost_of_attendance"]
-                                        const acceptance_rate = college["admission_rate"]
-                                        const average_sat = college["sat_score"]
-
-                                        return (
-                                            <College
-                                                key={college.id}
-                                                id={college.id}
-                                                name={name}
-                                                city={city}
-                                                state={state}
-                                                acceptance_rate={acceptance_rate}
-                                                average_sat={average_sat}
-                                                cost_of_attendance={cost_of_attendance}
-                                                img={college.img}
-                                            />
-                                        );
-                                    })} */}
                                 </div>
                             </>
                         ) : null}
-
                     </div>
                 </div>
             }
