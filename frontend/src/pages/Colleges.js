@@ -1,6 +1,7 @@
 import '../index.css';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect, useContext } from 'react';
+import InfiniteScrollScreen from '../components/InfiniteScroll';
 import College from '../components/College';
 import NotFound from '../components/NotFound';
 import { baseUrl } from '../shared';
@@ -10,46 +11,9 @@ import { useCurrentUser } from '../UserProvider/UserProvider';
 
 const Colleges = () => {
     const { user, loading, loggedIn } = useCurrentUser();
-    console.log("user", user);
-    console.log("loggedIn", loggedIn)
-    const [colleges, setColleges] = useState([
-        {
-            id: 1,
-            name: 'Harvard',
-            city: 'Cambridge, MA',
-            img: 'https://www.harvard.edu/wp-content/uploads/2021/02/091520_Stock_KS_025.jpeg?resize=1200,630',
-        },
-        {
-            id: 2,
-            name: 'MIT',
-            city: 'Cambridge, MA',
-            img: 'https://news.mit.edu/sites/default/files/download/201810/MIT-Computer-Announce-01-PRESS.jpg',
-        },
-        {
-            id: 3,
-            name: 'Stanford',
-            city: 'Stanford, CA',
-            img: 'https://news.stanford.edu/__data/assets/image/0019/90118/Vision_hero-scaled.jpg.jpeg',
-        },
-        {
-            id: 4,
-            name: 'Yale',
-            city: 'New Haven, CT',
-            img: 'https://admissions.yale.edu/sites/default/files/styles/flexslider_full/public/2010_05_10_19_03_37_central_campus_1.jpg?itok=1hVNjje6',
-        },
-        {
-            id: 5,
-            name: 'Cornell',
-            city: 'Ithaca, NY',
-            img: 'https://www.cornell.edu/about/img/main-Tower1.Still001-720x.jpg',
-        },
-        {
-            id: 6,
-            name: 'Princeton',
-            city: 'Princeton, NJ',
-            img: 'https://assets.simpleviewinc.com/simpleview/image/upload/c_fill,h_768,q_50,w_1024/v1/clients/princetonnj/princeton_university_main_building_at_front_gate_geraldine_scull_209cbd93-c4fc-4485-a274-66b4076c71e0.jpg',
-        },
-    ]);
+    // console.log("user", user);
+    // console.log("loggedIn", loggedIn)
+
     const [sampleColleges, setSampleColleges] = useState([]);
     //console.log("sampleColleges here", sampleColleges);
     const { search } = useParams();
@@ -62,47 +26,63 @@ const Colleges = () => {
     const [notFound, setNotFound] = useState(false);
     const url = baseUrl + 'api/colleges/';
 
-    const handleSearch = async () => {
-        setLoading(true)
-        setSearchResult([])
-
-        try {
-
-            const options = {
-                method: "GET",
-                url: url,
-            }
-            const response = await axios.request(options, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('access')}`
-                }
-            });
-            if (response.status === 404) {
-                setNotFound(true);
-            }
-            else if (response.status === 401) {
-                navigate("/login/", {
-                    state: {
-                        previousUrl: location.pathname
-                    }
-                });
-            }
-            setSearchResult(response.data.colleges);
-            setSampleColleges(response.data.colleges);
-            //console.log("RESPONSE", response.data);
-
-        } catch (error) {
-            setSearchError(error);
-            console.log(error);
-        } finally {
-            setLoading(false);
-        }
+    const fetchColleges = async (page) => {
+        console.log("fetchColleges page", page);
+        const response = await fetch(`${baseUrl}api/colleges/?page=${page}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('access')}` }
+        });
+        const data = await response.json();
+        console.log("data!!!!!!", data);
+        return { colleges: data.colleges, hasMore: data.has_more };
     };
 
-    useEffect(() => {
-        handleSearch()
-    }, [])
+    const renderCollege = (college, index) => (
+        <div key={college.id} >
+            <College {...college} />
+        </div>
+    );
+
+    // const handleSearch = async () => {
+    //     setLoading(true)
+    //     setSearchResult([])
+
+    //     try {
+
+    //         const options = {
+    //             method: "GET",
+    //             url: url,
+    //         }
+    //         const response = await axios.request(options, {
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //                 'Authorization': `Bearer ${localStorage.getItem('access')}`
+    //             }
+    //         });
+    //         if (response.status === 404) {
+    //             setNotFound(true);
+    //         }
+    //         else if (response.status === 401) {
+    //             navigate("/login/", {
+    //                 state: {
+    //                     previousUrl: location.pathname
+    //                 }
+    //             });
+    //         }
+    //         setSearchResult(response.data.colleges);
+    //         setSampleColleges(response.data.colleges);
+    //         //console.log("RESPONSE", response.data);
+
+    //     } catch (error) {
+    //         setSearchError(error);
+    //         console.log(error);
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
+
+    // useEffect(() => {
+    //     handleSearch()
+    // }, [])
 
 
     const showColleges = true;
@@ -120,8 +100,11 @@ const Colleges = () => {
                         {showColleges ? (
                             <>
                                 <div className="flex flex-wrap justify-center">
-
-                                    {sampleColleges.map((college) => {
+                                    <InfiniteScrollScreen
+                                        renderItem={renderCollege}
+                                        fetchColleges={fetchColleges}
+                                        keyExtractor={college => college.id} />
+                                    {/* {sampleColleges.map((college) => {
                                         const name = college["name"];
                                         const city = college["city"];
                                         const state = college["state"];
@@ -142,7 +125,7 @@ const Colleges = () => {
                                                 img={college.img}
                                             />
                                         );
-                                    })}
+                                    })} */}
                                 </div>
                             </>
                         ) : null}

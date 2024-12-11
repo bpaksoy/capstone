@@ -40,7 +40,6 @@ const College = ({ id: collegeId, name, city, state, acceptance_rate, average_sa
     };
 
 
-
     useEffect(() => {
         checkBookmark();
     }, [collegeId]);
@@ -62,7 +61,6 @@ const College = ({ id: collegeId, name, city, state, acceptance_rate, average_sa
         }
     };
 
-    //console.log("here is the test for back end", backendData);
     const [notFound, setNotFound] = useState(false);
 
 
@@ -95,30 +93,6 @@ const College = ({ id: collegeId, name, city, state, acceptance_rate, average_sa
     return (
         <div>
             {notFound && <NotFound />}
-            {/* <div className="min-w-[350px] max-w-[350px] m-2 py-8 px-8 max-w-sm bg-white rounded-xl shadow-lg space-y-2 sm:py-4 sm:flex sm:items-center sm:space-y-0 sm:space-x-6">
-                <img
-                    className="object-cover rounded-full h-[100px] w-[100px] block mx-auto h-24 rounded-full sm:mx-0 sm:shrink-0"
-                    src="https://images.unsplash.com/photo-1677594334053-afe4b41aa0a3?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTV8fGNvbGxlZ2V8ZW58MHx8MHx8fDA%3D"
-                    alt="college"
-                />
-                <div className="text-center space-y-2 sm:text-left">
-                    <div className="space-y-0.5">
-                        <p className="text-lg text-black font-semibold">
-                            {name}
-                        </p>
-                        <p className="text-slate-500 font-medium">{city}, {state}</p>
-                    </div>
-                    <p className="text-xl font-pregular text-gray-100 mt-3 text-center">
-                        {`Acceptance Rate : \n ${(acceptance_rate * 100).toFixed(2)}%`}
-                    </p>
-                    <p className="text-xl font-pregular text-gray-200 mt-3 text-center">
-                        {`Average SAT score: ${average_sat}`}
-                    </p>
-                    <p className="text-sm font-pregular text-gray-300 mt-3 text-center">
-                        {`Average Cost of Attendance per Academic Year: \n ${formatter.format(cost_of_attendance).replace(/(\.|,)00$/g, '')}`}
-                    </p>
-                </div>
-            </div> */}
 
             <div className="relative flex w-full max-w-[26rem] flex-col rounded-xl bg-white bg-clip-border text-gray-700 shadow-lg m-3">
                 <div

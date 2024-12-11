@@ -23,6 +23,7 @@ from django.db.models import Count, Sum
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 api_view(['GET', 'POST'])
@@ -138,7 +139,7 @@ api_view(['GET', 'POST'])
 
 @permission_classes([IsAuthenticated])
 def colleges(request):
-    data = College.objects.all()[:10]
+    data = College.objects.all()
     serializer = CollegeSerializer(data, many=True)
     return JsonResponse({"colleges": serializer.data})
 
@@ -147,33 +148,24 @@ class CollegeListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
-        page = request.query_params.get('page', 1)
-        page_size = request.query_params.get('page_size', 10)
+        page = int(request.query_params.get('page', 1))
+        page_size = int(request.query_params.get('page_size', 10))
+
+        # Order the queryset!  Choose an appropriate field for ordering.
+        paginator = Paginator(College.objects.all().order_by('id'), page_size)
 
         try:
-            page = int(page)
-            page_size = int(page_size)
-        except ValueError:
-            return Response({'error': 'Invalid page or page_size'}, status=status.HTTP_400_BAD_REQUEST)
+            colleges = paginator.page(page)
+        except PageNotAnInteger:
+            colleges = paginator.page(1)
+        except EmptyPage:
+            colleges = paginator.page(paginator.num_pages)
 
-        # Calculate pagination limits
-        start = (page - 1) * page_size
-        end = page * page_size
-
-        # Get data from the model
-        items = College.objects.all()[start:end]
-
-        # Check if there are more items to load
-        has_more = College.objects.all().count() > end
-
-        # Serialize data
-        serializer = CollegeSerializer(items, many=True)
-
-        # Return response with additional information
+        serializer = CollegeSerializer(colleges, many=True)
         return Response({
-            'results': serializer.data,
-            'has_more': has_more
-        }, status=status.HTTP_200_OK)
+            'colleges': serializer.data,
+            'has_more': colleges.has_next()
+        })
 
 
 api_view(['GET', 'POST'])

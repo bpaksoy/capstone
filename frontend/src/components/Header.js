@@ -22,12 +22,12 @@ function classNames(...classes) {
 const Header = (props) => {
     const { user, handleLogout, loading, loggedIn, forceFetchFriendRequests, setForceFetchFriendRequests } = useCurrentUser();
     const [friendRequestCount, setFriendRequestCount] = useState(0);
-    console.log("friendRequestCount", friendRequestCount);
+    //console.log("friendRequestCount", friendRequestCount);
     const [acceptedFriendRequestCount, setAcceptedFriendRequestCount] = useState(0);
-    console.log("acceptedFriendRequestCount", acceptedFriendRequestCount);
+    //console.log("acceptedFriendRequestCount", acceptedFriendRequestCount);
     const [showPopup, setShowPopup] = useState(false);
     const [friendRequests, setFriendRequests] = useState([]);
-    console.log("friendRequests", friendRequests);
+    //console.log("friendRequests", friendRequests);
 
     useEffect(() => {
         const fetchFriendRequestCount = async () => {

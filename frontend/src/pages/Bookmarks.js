@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import InfiniteScroll from '../components/InfiniteScroll';
 import College from '../components/College';
 import axios from 'axios';
 import { baseUrl } from '../shared';
@@ -34,11 +33,8 @@ function Bookmarks() {
   }, [bookmarkedColleges]);
 
 
-
   return (
     <div className="bg-primary min-h-screen flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div>Bookmarks</div>
-      <InfiniteScroll />
       <div className="flex flex-wrap justify-center">
 
         {bookmarkedColleges.map((college) => {
