@@ -20,6 +20,7 @@ const Colleges = () => {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('access')}` }
         });
         const data = await response.json();
+        console.log("data", data);
         return { colleges: data.colleges, hasMore: data.has_more };
     };
 

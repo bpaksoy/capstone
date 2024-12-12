@@ -11,7 +11,7 @@ const formatter = new Intl.NumberFormat('en-US', {
     currency: 'USD',
 })
 
-const College = ({ id: collegeId, name, city, state, acceptance_rate, average_sat, cost_of_attendance }) => {
+const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, cost_of_attendance }) => {
     const { user, loading, loggedIn } = useCurrentUser();
     // const { id } = useParams();
     //console.log("collegeId", collegeId);
@@ -142,10 +142,10 @@ const College = ({ id: collegeId, name, city, state, acceptance_rate, average_sa
                     </div>
                     <p className="block font-sans text-base antialiased font-light leading-relaxed text-gray-700">
 
-                        {`Acceptance Rate : \n ${(acceptance_rate * 100).toFixed(2)}%`}
+                        {`Acceptance Rate : \n ${(admission_rate * 100).toFixed(2)}%`}
                     </p>
                     <p className="block font-sans text-base antialiased font-light leading-relaxed text-gray-700">
-                        {`Average SAT score: ${average_sat}`}
+                        {`Average SAT score: ${sat_score}`}
                     </p>
                     <p className="block font-sans text-base antialiased font-light leading-relaxed text-gray-700">
                         Average Cost of Attendance per Academic Year:<br />
@@ -155,7 +155,7 @@ const College = ({ id: collegeId, name, city, state, acceptance_rate, average_sa
                             <span>N/A</span>
                         )}
                     </p>
-                    <div className="inline-flex flex-wrap items-center gap-3 mt-8 group">
+                    {/* <div className="inline-flex flex-wrap items-center gap-3 mt-8 group">
                         <span
                             className="cursor-pointer rounded-full border border-gray-900/5 bg-gray-900/5 p-3 text-gray-900 transition-colors hover:border-gray-900/10 hover:bg-gray-900/10 hover:!opacity-100 group-hover:opacity-70">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
@@ -213,7 +213,7 @@ const College = ({ id: collegeId, name, city, state, acceptance_rate, average_sa
                             className="cursor-pointer rounded-full border border-gray-900/5 bg-gray-900/5 p-3 text-gray-900 transition-colors hover:border-gray-900/10 hover:bg-gray-900/10 hover:!opacity-100 group-hover:opacity-70">
                             +20
                         </span>
-                    </div>
+                    </div> */}
                 </div>
                 <div className="p-6 pt-3">
                     <button

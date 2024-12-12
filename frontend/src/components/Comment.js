@@ -18,6 +18,7 @@ function Comment({ postId, lastUpdatedComment, onAddPost, user }) {
     const [commentIdToDelete, setCommentIdToDelete] = useState(null);
     const [commentToEdit, setCommentToEdit] = useState(null);
     const [commentIdToEdit, setCommentIdToEdit] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     const updateLikeStatus = (commentId, isLiked) => {
         setCommentLikes((prevCommentLikes) => ({ ...prevCommentLikes, [commentId]: isLiked }));
@@ -33,6 +34,7 @@ function Comment({ postId, lastUpdatedComment, onAddPost, user }) {
                 },
             });
             setComments(response.data);
+            setLoading(false);
         } catch (error) {
             setError(error);
         }
@@ -47,6 +49,7 @@ function Comment({ postId, lastUpdatedComment, onAddPost, user }) {
                     },
                 });
                 setComments(response.data);
+                setLoading(false);
             } catch (error) {
                 setError(error);
             }
@@ -122,7 +125,7 @@ function Comment({ postId, lastUpdatedComment, onAddPost, user }) {
         <div>
             <hr className="mt-2 mb-2" />
             <div className="mt-4 grid grid-cols-1 gap-x-2 border border-gray-200 rounded">
-                {comments.length > 0 ? (
+                {comments.length > 0 || !loading ? (
                     comments.map((comment) => (
                         comment &&
                         <>

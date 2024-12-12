@@ -248,7 +248,11 @@ class UploadApiView(APIView):
                     cost_of_attendance=row['COSTT4_A'],
                     tuition_in_state=row['TUITIONFEE_IN'],
                     tuition_out_state=row['TUITIONFEE_IN'],
+                    latitude=row['LATITUDE'],
+                    longitude=row['LONGITUDE'],
+                    ft_faculty_rate=row['PFTFAC'],
                 )
+
                 if created:
                     colleges.append(college)
                     messages.success(
@@ -258,6 +262,70 @@ class UploadApiView(APIView):
             College.objects.bulk_create(colleges)
             return Response({'message': 'File uploaded successfully'}, status=status.HTTP_201_CREATED)
         except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UploadApiView2(APIView):
+    serializer_class = UploadFileSerializer
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request):
+        try:
+            data = request.FILES['file']
+            df = pd.read_csv(data, sep=',', on_bad_lines='skip', index_col=False,
+                             na_values=None, na_filter=True, dtype='unicode').convert_dtypes()
+
+            colleges = []
+            for index, row in df.iterrows():
+                try:
+                    admission_rate = float(row['ADM_RATE']) if pd.notna(
+                        row['ADM_RATE']) else None
+                    sat_score = int(row['SAT_AVG']) if pd.notna(
+                        row['SAT_AVG']) else None
+                    cost_of_attendance = int(row['COSTT4_A']) if pd.notna(
+                        row['COSTT4_A']) else None
+                    tuition_in_state = int(row['TUITIONFEE_IN']) if pd.notna(
+                        row['TUITIONFEE_IN']) else None
+                    tuition_out_state = int(row['TUITIONFEE_OUT']) if pd.notna(
+                        row['TUITIONFEE_OUT']) else None  # Fixed field name
+                    latitude = float(row['LATITUDE']) if pd.notna(
+                        row['LATITUDE']) else None
+                    longitude = float(row['LONGITUDE']) if pd.notna(
+                        row['LONGITUDE']) else None
+                    enrollment_all = int(row['UG']) if pd.notna(
+                        row['UG']) else None
+                    ft_faculty_rate = float(row['PFTFAC']) if pd.notna(
+                        row['PFTFAC']) else None
+
+                    college, created = College.objects.update_or_create(
+                        name=row['INSTNM'],
+                        defaults={
+                            'city': row['CITY'],
+                            'state': row['STABBR'],
+                            'website': row['INSTURL'],
+                            'admission_rate': admission_rate,
+                            'sat_score': sat_score,
+                            'cost_of_attendance': cost_of_attendance,
+                            'tuition_in_state': tuition_in_state,
+                            'tuition_out_state': tuition_out_state,
+                            'latitude': latitude,
+                            'longitude': longitude,
+                            'enrollment_all': enrollment_all,
+                            'ft_faculty_rate': ft_faculty_rate,
+                        }
+                    )
+
+                    if created:
+                        messages.success(
+                            request, f'Successfully imported {college.name}')
+                    else:
+                        messages.warning(request, f'{college.name} updated')
+                except (ValueError, KeyError) as e:
+                    messages.error(
+                        request, f"Error processing row {index+1}: {e}")
+            return Response({'message': 'File uploaded successfully'}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            messages.error(request, f"An unexpected error occurred: {e}")
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 

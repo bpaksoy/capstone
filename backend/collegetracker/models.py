@@ -37,7 +37,7 @@ class Friendship(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=[('pending', 'Pending'), (
         'accepted', 'Accepted'), ('rejected', 'Rejected')], default='pending')
-    read = models.BooleanField(default=False) 
+    read = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('user1', 'user2')
@@ -56,9 +56,12 @@ class College(models.Model):
     cost_of_attendance = models.IntegerField(null=True)
     tuition_in_state = models.IntegerField(null=True)
     tuition_out_state = models.IntegerField(null=True)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+    ft_faculty_rate = models.FloatField(null=True, blank=True)
 
     def __str__(self):
-        return self.name + ' - ' + self.city + ', ' + self.state + ', ' + self.website + ', ' + str(self.admission_rate) + ', ' + str(self.sat_score) + ', ' + str(self.cost_of_attendance) + ', ' + str(self.tuition_in_state) + ', ' + str(self.tuition_out_state)
+        return self.name + ' - ' + self.city + ', ' + self.state + ', ' + self.website + ', ' + str(self.admission_rate) + ', ' + str(self.sat_score) + ', ' + str(self.cost_of_attendance) + ', ' + str(self.tuition_in_state) + ', ' + str(self.tuition_out_state) + ', ' + str(self.latitude) + ', ' + str(self.longitude) + ', '  + str(self.ft_faculty_rate)
 
 
 class Post(models.Model):
