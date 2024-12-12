@@ -61,6 +61,15 @@ const College = ({ id: collegeId, name, city, state, acceptance_rate, average_sa
         }
     };
 
+    const handleClickMore = () => {
+        const numericCollegeId = parseInt(collegeId, 10);
+        if (!isNaN(numericCollegeId)) {
+            navigate(`/colleges/${numericCollegeId}/details`);
+        } else {
+            console.error('Invalid collegeId:', collegeId);
+        }
+    };
+
     const [notFound, setNotFound] = useState(false);
 
 
@@ -120,7 +129,7 @@ const College = ({ id: collegeId, name, city, state, acceptance_rate, average_sa
                         <h5 className="block font-sans text-xl antialiased font-medium leading-snug tracking-normal text-blue-gray-900">
                             {name}, {city}, {state}
                         </h5>
-                        <p
+                        {/* <p
                             className="flex items-center gap-1.5 font-sans text-base font-normal leading-relaxed text-blue-gray-900 antialiased">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
                                 className="-mt-0.5 h-5 w-5 text-yellow-700">
@@ -129,7 +138,7 @@ const College = ({ id: collegeId, name, city, state, acceptance_rate, average_sa
                                     clipRule="evenodd"></path>
                             </svg>
                             5.0
-                        </p>
+                        </p> */}
                     </div>
                     <p className="block font-sans text-base antialiased font-light leading-relaxed text-gray-700">
 
@@ -208,9 +217,10 @@ const College = ({ id: collegeId, name, city, state, acceptance_rate, average_sa
                 </div>
                 <div className="p-6 pt-3">
                     <button
+                        onClick={handleClickMore}
                         className="block w-full select-none rounded-lg bg-gray-800 py-3.5 px-7 text-center align-middle font-sans text-sm font-bold uppercase text-white shadow-md shadow-gray-900/10 transition-all hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
                         type="button">
-                        Follow
+                        More
                     </button>
                 </div>
             </div>

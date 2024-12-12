@@ -168,6 +168,19 @@ class CollegeListView(APIView):
         })
 
 
+class CollegeDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, college_id, format=None):
+        try:
+            college = College.objects.get(pk=college_id)
+        except College.DoesNotExist:
+            raise Http404("College not found")
+
+        serializer = CollegeSerializer(college)
+        return Response(serializer.data)
+
+
 api_view(['GET', 'POST'])
 
 

@@ -8,6 +8,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import NotFound from "./components/NotFound";
 import College from "./components/College";
+import CollegeDetail from "./components/CollegeDetail";
 import SearchResults from "./components/SearchResults";
 import { UserProvider } from "./UserProvider/UserProvider";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -25,6 +26,7 @@ const App = () => {
           <Route path="/" element={<PrivateRoute />} >
             <Route path="/" element={<Colleges />} />
             <Route path="/colleges/:id" element={<College />} />
+            <Route path="/colleges/:id/details" element={<CollegeDetail />} />
             <Route path="/bookmarks" element={<Bookmarks />} />
             <Route path="/trending" element={<Trending />} />
             <Route path="/profile" element={<Profile />} />

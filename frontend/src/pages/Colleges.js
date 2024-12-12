@@ -1,37 +1,25 @@
 import '../index.css';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { useState, useEffect, useContext } from 'react';
+import { useState } from 'react';
 import InfiniteScrollScreen from '../components/InfiniteScroll';
 import College from '../components/College';
 import NotFound from '../components/NotFound';
 import { baseUrl } from '../shared';
 import Search from '../components/Search';
-import axios from "axios";
 import { useCurrentUser } from '../UserProvider/UserProvider';
 
 const Colleges = () => {
     const { user, loading, loggedIn } = useCurrentUser();
     // console.log("user", user);
     // console.log("loggedIn", loggedIn);
-    const [sampleColleges, setSampleColleges] = useState([]);
-    //console.log("sampleColleges here", sampleColleges);
-    const { search } = useParams();
-    const navigate = useNavigate();
-    const location = useLocation();
 
-    const [searchResult, setSearchResult] = useState([]);
-    const [isLoading, setLoading] = useState(false);
-    const [searchError, setSearchError] = useState(null);
     const [notFound, setNotFound] = useState(false);
-    const url = baseUrl + 'api/colleges/';
 
     const fetchColleges = async (page) => {
-        console.log("fetchColleges page", page);
+        // console.log("fetchColleges page", page);
         const response = await fetch(`${baseUrl}api/colleges/?page=${page}`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('access')}` }
         });
         const data = await response.json();
-        console.log("data!!!!!!", data);
         return { colleges: data.colleges, hasMore: data.has_more };
     };
 
@@ -40,49 +28,6 @@ const Colleges = () => {
             <College {...college} />
         </div>
     );
-
-    // const handleSearch = async () => {
-    //     setLoading(true)
-    //     setSearchResult([])
-
-    //     try {
-
-    //         const options = {
-    //             method: "GET",
-    //             url: url,
-    //         }
-    //         const response = await axios.request(options, {
-    //             headers: {
-    //                 'Content-Type': 'application/json',
-    //                 'Authorization': `Bearer ${localStorage.getItem('access')}`
-    //             }
-    //         });
-    //         if (response.status === 404) {
-    //             setNotFound(true);
-    //         }
-    //         else if (response.status === 401) {
-    //             navigate("/login/", {
-    //                 state: {
-    //                     previousUrl: location.pathname
-    //                 }
-    //             });
-    //         }
-    //         setSearchResult(response.data.colleges);
-    //         setSampleColleges(response.data.colleges);
-    //         //console.log("RESPONSE", response.data);
-
-    //     } catch (error) {
-    //         setSearchError(error);
-    //         console.log(error);
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
-
-    // useEffect(() => {
-    //     handleSearch()
-    // }, [])
-
 
     const showColleges = true;
 
