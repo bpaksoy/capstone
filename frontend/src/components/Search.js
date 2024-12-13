@@ -5,6 +5,7 @@ import { useState } from 'react';
 
 function Search() {
     const [query, setQuery] = useState("");
+    console.log("query", query);
     const navigate = useNavigate();
 
     return (

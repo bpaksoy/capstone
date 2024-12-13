@@ -63,7 +63,7 @@ function SearchResults() {
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [query]);
 
     //const handleSearch = async () => {
     //     setLoading(true)
