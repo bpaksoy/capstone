@@ -29,7 +29,7 @@ function Reply({ commentId, lastUpdatedReply, onAddPost }) {
                 );
                 setReplies(response.data);
                 setIsLoading(false);
-                console.log('Reply added:', response.data);
+                // console.log('Reply added:', response.data);
 
             } catch (error) {
                 console.error('Error adding reply:', error);

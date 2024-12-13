@@ -27,7 +27,7 @@ const CollegeDetail = () => {
     const { id: collegeId } = useParams();
     //console.log("collegeId", collegeId);
     const [college, setCollege] = useState(null);
-    console.log("College", college);
+    // console.log("College", college);
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 

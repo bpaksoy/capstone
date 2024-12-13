@@ -11,14 +11,14 @@ import { useLocation } from 'react-router-dom';
 const Profile = () => {
 
     const { user, fetchUser, loading } = useCurrentUser();
-    console.log("user", user);
-    console.log("loading", loading);
+    // console.log("user", user);
+    // console.log("loading", loading);
     const token = localStorage.getItem('access');
     const location = useLocation();
     const [isFriend, setIsFriend] = useState(false);
     const otherUser = location.state?.otherUser;
     const [pendingRequests, setPendingRequests] = useState([]);
-    console.log("pendingRequests", pendingRequests);
+    // console.log("pendingRequests", pendingRequests);
 
 
     useEffect(() => {
@@ -76,7 +76,7 @@ const Profile = () => {
     const { data: commentsData, loading: commentsLoading, error: commentsError, fetchData } = useFetch({}, token);
     const { data: postsData, loading: postsLoading, error: postsError, fetchData: fetchPostsData } = useFetch({}, token);
     const { data: friendsData, loading: friendsLoading, error: friendsError, fetchData: fetchFriendsData } = useFetch({}, token);
-    console.log("friendsData", friendsData);
+    // console.log("friendsData", friendsData);
 
 
     useEffect(() => {

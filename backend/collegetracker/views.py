@@ -181,6 +181,18 @@ class CollegeDetailView(APIView):
         return Response(serializer.data)
 
 
+class FilteredCollegeListView(generics.ListAPIView):
+    serializer_class = CollegeSerializer
+
+    def get_queryset(self):
+        states_param = self.request.query_params.get('states', None)
+        if not states_param:
+            raise ValidationError("The 'states' query parameter is required.")
+        states_list = [state.strip() for state in states_param.split(',')]
+        queryset = College.objects.filter(state__in=states_list)
+        return queryset
+
+
 api_view(['GET', 'POST'])
 
 

@@ -56,6 +56,8 @@ urlpatterns = [
     path('api/colleges/<int:id>/', views.college, name='college'),
     path('api/colleges/', CollegeListView.as_view()),
     path('api/colleges/<int:college_id>/', views.CollegeDetailView.as_view()),
+    path('api/colleges/filtered/', views.FilteredCollegeListView.as_view(),
+         name='filtered-college-list'),
     path('api/colleges/<int:college_pk>/bookmark/',
          BookmarkToggleView.as_view(), name='bookmark-toggle'),
     path('api/bookmarks/', BookmarkedCollegesView.as_view(), name='user-bookmarks'),
