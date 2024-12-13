@@ -188,11 +188,14 @@ const Profile = () => {
                                                 className="shadow-xl rounded-full h-auto align-middle border-none relative -m-16 -ml-2 lg:-ml-0 max-w-150-px absolute inset-0"
                                             />
                                         )}
-                                        <div className="absolute bg-white hover:bg-gray-200 rounded top-34 right-8 m-2">
+                                        <div className="absolute bg-white hover:bg-gray-200 rounded top-34 right-6 m-4">
                                             <button>
                                                 <input type="file" style={{ display: 'none' }} onChange={handleImageChange} id="profile-upload-input" className="text-white font-bold py-2 px-4 rounded flex items-center mt-12" />
                                                 <label htmlFor="profile-upload-input" className="mt-2 flex items-center justify-center cursor-pointer">
-                                                    <img className="size-8" src={icons.upload} alt="upload" />
+                                                    {/* <img className="size-8" src={icons.upload} alt="upload" /> */}
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="size-8">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
+                                                    </svg>
                                                 </label>
                                             </button>
                                         </div>
