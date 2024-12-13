@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { baseUrl } from '../shared';
 import { images } from '../constants';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+
 
 const formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -113,7 +113,6 @@ const CollegeDetail = () => {
 
                             </div>
                         </div>
-
                     </div>
                 </div>
 

@@ -197,7 +197,7 @@ const Header = (props) => {
                                         {user &&
                                             <img
                                                 alt=""
-                                                src={user.image ? baseUrl + user.image : images.profile}
+                                                src={user.image ? baseUrl + user.image : images.avatar}
                                                 className="h-8 w-8 rounded-full enhanced-image"
                                             />
                                         }

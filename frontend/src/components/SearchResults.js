@@ -13,9 +13,10 @@ import { useCurrentUser } from '../UserProvider/UserProvider';
 
 function SearchResults() {
     let { query } = useParams();
-    //console.log("query in Search Results", query);
+    console.log("query in Search Results", query);
     const { loggedIn, updateLoggedInStatus } = useCurrentUser();
     const [searchResult, setSearchResult] = useState([]);
+    console.log("searchResult", searchResult);
     const [isLoading, setLoading] = useState(false);
     const [searchError, setSearchError] = useState(null);
     const [notFound, setNotFound] = useState(false);
@@ -28,7 +29,7 @@ function SearchResults() {
 
 
     async function fetchData() {
-        const url = baseUrl + 'api/search/' + query;
+        const url = baseUrl + 'api/search/' + query + '/';
         const options = {
             method: "GET",
             url: url
@@ -55,13 +56,14 @@ function SearchResults() {
         //     throw new Error("Something went wrong!")
         // }
         const data = response.data;
+        console.log("data in search", data);
         setBackendData(data.college);
         setSearchResult(data.college);
     }
 
     useEffect(() => {
         fetchData();
-    }, [searchResult]);
+    }, []);
 
     //const handleSearch = async () => {
     //     setLoading(true)
@@ -159,8 +161,8 @@ function SearchResults() {
                             const state = college.state;
 
                             const cost_of_attendance = college.cost_of_attendance
-                            const acceptance_rate = college.admission_rate
-                            const average_sat = college.sat_score
+                            const admission_rate = college.admission_rate
+                            const sat_score = college.sat_score
 
                             return (
                                 <College
@@ -169,8 +171,8 @@ function SearchResults() {
                                     name={name}
                                     city={city}
                                     state={state}
-                                    acceptance_rate={acceptance_rate}
-                                    average_sat={average_sat}
+                                    admission_rate={admission_rate}
+                                    sat_score={sat_score}
                                     cost_of_attendance={cost_of_attendance}
                                     img="https://images.unsplash.com/photo-1677594334053-afe4b41aa0a3?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTV8fGNvbGxlZ2V8ZW58MHx8MHx8fDA%3D"
                                 />
