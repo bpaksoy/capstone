@@ -3,6 +3,7 @@ import { baseUrl } from '../shared';
 import { useLocation, useNavigate } from 'react-router-dom';
 import graduation from '../assets/images/graduation.jpg';
 import { useCurrentUser } from '../UserProvider/UserProvider';
+import { Link } from 'react-router-dom';
 
 export default function Register() {
     const { user, loading, loggedIn, updateLoggedInStatus } = useCurrentUser();
@@ -186,16 +187,16 @@ export default function Register() {
                                 </div>
                                 <hr className="mb-6 border-t" />
                                 <div className="text-center">
-                                    <a className="inline-block text-sm text-blue-500 dark:text-blue-500 align-baseline hover:text-blue-800"
+                                    {/* <a className="inline-block text-sm text-blue-500 dark:text-blue-500 align-baseline hover:text-blue-800"
                                         href="#">
                                         Forgot Password?
-                                    </a>
+                                    </a> */}
                                 </div>
                                 <div className="text-center">
-                                    <a className="inline-block text-sm text-blue-500 dark:text-blue-500 align-baseline hover:text-blue-800"
+                                    <Link to="login" className="inline-block text-sm text-blue-500 dark:text-blue-500 align-baseline hover:text-blue-800"
                                         href="./index.html">
                                         Already have an account? Login!
-                                    </a>
+                                    </Link>
                                 </div>
                             </form>
                         </div>

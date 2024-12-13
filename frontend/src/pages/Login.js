@@ -46,7 +46,7 @@ export default function Login() {
                     <div className="w-full p-8 lg:w-1/2">
                         <h2 className="text-2xl font-semibold text-gray-700 text-center">Worm</h2>
                         <p className="text-xl text-gray-600 text-center">Welcome back!</p>
-                        <a href="#" className="flex items-center justify-center mt-4 text-white rounded-lg shadow-md hover:bg-gray-100">
+                        {/* <a href="#" className="flex items-center justify-center mt-4 text-white rounded-lg shadow-md hover:bg-gray-100">
                             <div className="px-4 py-3">
                                 <svg className="h-6 w-6" viewBox="0 0 40 40">
                                     <path
@@ -64,10 +64,10 @@ export default function Login() {
                                 </svg>
                             </div>
                             <h1 className="px-4 py-3 w-5/6 text-center text-gray-600 font-bold">Sign in with Google</h1>
-                        </a>
+                        </a> */}
                         <div className="mt-4 flex items-center justify-between">
                             <span className="border-b w-1/5 lg:w-1/4"></span>
-                            <a href="#" className="text-xs text-center text-gray-500 uppercase">or login with email</a>
+                            {/* <a href="#" className="text-xs text-center text-gray-500 uppercase">or login with email</a> */}
                             <span className="border-b w-1/5 lg:w-1/4"></span>
                         </div>
                         {error && <div className="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">Invalid username or password</div>}
@@ -82,7 +82,7 @@ export default function Login() {
                             <div className="mt-4">
                                 <div className="flex justify-between">
                                     <label className="block text-gray-700 text-sm font-bold mb-2">Password</label>
-                                    <a href="#" className="text-xs text-gray-500">Forget Password?</a>
+                                    {/* <a href="#" className="text-xs text-gray-500">Forget Password?</a> */}
                                 </div>
                                 <input id="password" value={password} className="bg-gray-200 text-gray-700 focus:outline-none focus:shadow-outline border border-gray-300 rounded py-2 px-4 block w-full appearance-none" type="password"
                                     onChange={(e) => {
