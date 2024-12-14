@@ -44,7 +44,8 @@ This project demonstrates distinctiveness and complexity in the following ways:
 * **Complex Relationships**: The backend code implements a full system for user authentication, posting and commenting, following other users, and managing friend requests showcasing an understanding of complex relationships in a database.
 *   **Error Handling and Authentication:** The project demonstrates robust error handling, input validation, and the use of JWT for secure API access, highlighting attention to best practices.
 *   **Responsive UI**: The use of Tailwind CSS and responsive design make sure that the app looks and functions well regardless of the screen size.
-*   **API Filtering:** The API uses filtering to retrieve specific datasets.
+*   **Image Uploading**: The user can upload images with the posts and upload their profile picture to make the app visually more appealing.
+*   **API Filtering:** The API uses filtering to retrieve specific datasets based on personal information.
 *   **Infinite Scrolling:** The landing page uses infinite scrolling, which implements an efficient and modern method of loading colleges in the frontend.
 
 ## File Structure
