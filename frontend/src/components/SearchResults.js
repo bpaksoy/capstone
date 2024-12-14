@@ -13,7 +13,7 @@ import { useCurrentUser } from '../UserProvider/UserProvider';
 
 function SearchResults() {
     let { query } = useParams();
-    console.log("query in Search Results", query);
+    //console.log("query in Search Results", query);
     const { loggedIn, updateLoggedInStatus } = useCurrentUser();
     const [searchResult, setSearchResult] = useState([]);
     console.log("searchResult", searchResult);
