@@ -32,7 +32,7 @@ This project is a web application designed to help prospective students looking 
 *   **Interactive Elements:**
    * Dynamic loading and error states are used to make the app more reactive to users' actions.
    * Users can like and comment on blog posts for interaction.
-    * Users can upload posts with and without images.
+   * Users can upload posts with and without images.
 
 ## Distinctiveness and Complexity
 
