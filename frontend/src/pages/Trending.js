@@ -2,6 +2,7 @@ import React from 'react';
 import PostList from '../components/PostList';
 import PostModal from '../utils/PostModal';
 import usePosts from '../hooks/FetchPosts';
+import NewsFeed from '../components/NewsFeed';
 
 function Trending() {
     const { posts, updatePosts } = usePosts();
@@ -13,6 +14,7 @@ function Trending() {
         <div className="bg-primary min-h-screen flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
             <PostModal onAddPost={handleAddPost} />
             <PostList posts={posts} onAddPost={handleAddPost} />
+            <NewsFeed />
         </div>
     )
 }

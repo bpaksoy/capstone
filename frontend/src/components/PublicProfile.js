@@ -3,34 +3,78 @@ import { useParams, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { baseUrl } from '../shared';
 import { images } from '../constants';
+import useFetch from '../hooks/FetchData';
+import { useCurrentUser } from '../UserProvider/UserProvider';
 
 const PublicProfile = () => {
     const location = useLocation();
-    const otherUser = location.state?.otherUser;
+    let otherUser = location.state?.otherUser;
+    console.log("otherUser", otherUser);
     const { userId } = useParams();
     const [isFriend, setIsFriend] = useState(false);
     const [isPending, setIsPending] = useState(false);
     console.log("isFriend", isFriend);
+    console.log("isPending", isPending);
     const [pendingRequests, setPendingRequests] = useState([]);
-    // console.log("pendingRequests", pendingRequests);
+    const [otherUserData, setOtherUserData] = useState(otherUser);
+    const { user: currentUser, loading: currentUserLoading, handleLogout } = useCurrentUser();
+    const token = localStorage.getItem('access');
+
+    const { data: friendsData, loading: friendsLoading, error: friendsError, fetchData: fetchFriendsData } = useFetch({}, token);
+    console.log("friendsData Public", friendsData)
 
     useEffect(() => {
-        const checkFriendship = async () => {
+        const fetchFriends = async () => {
+            const url = baseUrl + `api/users/${userId}/friends/`;
+            if (userId) {
+                await fetchFriendsData(url, 'get');
+            }
+        }
+        fetchFriends();
+    }, [userId]);
+
+    useEffect(() => {
+        if (friendsData) {
+            setIsFriend(friendsData.is_friend);
+            setIsPending(friendsData.is_pending);
+        }
+    }, [friendsData]);
+
+    useEffect(() => {
+        const fetchPendingRequests = async () => {
             try {
-                const response = await axios.get(`${baseUrl}api/users/${userId}/friends/`, {
+                const response = await axios.get(`${baseUrl}api/users/pending-requests/`, {
                     headers: {
-                        Authorization: `Bearer ${localStorage.getItem('access')}`,
+                        Authorization: `Bearer ${token}`,
                     },
                 });
-                setIsFriend(response.data.is_friend);
-                setIsPending(response.data.is_pending);
+                setPendingRequests(response.data);
             } catch (error) {
-                console.error("Error fetching friends:", error);
+                console.error("Error fetching pending requests:", error);
             }
         };
+        fetchPendingRequests();
+    }, []);
 
-        checkFriendship();
+
+    const { data: updatedOtherUserData, loading: updatedLoading, error: updatedError, fetchData: refetchOtherUser } = useFetch({}, token);
+    useEffect(() => {
+        const refetchOtherUserData = async () => {
+            const url = baseUrl + `api/users/${userId}/`;
+            if (userId) {
+                await refetchOtherUser(url, 'get');
+            }
+            if (updatedLoading) return <p>Loading...</p>;
+            if (updatedError) return <p>Error: {updatedError.message}</p>;
+        };
+        refetchOtherUserData();
     }, [userId]);
+
+    useEffect(() => {
+        if (updatedOtherUserData) {
+            setOtherUserData(updatedOtherUserData);
+        }
+    }, [updatedOtherUserData]);
 
 
     const handleFriendRequest = async (friendId) => {
@@ -39,21 +83,20 @@ const PublicProfile = () => {
                 method: isFriend ? 'delete' : 'post',
                 url: `${baseUrl}api/users/${friendId}/${isFriend ? 'unfriend/' : 'friend-request/'}`,
                 headers: {
-                    Authorization: `Bearer ${localStorage.getItem('access')}`,
+                    Authorization: `Bearer ${token}`,
                 },
             });
             console.log("Friend request response", response);
             alert(isFriend ? 'User unfriended successfully!' : 'Friend request sent!');
-            // setIsFriend(!isFriend);
+            setIsFriend(response.data.is_friend);
+            setIsPending(response.data.is_pending);
+            fetchFriendsData(baseUrl + `api/users/${userId}/friends/`, 'get');
         } catch (error) {
             console.error('Error handling friend request:', error);
             alert('Error handling friend request.');
         }
     };
 
-    if (!otherUser) {
-        return <p>Loading...</p>;
-    }
 
     return (
         <>
@@ -90,21 +133,17 @@ const PublicProfile = () => {
                                         )}
                                     </div>
                                 </div>
-                                {otherUser ? (
-                                    <div className="w-full lg:w-4/12 px-4 lg:order-3 lg:text-right lg:self-center">
-                                        <div className="py-6 px-3 mt-20 sm:mt-0 flex justify-center">
-                                            <button className="bg-pink-500 active:bg-pink-600 uppercase text-white font-bold hover:shadow-md shadow text-xs px-4 py-2 rounded outline-none focus:outline-none mb-1 ease-linear transition-all duration-150" type="button" onClick={() => handleFriendRequest(otherUser.id)}>
-                                                {isFriend ? "Disconnect" : isPending ? "Pending" : "Connect"}
-                                            </button>
-                                        </div>
-                                    </div>) : (
-                                    <div className="w-full lg:w-4/12 px-4 lg:order-3 lg:text-right lg:self-center">
-
-                                    </div>)}
+                                <div className="w-full lg:w-4/12 px-4 lg:order-3 lg:text-right lg:self-center">
+                                    <div className="py-6 px-3 mt-20 sm:mt-0 flex justify-center">
+                                        <button className="bg-pink-500 active:bg-pink-600 uppercase text-white font-bold hover:shadow-md shadow text-xs px-4 py-2 rounded outline-none focus:outline-none mb-1 ease-linear transition-all duration-150" type="button" onClick={() => handleFriendRequest(otherUser.id)}>
+                                            {isFriend ? "Disconnect" : isPending ? "Pending" : "Connect"}
+                                        </button>
+                                    </div>
+                                </div>
                                 <div className="w-full lg:w-4/12 px-4 lg:order-1">
                                     <div className="flex justify-center py-4 lg:pt-4 pt-8">
                                         <div className="mr-4 p-3 text-center">
-                                            <span className="text-xl font-bold block uppercase tracking-wide text-blueGray-600">{otherUser?.friends.length}</span><span className="text-sm text-blueGray-400">Friends</span>
+                                            <span className="text-xl font-bold block uppercase tracking-wide text-blueGray-600">{friendsData?.friends?.length}</span><span className="text-sm text-blueGray-400">Friends</span>
                                         </div>
                                         <div className="lg:mr-4 p-3 text-center">
                                             <span className="text-xl font-bold block uppercase tracking-wide text-blueGray-600">
@@ -128,7 +167,7 @@ const PublicProfile = () => {
                                     <i className="fas fa-map-marker-alt mr-2 text-lg text-blueGray-400"></i>
                                     {otherUser?.city || otherUser?.state || otherUser?.country ? (
                                         [otherUser?.city, otherUser?.state, otherUser?.country]
-                                            .filter(item => item) // Remove empty strings
+                                            .filter(item => item)
                                             .join(', ')
                                     ) : (
                                         "Add more info"
@@ -147,7 +186,7 @@ const PublicProfile = () => {
                                         <p className="mb-4 text-lg leading-relaxed text-blueGray-700">
                                             {otherUser?.bio}
                                         </p>
-                                        <a href="#pablo" className="font-normal text-pink-500">Show more</a>
+                                        {/* <a href="#pablo" className="font-normal text-pink-500">Show more</a> */}
                                     </div>
                                 </div>
                             </div>

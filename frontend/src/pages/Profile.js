@@ -8,17 +8,17 @@ import { baseUrl } from '../shared';
 import useFetch from '../hooks/FetchData';
 import { useLocation } from 'react-router-dom';
 
-
 const Profile = () => {
 
-    const { user, fetchUser } = useCurrentUser();
-    console.log("user", user);
+    const { user, fetchUser, loading } = useCurrentUser();
+    // console.log("user", user);
+    // console.log("loading", loading);
     const token = localStorage.getItem('access');
     const location = useLocation();
     const [isFriend, setIsFriend] = useState(false);
     const otherUser = location.state?.otherUser;
     const [pendingRequests, setPendingRequests] = useState([]);
-    console.log("pendingRequests", pendingRequests);
+    // console.log("pendingRequests", pendingRequests);
 
 
     useEffect(() => {
@@ -76,7 +76,7 @@ const Profile = () => {
     const { data: commentsData, loading: commentsLoading, error: commentsError, fetchData } = useFetch({}, token);
     const { data: postsData, loading: postsLoading, error: postsError, fetchData: fetchPostsData } = useFetch({}, token);
     const { data: friendsData, loading: friendsLoading, error: friendsError, fetchData: fetchFriendsData } = useFetch({}, token);
-    console.log("friendsData", friendsData);
+    // console.log("friendsData", friendsData);
 
 
     useEffect(() => {
@@ -112,31 +112,10 @@ const Profile = () => {
 
     useEffect(() => {
         if (friendsData) {
-            // setFriends(friendsData.friends);
             setIsFriend(friendsData.is_friend);
         }
     }, [friendsData])
 
-
-
-    // const handleSave = async () => {
-    //     try {
-    //         await axios.put(
-    //             'http://127.0.0.1:8000/api/user/',
-    //             userData
-    //         );
-    //         setIsEditing(false);
-    //     } catch (error) {
-    //         console.error('Error saving user data:', error);
-    //     }
-    // };
-
-    // const handleChange = (e) => {
-    //     setUserData({
-    //         ...userData,
-    //         [e.target.name]: e.target.value,
-    //     });
-    // };
 
 
     const handleFriendRequestResponse = async (requestId, action) => {
@@ -148,7 +127,6 @@ const Profile = () => {
             });
             alert(response.data.message);
             fetchFriendsData(`${baseUrl}api/users/${user.id}/friends/`);
-            fetchUser();
             const response2 = await axios.get(`${baseUrl}api/users/pending-requests/`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('access')}`,
@@ -158,7 +136,7 @@ const Profile = () => {
 
         } catch (error) {
             console.error('Error responding to friend request:', error);
-            alert('Error responding to friend request.');
+            alert(`Error responding to friend request: ${error.message}`);
         }
     };
 
@@ -210,11 +188,14 @@ const Profile = () => {
                                                 className="shadow-xl rounded-full h-auto align-middle border-none relative -m-16 -ml-2 lg:-ml-0 max-w-150-px absolute inset-0"
                                             />
                                         )}
-                                        <div className="absolute bg-white hover:bg-gray-200 rounded top-34 right-8 m-2">
+                                        <div className="absolute bg-white hover:bg-gray-200 rounded top-34 right-6 m-4">
                                             <button>
                                                 <input type="file" style={{ display: 'none' }} onChange={handleImageChange} id="profile-upload-input" className="text-white font-bold py-2 px-4 rounded flex items-center mt-12" />
                                                 <label htmlFor="profile-upload-input" className="mt-2 flex items-center justify-center cursor-pointer">
-                                                    <img className="size-8" src={icons.upload} alt="upload" />
+                                                    {/* <img className="size-8" src={icons.upload} alt="upload" /> */}
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="size-8">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
+                                                    </svg>
                                                 </label>
                                             </button>
                                         </div>
@@ -315,7 +296,7 @@ const Profile = () => {
                                         </p>
 
                                         <AddBioModal initialValues={{ bio: user?.bio }} fetchUser={fetchUser} />
-                                        <a href="#pablo" className="font-normal text-pink-500">Show more</a>
+                                        {/* <a href="#pablo" className="font-normal text-pink-500">Show more</a> */}
                                     </div>
                                 </div>
                             </div>
@@ -328,4 +309,3 @@ const Profile = () => {
 };
 
 export default Profile;
-

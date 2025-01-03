@@ -1,84 +1,54 @@
-import React, { useState, useEffect, useRef } from "react";
-import { baseUrl } from "../shared";
+import React, { useState, useEffect } from 'react';
+import InfiniteScroll from "react-infinite-scroll-component";
 
-const InfiniteScroll = () => {
+const InfiniteScrollScreen = ({ fetchColleges, renderItem }) => {
     const [items, setItems] = useState([]);
-    const [isLoading, setIsLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
-    const [pageNumber, setPageNumber] = useState(1);
+    const [page, setPage] = useState(1);
+    const [error, setError] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
 
-    const observer = useRef(null);
 
     useEffect(() => {
-        // Initialize observer for infinite scroll
-        const options = {
-            root: null,
-            rootMargin: "20px",
-            threshold: 1.0,
-        };
+        // Initial fetch
+        fetchData();
+    }, []);
 
-        if (observer.current) {
-            observer.current.disconnect();
-        }
-
-        observer.current = new IntersectionObserver(handleObserver, options);
-
-        if (observer.current) {
-            observer.current.observe(document.querySelector(".scroll-container"));
-        }
-
-        return () => observer.current.disconnect();
-    }, []); // Runs only once when component mounts
-
-    // Fetch data for each page
-    useEffect(() => {
-        if (pageNumber > 1) {
-            setIsLoading(true);
-            fetchItems();
-        }
-    }, [pageNumber]);
-
-    // Fetch items based on pageNumber
-    const fetchItems = async () => {
+    const fetchData = async () => {
+        setIsLoading(true);
         try {
-            // Replace with your actual API call
-            const response = await fetch(
-                `${baseUrl}api/colleges/?page=${pageNumber}`
-            );
-            const data = await response.json();
-            //console.log("Infinite scroll data:", data.colleges);
-
-            // Update items state
-            setItems((prevItems) => [...prevItems, ...data.colleges]);
-
-            // Check if there are more items to load
-            setHasMore(data.colleges.length > 0);
-
-            setIsLoading(false);
+            const result = await fetchColleges(page);
+            if (!result || !result.colleges) {
+                throw new Error(`Invalid API response for page ${page}`);
+            }
+            setItems(prevItems => page === 1 ? result.colleges : [...prevItems, ...result.colleges]);
+            setHasMore(result.hasMore);
+            setPage(page + 1);
         } catch (error) {
-            console.error(error);
+            handleError(error);
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    // Callback for IntersectionObserver
-    const handleObserver = (entries) => {
-        if (entries[0].isIntersecting && hasMore) {
-            setPageNumber((prevPageNumber) => prevPageNumber + 1);
-        }
+    const handleError = (error) => {
+        setError(error);
+        setHasMore(false);
+        console.error("Error fetching data:", error);
     };
 
     return (
-        <div className="scroll-container">
-            {/* Display items */}
-            {items.map((item, index) => (
-                <div key={index}>{item.name}</div>
-            ))}
-            <p>Data</p>
-
-            {/* Display loading spinner */}
-            {isLoading && <div>Loading...</div>}
-        </div>
+        <InfiniteScroll
+            dataLength={items.length}
+            next={fetchData}
+            hasMore={hasMore}
+            loader={<div>Loading...</div>}
+            endMessage={<div>No more colleges to show</div>}
+        >
+            {items.map(renderItem)}
+            {error && <div>Error: {error.message}</div>}
+        </InfiniteScroll>
     );
 };
 
-export default InfiniteScroll;
+export default InfiniteScrollScreen;

@@ -11,6 +11,7 @@ import empty from "../assets/images/empty.png";
 import logoColor from "../assets/images/logo-color.png";
 import toss from "../assets/images/toss.jpg";
 import avatar from "../assets/images/avatar.png";
+import collegeImg from "../assets/images/college.jpg";
 
 
-export default { profile, thumbnail, cards, cards2, path, logo, logoSmall, empty, logoNew, logoColor, toss, avatar, logo6 };
+export default { profile, thumbnail, cards, cards2, path, logo, logoSmall, empty, logoNew, logoColor, toss, avatar, logo6, collegeImg };

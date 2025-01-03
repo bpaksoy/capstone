@@ -2,7 +2,7 @@ import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import React, { useState, useEffect, useContext } from 'react';
 import NotFound from './NotFound';
 import { baseUrl } from '../shared';
-import { LoginContext } from '../App';
+import { useCurrentUser } from '../UserProvider/UserProvider'
 import { images } from "../constants";
 import axios from 'axios';
 
@@ -11,8 +11,8 @@ const formatter = new Intl.NumberFormat('en-US', {
     currency: 'USD',
 })
 
-const College = ({ id: collegeId, name, city, state, acceptance_rate, average_sat, cost_of_attendance }) => {
-    const [loggedIn, setLoggedIn] = useContext(LoginContext);
+const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, cost_of_attendance }) => {
+    const { user, loading, loggedIn } = useCurrentUser();
     // const { id } = useParams();
     //console.log("collegeId", collegeId);
     const navigate = useNavigate();
@@ -40,7 +40,6 @@ const College = ({ id: collegeId, name, city, state, acceptance_rate, average_sa
     };
 
 
-
     useEffect(() => {
         checkBookmark();
     }, [collegeId]);
@@ -62,7 +61,15 @@ const College = ({ id: collegeId, name, city, state, acceptance_rate, average_sa
         }
     };
 
-    //console.log("here is the test for back end", backendData);
+    const handleClickMore = () => {
+        const numericCollegeId = parseInt(collegeId, 10);
+        if (!isNaN(numericCollegeId)) {
+            navigate(`/colleges/${numericCollegeId}/details`);
+        } else {
+            console.error('Invalid collegeId:', collegeId);
+        }
+    };
+
     const [notFound, setNotFound] = useState(false);
 
 
@@ -91,38 +98,13 @@ const College = ({ id: collegeId, name, city, state, acceptance_rate, average_sa
     //     fetchData();
     // }, []);
 
-
     return (
-        <div>
+        <div className="college-item">
             {notFound && <NotFound />}
-            {/* <div className="min-w-[350px] max-w-[350px] m-2 py-8 px-8 max-w-sm bg-white rounded-xl shadow-lg space-y-2 sm:py-4 sm:flex sm:items-center sm:space-y-0 sm:space-x-6">
-                <img
-                    className="object-cover rounded-full h-[100px] w-[100px] block mx-auto h-24 rounded-full sm:mx-0 sm:shrink-0"
-                    src="https://images.unsplash.com/photo-1677594334053-afe4b41aa0a3?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTV8fGNvbGxlZ2V8ZW58MHx8MHx8fDA%3D"
-                    alt="college"
-                />
-                <div className="text-center space-y-2 sm:text-left">
-                    <div className="space-y-0.5">
-                        <p className="text-lg text-black font-semibold">
-                            {name}
-                        </p>
-                        <p className="text-slate-500 font-medium">{city}, {state}</p>
-                    </div>
-                    <p className="text-xl font-pregular text-gray-100 mt-3 text-center">
-                        {`Acceptance Rate : \n ${(acceptance_rate * 100).toFixed(2)}%`}
-                    </p>
-                    <p className="text-xl font-pregular text-gray-200 mt-3 text-center">
-                        {`Average SAT score: ${average_sat}`}
-                    </p>
-                    <p className="text-sm font-pregular text-gray-300 mt-3 text-center">
-                        {`Average Cost of Attendance per Academic Year: \n ${formatter.format(cost_of_attendance).replace(/(\.|,)00$/g, '')}`}
-                    </p>
-                </div>
-            </div> */}
 
-            <div className="relative flex w-full max-w-[26rem] flex-col rounded-xl bg-white bg-clip-border text-gray-700 shadow-lg m-3">
+            <div className="relative flex max-w-[26rem] flex-col rounded-xl bg-white bg-clip-border text-gray-700 shadow-lg m-3">
                 <div
-                    className="relative mx-4 mt-4 overflow-hidden text-white shadow-lg rounded-xl bg-blue-gray-500 bg-clip-border shadow-blue-gray-500/40">
+                    className="relative mx-4 mt-4 overflow-hidden text-white shadow-lg rounded-xl bg-blue-gray-500 bg-clip-border shadow-blue-gray-500/40 ">
                     <img
                         src={images.toss}
                         alt="college" />
@@ -147,7 +129,7 @@ const College = ({ id: collegeId, name, city, state, acceptance_rate, average_sa
                         <h5 className="block font-sans text-xl antialiased font-medium leading-snug tracking-normal text-blue-gray-900">
                             {name}, {city}, {state}
                         </h5>
-                        <p
+                        {/* <p
                             className="flex items-center gap-1.5 font-sans text-base font-normal leading-relaxed text-blue-gray-900 antialiased">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
                                 className="-mt-0.5 h-5 w-5 text-yellow-700">
@@ -156,19 +138,24 @@ const College = ({ id: collegeId, name, city, state, acceptance_rate, average_sa
                                     clipRule="evenodd"></path>
                             </svg>
                             5.0
-                        </p>
+                        </p> */}
                     </div>
                     <p className="block font-sans text-base antialiased font-light leading-relaxed text-gray-700">
 
-                        {`Acceptance Rate : \n ${(acceptance_rate * 100).toFixed(2)}%`}
+                        {`Acceptance Rate : \n ${(admission_rate * 100).toFixed(2)}%`}
                     </p>
                     <p className="block font-sans text-base antialiased font-light leading-relaxed text-gray-700">
-                        {`Average SAT score: ${average_sat}`}
+                        {`Average SAT score: ${sat_score}`}
                     </p>
                     <p className="block font-sans text-base antialiased font-light leading-relaxed text-gray-700">
-                        {`Average Cost of Attendance per Academic Year: \n ${formatter.format(cost_of_attendance).replace(/(\.|,)00$/g, '')}`}
+                        Average Cost of Attendance per Academic Year:<br />
+                        {cost_of_attendance > 0 ? (
+                            <span>{formatter.format(cost_of_attendance).replace(/(\.|,)00$/g, '')}</span>
+                        ) : (
+                            <span>N/A</span>
+                        )}
                     </p>
-                    <div className="inline-flex flex-wrap items-center gap-3 mt-8 group">
+                    {/* <div className="inline-flex flex-wrap items-center gap-3 mt-8 group">
                         <span
                             className="cursor-pointer rounded-full border border-gray-900/5 bg-gray-900/5 p-3 text-gray-900 transition-colors hover:border-gray-900/10 hover:bg-gray-900/10 hover:!opacity-100 group-hover:opacity-70">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
@@ -226,13 +213,14 @@ const College = ({ id: collegeId, name, city, state, acceptance_rate, average_sa
                             className="cursor-pointer rounded-full border border-gray-900/5 bg-gray-900/5 p-3 text-gray-900 transition-colors hover:border-gray-900/10 hover:bg-gray-900/10 hover:!opacity-100 group-hover:opacity-70">
                             +20
                         </span>
-                    </div>
+                    </div> */}
                 </div>
                 <div className="p-6 pt-3">
                     <button
+                        onClick={handleClickMore}
                         className="block w-full select-none rounded-lg bg-gray-800 py-3.5 px-7 text-center align-middle font-sans text-sm font-bold uppercase text-white shadow-md shadow-gray-900/10 transition-all hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
                         type="button">
-                        Follow
+                        More
                     </button>
                 </div>
             </div>

@@ -2,7 +2,6 @@ import { useContext, useEffect, useState } from 'react';
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { NavLink } from 'react-router-dom';
-import { LoginContext } from '../App';
 import { images } from "../constants";
 import { useCurrentUser } from '../UserProvider/UserProvider';
 import { baseUrl } from '../shared';
@@ -13,59 +12,83 @@ const navigation = [
     { name: 'Bookmarks', href: '/bookmarks', current: false },
     { name: 'Trending', href: '/trending', current: false },
     { name: 'Profile', href: '/profile', current: false },
+    { name: 'Advanced', href: '/detailed-search', current: false },
+
 ]
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
 }
 
-export default function Header(props) {
 
-    const { user, fetchUser } = useCurrentUser();
-    useEffect(() => {
-        fetchUser();
-    }, []);
-
-    const [loggedIn, setLoggedIn] = useContext(LoginContext);
+const Header = (props) => {
+    const { user, handleLogout, loading, loggedIn, forceFetchFriendRequests, setForceFetchFriendRequests } = useCurrentUser();
     const [friendRequestCount, setFriendRequestCount] = useState(0);
+    //console.log("friendRequestCount", friendRequestCount);
     const [acceptedFriendRequestCount, setAcceptedFriendRequestCount] = useState(0);
+    //console.log("acceptedFriendRequestCount", acceptedFriendRequestCount);
     const [showPopup, setShowPopup] = useState(false);
     const [friendRequests, setFriendRequests] = useState([]);
+    //console.log("friendRequests", friendRequests);
 
     useEffect(() => {
         const fetchFriendRequestCount = async () => {
             try {
-                const response = await axios.get(`${baseUrl}api/friend-request-count/`, {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('access')}`,
-                    },
-                });
-                setFriendRequestCount(response.data.pending_count);
-                setAcceptedFriendRequestCount(response.data.accepted_count);
+                if (loggedIn) {
+                    const response = await axios.get(`${baseUrl}api/friend-request-count/`, {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem('access')}`,
+                        },
+                    });
+                    setFriendRequestCount(response.data.pending_count);
+                    setAcceptedFriendRequestCount(response.data.accepted_count);
+                }
             } catch (error) {
                 console.error('Error fetching friend request count:', error);
             }
         };
 
         fetchFriendRequestCount();
-    }, []);
-
+    }, [loggedIn, forceFetchFriendRequests]);
 
     useEffect(() => {
         const fetchFriendRequests = async () => {
             try {
-                const response = await axios.get(`${baseUrl}api/friend-requests/`, {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('access')}`,
-                    },
-                });
-                setFriendRequests(response.data);
+                if (loggedIn) {
+                    const response = await axios.get(`${baseUrl}api/friend-requests/`, {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem('access')}`,
+                        },
+                    });
+                    setFriendRequests(response.data);
+
+                }
             } catch (error) {
                 console.error("Error fetching friend requests:", error);
             }
         };
         fetchFriendRequests();
-    }, []);
+    }, [loggedIn, forceFetchFriendRequests]);
+
+
+    useEffect(() => {
+        setFriendRequestCount(friendRequests.filter(request => request.status === 'pending').length);
+    }, [friendRequests]);
+
+
+    const handleClosePopup = async () => {
+        setShowPopup(false);
+        await Promise.all(friendRequests.map(async (request) => {
+            if (request.status === 'accepted') {
+                await axios.put(`${baseUrl}api/friend-requests/${request.id}/read/`, {}, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('access')}`,
+                    },
+                });
+            }
+        }));
+        setAcceptedFriendRequestCount(0);
+    };
 
 
     return (
@@ -115,9 +138,9 @@ export default function Header(props) {
                                     {loggedIn ?
                                         <NavLink to={'/login'}
                                             onClick={() => {
+                                                handleLogout();
                                                 console.log("logout");
-                                                setLoggedIn(false);
-                                                localStorage.clear();
+
                                             }}
                                             className="px-3 py-2 rounded-md text-sm font-medium no-underline text-gray-300 hover:text-white">
                                             Logout
@@ -146,7 +169,7 @@ export default function Header(props) {
                                     </span>
                                 )}
                                 {acceptedFriendRequestCount > 0 && (
-                                    <span className="absolute top-0 right-6 inline-flex items-center justify-center w-4 h-4 rounded-full bg-green-600 text-white">
+                                    <span className="absolute top-0 right-5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-green-600 text-white">
                                         {acceptedFriendRequestCount}
                                     </span>
                                 )}
@@ -156,14 +179,14 @@ export default function Header(props) {
                                     {friendRequests.map((request) => (
                                         <div key={request.id} className="flex justify-between items-center mb-2">
                                             <p className="text-gray-800 font-medium">
-                                                {request.status === 'pending'
-                                                    ? `Friend request from ${request.user1.username}`
-                                                    : `Friend request from ${request.user1.username} accepted`
+                                                {request.user1.id === user.id ?  // Check if the current user is the sender or receiver of the friend request
+                                                    (request.status === 'pending' ? `Friend request sent to ${request.user2.username}` : `Friend request sent to ${request.user2.username} accepted`)
+                                                    : (request.status === 'pending' ? `Friend request from ${request.user1.username}` : `Friend request from ${request.user1.username} accepted`)
                                                 }
                                             </p>
                                         </div>
                                     ))}
-                                    <button onClick={() => setShowPopup(false)} className="mt-2 bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-1 px-2 rounded">Close</button>
+                                    <button onClick={handleClosePopup} className="mt-2 bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-1 px-2 rounded">Close</button>
                                 </div>
                             )}
 
@@ -176,7 +199,7 @@ export default function Header(props) {
                                         {user &&
                                             <img
                                                 alt=""
-                                                src={user.image ? baseUrl + user.image : images.profile}
+                                                src={user.image ? baseUrl + user.image : images.avatar}
                                                 className="h-8 w-8 rounded-full enhanced-image"
                                             />
                                         }
@@ -200,9 +223,8 @@ export default function Header(props) {
                                         {loggedIn ?
                                             <a href={'/login'}
                                                 onClick={() => {
+                                                    handleLogout();
                                                     console.log("logout");
-                                                    setLoggedIn(false);
-                                                    localStorage.clear();
                                                 }}
                                                 className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100" >
                                                 Logout
@@ -239,11 +261,14 @@ export default function Header(props) {
                     </div>
                 </DisclosurePanel>
             </Disclosure>
-            <div className="bg-gray-300 min-h-screen">
-                <div className="max-w-7xl mx-auto min-h-screen px-3">
+            <div className="bg-gray-300">
+                <div className="max-w-7xl mx-auto  px-3">
                     {props.children}
                 </div>
             </div>
         </>
+
     )
 }
+
+export default Header;

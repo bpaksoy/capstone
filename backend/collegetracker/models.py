@@ -37,6 +37,7 @@ class Friendship(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=[('pending', 'Pending'), (
         'accepted', 'Accepted'), ('rejected', 'Rejected')], default='pending')
+    read = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('user1', 'user2')
@@ -55,9 +56,48 @@ class College(models.Model):
     cost_of_attendance = models.IntegerField(null=True)
     tuition_in_state = models.IntegerField(null=True)
     tuition_out_state = models.IntegerField(null=True)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+    ft_faculty_rate = models.FloatField(null=True, blank=True)
+    enrollment_all = models.IntegerField(null=True, blank=True)
+    UNITID = models.CharField(
+        max_length=255, unique=True, null=True, blank=True)
 
     def __str__(self):
-        return self.name + ' - ' + self.city + ', ' + self.state + ', ' + self.website + ', ' + str(self.admission_rate) + ', ' + str(self.sat_score) + ', ' + str(self.cost_of_attendance) + ', ' + str(self.tuition_in_state) + ', ' + str(self.tuition_out_state)
+        return self.name + ' - ' + self.city + ', ' + self.state + ', ' + self.website + ', ' + str(self.admission_rate) + ', ' + str(self.sat_score) + ', ' + str(self.cost_of_attendance) + ', ' + str(self.tuition_in_state) + ', ' + str(self.tuition_out_state) + ', ' + str(self.latitude) + ', ' + str(self.longitude) + ', ' + str(self.ft_faculty_rate)
+
+
+class SmartCollege(models.Model):
+    name = models.CharField(max_length=255)
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=2)
+    website = models.CharField(max_length=200, null=True, blank=True)
+    admission_rate = models.FloatField(null=True, blank=True)
+    sat_score = models.IntegerField(null=True, blank=True)
+    cost_of_attendance = models.IntegerField(null=True, blank=True)
+    tuition_in_state = models.IntegerField(null=True, blank=True)
+    tuition_out_state = models.IntegerField(null=True, blank=True)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+    ft_faculty_rate = models.FloatField(null=True, blank=True)
+    enrollment_all = models.IntegerField(null=True, blank=True)
+    CCBASIC = models.CharField(max_length=255, null=True, blank=True)
+    HLOFFER = models.CharField(max_length=255, null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class CollegeProgram(models.Model):
+    college = models.ForeignKey(
+        College, on_delete=models.CASCADE, related_name='programs')
+    cipcode = models.CharField(max_length=20)
+    cipdesc = models.TextField()
+    creddesc = models.CharField(max_length=255, null=True, blank=True)
+    UNITID = models.CharField(max_length=255, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.college.name} - {self.cipdesc}"
 
 
 class Post(models.Model):
