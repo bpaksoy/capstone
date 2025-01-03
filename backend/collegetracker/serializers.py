@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import College
 from django.contrib.auth import authenticate
-from .models import Comment, Post, Bookmark, Reply, User, Like, Friendship
+from .models import Comment, Post, Bookmark, Reply, User, Like, Friendship, SmartCollege, CollegeProgram
 from django.contrib.contenttypes.models import ContentType
 from rest_framework.validators import UniqueTogetherValidator
 
@@ -9,6 +9,18 @@ from rest_framework.validators import UniqueTogetherValidator
 class CollegeSerializer(serializers.ModelSerializer):
     class Meta:
         model = College
+        fields = '__all__'
+
+
+class SmartCollegeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SmartCollege
+        fields = '__all__'
+
+
+class CollegeProgramSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CollegeProgram
         fields = '__all__'
 
 
