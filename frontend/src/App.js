@@ -14,6 +14,9 @@ import { UserProvider } from "./UserProvider/UserProvider";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import PrivateRoute from "./pages/PrivateRoute";
 import PublicProfile from "./components/PublicProfile";
+import SmartBookmarks from "./components/SmartBookmarks";
+import SmartCollegeDetail from "./components/SmartCollegeDetail";
+import DetailedSearch from "./components/DetailedSearch";
 
 
 const App = () => {
@@ -27,11 +30,14 @@ const App = () => {
             <Route path="/" element={<Colleges />} />
             <Route path="/colleges/:id" element={<College />} />
             <Route path="/colleges/:id/details" element={<CollegeDetail />} />
+            <Route path="/smart-colleges/:id/details" element={<SmartCollegeDetail />} />
             <Route path="/bookmarks" element={<Bookmarks />} />
+            <Route path="/smart-bookmarks" element={<SmartBookmarks />} />
             <Route path="/trending" element={<Trending />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/profile/:userId" element={<PublicProfile />} />
             <Route path="/search/:query" element={<SearchResults />} />
+            <Route path="/detailed-search" element={<DetailedSearch />} />
             <Route path="/404" element={<NotFound />} />
             <Route path="*" element={<NotFound />} />
           </Route>

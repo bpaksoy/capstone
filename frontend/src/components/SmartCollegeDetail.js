@@ -2,32 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { baseUrl } from '../shared';
 import { images } from '../constants';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
-import { Pie } from 'react-chartjs-2';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-
-ChartJS.register(ArcElement, Tooltip, Legend);
-
 
 const formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
-});
+})
 
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-    iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
-    iconUrl: require('leaflet/dist/images/marker-icon.png'),
-    shadowUrl: require('leaflet/dist/images/marker-shadow.png')
-});
 
-const CollegeDetail = () => {
+const SmartCollegeDetail = () => {
     const { id: collegeId } = useParams();
-    //console.log("collegeId", collegeId);
     const [college, setCollege] = useState(null);
-    // console.log("College", college);
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [programs, setPrograms] = useState([]);
@@ -44,17 +28,18 @@ const CollegeDetail = () => {
                     throw new Error('College ID is missing');
                 }
 
-                const response = await fetch(`${baseUrl}api/colleges/${collegeId}/`, {
+                const response = await fetch(`${baseUrl}api/smart-colleges/${collegeId}/`, {
                     headers: { Authorization: `Bearer ${localStorage.getItem('access')}` },
                 });
+
+                console.log("response", response);
 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
                 const data = await response.json();
-                console.log("College Details", data);
-                setCollege(data.college);
+                setCollege(data);
             } catch (error) {
                 setError(error);
                 console.error("Error fetching college details:", error);
@@ -62,6 +47,7 @@ const CollegeDetail = () => {
                 setIsLoading(false);
             }
         };
+
         const fetchCollegePrograms = async () => {
 
             try {
@@ -85,8 +71,6 @@ const CollegeDetail = () => {
 
         fetchCollegeDetails();
         fetchCollegePrograms();
-
-        fetchCollegeDetails();
     }, []);
 
 
@@ -99,14 +83,12 @@ const CollegeDetail = () => {
     if (error) return <p>Error: {error.message}</p>;
     if (!college) return <p>College not found</p>;
 
-    const mapCenter = [college.latitude, college.longitude];
-
     return (
         <>
             <div className="bg-primary min-h-screen">
                 <div className="container mx-auto px-4 py-8">
                     <div className="bg-white rounded-lg shadow-md p-6">
-                        <div className="flex flex-col md:flex-row items-start gap-8">
+                        <div className="flex flex-col md:flex-row items-center gap-8">
                             <img src={images.collegeImg} alt={college.name} className="w-64 h-64 rounded-lg object-cover shadow-md md:w-auto md:max-w-[300px]" />
                             <div>
                                 <h1 className="text-3xl font-bold mb-2">{college.name}</h1>
@@ -142,17 +124,8 @@ const CollegeDetail = () => {
                                         </svg>
                                         <p className="font-medium">Tuition out of state: {formatter.format(college.tuition_out_state).replace(/(\.|,)00$/g, '')}</p>
                                     </div>
-                                    <div className="bg-blue-100 p-3 rounded-lg flex items-center gap-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 1 0 7.5 7.5h-7.5V6Z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0 0 13.5 3v7.5Z" />
-                                        </svg>
-                                        <p className="font-medium">Full-time faculty rate: {(college.ft_faculty_rate * 100).toFixed(2)}%</p>
-                                    </div>
                                 </div>
 
-
-                                <p className="text-gray-700 mb-4">Lorem ipsum.....</p>
                                 {programs && programs.length > 0 && (
                                     <div className="mt-4">
                                         <h3 className="text-xl font-semibold mb-2">Programs Offered</h3>
@@ -166,35 +139,16 @@ const CollegeDetail = () => {
                                     </div>
                                 )}
 
-
                                 <a href={college.website} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">{college.website}</a>
-                                {college.latitude && college.longitude &&
-                                    <div className="mt-8 h-[300px] w-full md:w-[600px]">
-                                        <div className="mt-8 rounded-lg shadow-md overflow-hidden">
-                                            <MapContainer
-                                                center={mapCenter}
-                                                zoom={13}
-                                                style={{ height: '300px', width: '100%' }}
-                                                className="rounded-lg" // Applying border-radius to MapContainer
-                                            >
-                                                <TileLayer
-                                                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                                    attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                                                />
-                                                <Marker position={mapCenter}>
-                                                    <Popup>{college.name}</Popup>
-                                                </Marker>
-                                            </MapContainer>
-                                        </div>
-                                    </div>
-                                }
+
                             </div>
                         </div>
                     </div>
                 </div>
+
             </div>
         </>
     );
 };
 
-export default CollegeDetail;
+export default SmartCollegeDetail;

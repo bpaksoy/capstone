@@ -12,6 +12,8 @@ const navigation = [
     { name: 'Bookmarks', href: '/bookmarks', current: false },
     { name: 'Trending', href: '/trending', current: false },
     { name: 'Profile', href: '/profile', current: false },
+    { name: 'Advanced', href: '/detailed-search', current: false },
+
 ]
 
 function classNames(...classes) {
