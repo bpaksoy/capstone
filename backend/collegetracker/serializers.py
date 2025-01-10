@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import College
 from django.contrib.auth import authenticate
-from .models import Comment, Post, Bookmark, Reply, User, Like, Friendship, SmartCollege, CollegeProgram
+from .models import Comment, Post, Bookmark, Reply, User, Like, Friendship, SmartCollege, CollegeProgram, Article
 from django.contrib.contenttypes.models import ContentType
 from rest_framework.validators import UniqueTogetherValidator
 
@@ -91,11 +91,12 @@ class PostSerializer(serializers.ModelSerializer):
     comments_count = serializers.SerializerMethodField()
     likes_count = serializers.SerializerMethodField()
     image = serializers.ImageField(required=False, allow_null=True)
+    type = serializers.CharField(read_only=True)
 
     class Meta:
         model = Post
         fields = ('id', 'author', 'title', 'content', 'created_at',
-                  'updated_at', 'comments_count', 'likes_count', 'image')
+                  'updated_at', 'comments_count', 'likes_count', 'image', 'type')
         depth = 1
 
     def get_comments_count(self, obj):
@@ -176,3 +177,18 @@ class FriendshipSerializer(serializers.ModelSerializer):
     class Meta:
         model = Friendship
         fields = '__all__'
+
+
+class ArticleSerializer(serializers.ModelSerializer):
+    author = UserSerializer(read_only=True)
+    likes_count = serializers.SerializerMethodField()
+    type = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = Article
+        fields = ('id', 'author', 'title', 'slug', 'content', 'created_at', 'updated_at',
+                  'published_date',  'image', 'likes_count', 'category', 'tags', 'featured', 'editor_byline', 'type')
+        depth = 1
+
+    def get_likes_count(self, obj):
+        return obj.likes.count()

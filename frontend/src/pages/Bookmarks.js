@@ -182,7 +182,7 @@ const Bookmarks = () => {
                     Acceptance Rate: {(recommendedCollege.admission_rate * 100).toFixed(2)}%
                   </p>
                   <Link to={`/colleges/${recommendedCollege.id}/details`}
-                    className="mt-auto block w-full select-none rounded-lg bg-gray-800 py-3.5 px-7 text-center align-middle font-sans text-sm font-bold uppercase text-white shadow-md shadow-gray-900/10 transition-all hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+                    className="mt-auto block w-full select-none rounded-lg bg-gray-800 hover:bg-gray-700 py-3.5 px-7 text-center align-middle font-sans text-sm font-bold uppercase text-white shadow-md shadow-gray-900/10 transition-all hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
                   >
                     More
                   </Link>

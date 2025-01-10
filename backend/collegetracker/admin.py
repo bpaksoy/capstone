@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import College, Comment, Post, Bookmark, Reply, User, SmartCollege, CollegeProgram
+from .models import College, Comment, Post, Bookmark, Reply, User, SmartCollege, CollegeProgram, Article
 from django.contrib.auth.admin import UserAdmin
 
 
@@ -10,6 +10,7 @@ admin.site.register(Post)
 admin.site.register(Bookmark)
 admin.site.register(Reply)
 admin.site.register(CollegeProgram)
+admin.site.register(Article)
 # admin.site.register(SmartCollege)
 
 

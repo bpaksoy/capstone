@@ -17,6 +17,7 @@ import PublicProfile from "./components/PublicProfile";
 import SmartBookmarks from "./components/SmartBookmarks";
 import SmartCollegeDetail from "./components/SmartCollegeDetail";
 import DetailedSearch from "./components/DetailedSearch";
+import ArticleDetails from "./components/ArticleDetails";
 
 
 const App = () => {
@@ -34,6 +35,7 @@ const App = () => {
             <Route path="/bookmarks" element={<Bookmarks />} />
             <Route path="/smart-bookmarks" element={<SmartBookmarks />} />
             <Route path="/trending" element={<Trending />} />
+            <Route path="/articles/:slug" element={<ArticleDetails />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/profile/:userId" element={<PublicProfile />} />
             <Route path="/search/:query" element={<SearchResults />} />

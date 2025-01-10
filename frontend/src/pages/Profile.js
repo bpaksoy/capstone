@@ -164,7 +164,7 @@ const Profile = () => {
                     backgroundImage: ``,
                     backgroundSize: 'cover',
                     height: '200px',
-                    borderRadius: '5px',
+
                 }}>
 
                 </div>
@@ -292,7 +292,7 @@ const Profile = () => {
                                 <div className="flex flex-wrap justify-center">
                                     <div className="w-full lg:w-9/12 px-4">
                                         <p className="mb-4 text-lg leading-relaxed text-blueGray-700">
-                                            {user?.bio}
+                                            {user?.bio ? user.bio : <p className="text-sm leading-normal mt-0 mb-2 text-blueGray-400 font-bold uppercase">Add bio</p>}
                                         </p>
 
                                         <AddBioModal initialValues={{ bio: user?.bio }} fetchUser={fetchUser} />

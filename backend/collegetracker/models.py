@@ -6,6 +6,8 @@ from django.contrib.admin.models import LogEntry
 from django.core.validators import FileExtensionValidator
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
+from django.utils import timezone
+from django.utils.text import slugify
 
 
 # User = get_user_model()
@@ -100,6 +102,43 @@ class CollegeProgram(models.Model):
         return f"{self.college.name} - {self.cipdesc}"
 
 
+class Article(models.Model):
+    author = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='articles')
+    title = models.CharField(max_length=200)
+    slug = models.SlugField(max_length=255, unique=True, blank=True)
+    content = models.TextField()
+    published_date = models.DateTimeField(
+        blank=True, null=True)  # Optional publication date
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    image = models.ImageField(
+        upload_to='article_images/', blank=True, null=True)
+    category = models.CharField(
+        max_length=100, blank=True)  # example of category
+    # tags as comma separated string
+    tags = models.CharField(max_length=200, blank=True)
+    # flag to mark the article as featured
+    featured = models.BooleanField(default=False)
+    # editors byline if applicable
+    editor_byline = models.CharField(max_length=250, blank=True)
+    # generic relation to Like model
+    likes = GenericRelation('Like', related_query_name='articles')
+    type = models.CharField(max_length=20, default='article')
+
+    def __str__(self):
+        return self.title
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super(Article, self).save(*args, **kwargs)
+
+    class Meta:
+        # order by publish date first then created date.
+        ordering = ['-published_date', '-created_at']
+
+
 class Post(models.Model):
     title = models.CharField(max_length=200)
     content = models.TextField()
@@ -110,6 +149,7 @@ class Post(models.Model):
     likes = GenericRelation('Like', related_query_name='posts')
     image = models.ImageField(upload_to='post_images/', blank=True, null=True,
                               validators=[FileExtensionValidator(['png', 'jpg', 'jpeg'])])
+    type = models.CharField(max_length=20, default='post')
 
     # @cached_property
     # def author_username(self):

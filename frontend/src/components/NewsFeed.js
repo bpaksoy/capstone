@@ -8,7 +8,7 @@ import { images } from "../constants";
 
 const NewsFeed = () => {
     const [news, setNews] = useState([]);
-    console.log("news", news);
+    // console.log("news", news);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
@@ -124,9 +124,9 @@ const NewsFeed = () => {
                         <div className='max-w-[100px] max-h-[100px] min-w-[100px] min-h-[100px]'>
                             <img src={item.image_url ? item.image_url : images.toss} className="w-full h-full object-cover" alt="News thumbnail" />
                         </div>
-                        <div className='flex flex-col'>
+                        <div className="flex flex-col">
                             <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
-                            <p className="text-gray-700 ">{item.description}</p>
+                            <p className="text-gray-700">{item.description}</p>
                             <a className="text-blue-500 underline" href={item.link} target="_blank" rel="noopener noreferrer">Read More</a>
                         </div>
                     </div>

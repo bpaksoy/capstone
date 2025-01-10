@@ -116,7 +116,6 @@ const PostList = ({ posts, onAddPost }) => {
 
     return (
         <div className="container mx-auto p-4">
-            <h1 className="text-3xl font-bold mb-4 text-gray-800 text-center">Trending</h1>
             <div className="flex flex-col items-center">
                 {posts?.map((post) => (
                     <div key={post.id} className="bg-white p-4 rounded-lg shadow-md max-w-2xl w-full mb-4 relative">
