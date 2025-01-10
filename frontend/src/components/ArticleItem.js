@@ -2,18 +2,60 @@ import React from 'react';
 import { images } from '../constants';
 import { Link } from 'react-router-dom';
 import { baseUrl } from '../shared';
+import ReactHtmlParser from 'html-react-parser';
+import sanitizeHtml from 'sanitize-html';
 
 
-function ArticleItem({ id, title, content, image, created_at, author, slug }) {
-    const truncateContent = (text, maxLength) => {
-        if (!text) {
-            return "";
+const truncateContent = (html, maxLength) => {
+    if (!html) {
+        return "";
+    }
+    // Sanitize HTML
+    const sanitizedHtml = sanitizeHtml(html, {
+        allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img']),
+        allowedAttributes: {
+            '*': ['href', 'src', 'alt', 'title', 'style']
         }
-        if (text.length > maxLength) {
-            return text.substring(0, maxLength) + "...";
+    });
+
+    try {
+        const textContent = ReactHtmlParser(sanitizedHtml)
+            .reduce((text, item) => {
+                if (typeof item === "string") {
+                    return text + item
+                } else if (typeof item === "number") {
+                    return text + String(item)
+                }
+                else if (item && typeof item.props?.children === 'string') {
+                    return text + item.props?.children;
+                }
+                else if (item && Array.isArray(item.props?.children)) {
+                    return text + item.props.children.reduce((acc, child) => {
+                        if (typeof child === 'string') {
+                            return acc + child;
+                        } else if (typeof child === 'number') {
+                            return acc + String(child)
+                        } else {
+                            return acc
+                        }
+                    }, "");
+                }
+                return text
+            }, "");
+
+        if (textContent.length > maxLength) {
+            return textContent.substring(0, maxLength) + "...";
         }
-        return text;
-    };
+        return textContent;
+    } catch (error) {
+        console.error("Error parsing HTML:", error);
+        return html.substring(0, maxLength) + "...";
+    }
+};
+
+
+
+const ArticleItem = ({ id, title, content, image, created_at, author, slug }) => {
 
     return (
         <div className="container mx-auto p-4">

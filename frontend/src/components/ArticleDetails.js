@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { baseUrl } from '../shared';
 import { images } from '../constants';
+import ReactHtmlParser from 'html-react-parser';
 
 const ArticleDetails = () => {
     const { slug } = useParams();
@@ -54,7 +55,7 @@ const ArticleDetails = () => {
                         <p className="text-gray-500 text-sm">{article.author.username}</p>
                     </div>
                     {article.image && <img src={`${baseUrl}${article.image}`} alt="Article Thumbnail" className="w-full h-auto object-cover rounded-md mb-4" />}
-                    <p className="text-gray-700">{article.content}</p>
+                    {ReactHtmlParser(article.content)}
                 </div>
             ) : (
                 <p>Article not found</p>
