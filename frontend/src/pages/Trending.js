@@ -64,42 +64,29 @@ function Trending() {
     }, [updateLoggedInStatus, navigate, location.pathname]);
 
 
-    // useEffect(() => {
-    //     const fetchArticles = async () => {
-    //         try {
-    //             const response = await axios.get(`${baseUrl}api/articles/?published=true`, {
-    //                 headers: {
-    //                     Authorization: `Bearer ${localStorage.getItem('access')}`
-    //                 }
-    //             })
-    //             console.log("article data", response.data)
-    //             setArticles(response.data.articles);
-    //             setLoading(false)
-    //         } catch (error) {
-    //             console.log("error here", error)
-    //             setError(error);
-    //         }
-    //     };
-    //     fetchArticles();
-    // }, []);
-
     useEffect(() => {
-        if (!loading) { // mix only when both posts and news are loaded
+        if (!loading) {
             const allItems = [...posts, ...articles];
-            const shuffledItems = shuffleArray(allItems);
+            const shuffledItems = seededShuffle(allItems, Date.now());
             setAllMixedItems(shuffledItems);
         }
     }, [posts, articles, loading]);
 
-    const shuffleArray = (array) => {
+
+    const seededShuffle = (array, seed) => {
+        const random = (seed) => {
+            let x = Math.sin(seed++) * 10000;
+            return x - Math.floor(x);
+        };
         const shuffled = [...array];
+        let currentSeed = seed;
         for (let i = shuffled.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
+            const j = Math.floor(random(currentSeed) * (i + 1));
             [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            currentSeed++;
         }
         return shuffled;
     };
-
 
     if (error) return <p>Error: {error.message}</p>
     return (
