@@ -6,6 +6,8 @@ import NewsFeed from '../components/NewsFeed';
 import axios from 'axios';
 import { baseUrl } from '../shared';
 import ArticleItem from '../components/ArticleItem';
+import { useCurrentUser } from '../UserProvider/UserProvider';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 function Trending() {
     const { posts, updatePosts } = usePosts();
@@ -17,6 +19,10 @@ function Trending() {
         updatePosts(); // Trigger refetch after adding a post
     };
 
+    const { updateLoggedInStatus } = useCurrentUser();
+    const navigate = useNavigate();
+    const location = useLocation();
+
     useEffect(() => {
         const fetchArticles = async () => {
             try {
@@ -24,17 +30,58 @@ function Trending() {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('access')}`
                     }
-                })
-                console.log("article data", response.data)
-                setArticles(response.data.articles);
-                setLoading(false)
+                });
+                if (response.status === 401) {
+                    updateLoggedInStatus(false);
+                    navigate("/login", {
+                        state: {
+                            previousUrl: location.pathname
+                        }
+                    });
+                } else {
+                    setArticles(response.data.articles);
+                    setLoading(false);
+                }
+                console.log("article data", response.data);
+
             } catch (error) {
-                console.log("error here", error)
+                console.log("error here", error);
                 setError(error);
+                if (axios.isAxiosError(error) && error.response && error.response.status === 401) {
+                    updateLoggedInStatus(false);
+                    navigate("/login", {
+                        state: {
+                            previousUrl: location.pathname
+                        }
+                    });
+                }
+                else {
+                    setError(error);
+                }
             }
         };
         fetchArticles();
-    }, []);
+    }, [updateLoggedInStatus, navigate, location.pathname]);
+
+
+    // useEffect(() => {
+    //     const fetchArticles = async () => {
+    //         try {
+    //             const response = await axios.get(`${baseUrl}api/articles/?published=true`, {
+    //                 headers: {
+    //                     Authorization: `Bearer ${localStorage.getItem('access')}`
+    //                 }
+    //             })
+    //             console.log("article data", response.data)
+    //             setArticles(response.data.articles);
+    //             setLoading(false)
+    //         } catch (error) {
+    //             console.log("error here", error)
+    //             setError(error);
+    //         }
+    //     };
+    //     fetchArticles();
+    // }, []);
 
     useEffect(() => {
         if (!loading) { // mix only when both posts and news are loaded

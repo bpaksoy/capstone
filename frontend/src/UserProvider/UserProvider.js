@@ -3,7 +3,7 @@ import axios from 'axios';
 import { baseUrl } from '../shared';
 
 const UserContext = createContext();
-
+ 
 export const UserProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -16,6 +16,7 @@ export const UserProvider = ({ children }) => {
 
     const fetchUser = useCallback(async () => {
         setLoading(true);
+        setAppLoading(true);
         try {
             const token = localStorage.getItem('access');
             if (token) {
@@ -37,7 +38,7 @@ export const UserProvider = ({ children }) => {
             setForceFetch(false);
             setAppLoading(false);
         }
-    }, []);
+    }, [appLoading]);
 
     useEffect(() => {
         if (forceFetch) {
