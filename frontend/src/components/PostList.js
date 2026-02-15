@@ -9,6 +9,7 @@ import { useCurrentUser } from '../UserProvider/UserProvider';
 import { baseUrl } from '../shared';
 import axios from 'axios';
 import EditPostModal from '../utils/EditPostModal';
+import ShareModal from '../utils/ShareModal';
 import { useNavigate } from 'react-router-dom';
 
 const PostList = ({ posts, onAddPost }) => {
@@ -123,38 +124,14 @@ const PostList = ({ posts, onAddPost }) => {
         }));
     };
 
+    const [shareModalOpen, setShareModalOpen] = useState(false);
+    const [postToShare, setPostToShare] = useState(null);
+
     const handleShare = (post) => {
-        window.prompt("Share link:", window.location.href);
+        setPostToShare(post);
+        setShareModalOpen(true);
     };
 
-    const _old_handleShare = async (post) => {
-        console.log("handleShare called for post:", post.id);
-        try {
-            const username = post.author?.username || "Someone";
-            const contentText = post.content ? post.content.substring(0, 100) : (post.title || "Check this out");
-
-            const shareData = {
-                title: `Check out ${username}'s post`,
-                text: contentText,
-                url: window.location.href,
-            };
-
-            if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
-                await navigator.share(shareData);
-            } else {
-                throw new Error("Web Share Web API not supported or data not valid");
-            }
-        } catch (err) {
-            console.log('Share failed/unsupported, attempting clipboard copy:', err);
-            try {
-                await navigator.clipboard.writeText(window.location.href);
-                alert('Link copied to clipboard!');
-            } catch (clipboardErr) {
-                console.warn('Clipboard write failed, showing prompt:', clipboardErr);
-                window.prompt('Copy this link:', window.location.href);
-            }
-        }
-    };
 
     return (
         <div className="container mx-auto p-4">
@@ -351,6 +328,12 @@ const PostList = ({ posts, onAddPost }) => {
                     </div>
                 </div>
             )}
+
+            <ShareModal
+                isOpen={shareModalOpen}
+                onClose={() => setShareModalOpen(false)}
+                postUrl={postToShare ? `${window.location.origin}/posts/${postToShare.id}` : window.location.href} // Assuming robust URL structure or just current href if detail page
+            />
 
         </div>
     );
