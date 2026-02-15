@@ -9,13 +9,15 @@ import axios from 'axios';
 import InfiniteScroll from 'react-infinite-scroll-component';
 
 function Trending() {
-    const { posts, updatePosts } = usePosts();
+    const { posts, updatePosts, loading: postsLoading } = usePosts();
     const { loggedIn } = useCurrentUser();
     const [news, setNews] = useState([]);
+    const [newsLoading, setNewsLoading] = useState(true);
     const [displayLimit, setDisplayLimit] = useState(10); // Initial load
 
     useEffect(() => {
         const fetchNews = async () => {
+            setNewsLoading(true);
             try {
                 const token = localStorage.getItem('access');
                 const headers = token ? { Authorization: `Bearer ${token}` } : {};
@@ -25,6 +27,8 @@ function Trending() {
                 setNews(response.data.results || []);
             } catch (error) {
                 console.error("Error fetching news", error);
+            } finally {
+                setNewsLoading(false);
             }
         };
         fetchNews();
@@ -70,11 +74,22 @@ function Trending() {
                 dataLength={displayFeed.length}
                 next={fetchMoreData}
                 hasMore={hasMore}
-                loader={<h4 className="text-white text-center mt-4">Loading more...</h4>}
+                loader={
+                    <div className="flex justify-center items-center py-10 w-full">
+                        <div className="modern-loader">
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                        </div>
+                    </div>
+                }
                 endMessage={
-                    <p className="text-white text-center mt-4">
-                        <b>You have seen all trends!</b>
-                    </p>
+                    (!postsLoading && !newsLoading) ? (
+                        <p className="text-white text-center mt-8 pb-8">
+                            <b className="opacity-80">You have seen all trends!</b>
+                        </p>
+                    ) : null
                 }
                 scrollThreshold={0.9}
                 style={{ overflow: 'visible' }} // Important for sticky header/body scrolling

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import InfiniteScroll from "react-infinite-scroll-component";
 
-const InfiniteScrollScreen = ({ fetchColleges, renderItem }) => {
+const InfiniteScrollScreen = ({ fetchColleges, renderItem, className }) => {
     const [items, setItems] = useState([]);
     const [hasMore, setHasMore] = useState(true);
     const [page, setPage] = useState(1);
@@ -43,12 +43,18 @@ const InfiniteScrollScreen = ({ fetchColleges, renderItem }) => {
 
     return (
         <InfiniteScroll
+            className={className}
             dataLength={items.length}
             next={fetchData}
             hasMore={hasMore}
             loader={
-                <div className="flex justify-center items-center py-6">
-                    <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-gray-900"></div>
+                <div className="flex justify-center items-center py-10 w-full h-32">
+                    <div className="modern-loader">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
                 </div>
             }
             endMessage={<div className="text-center py-4 text-gray-500">No more colleges to show</div>}
