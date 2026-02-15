@@ -56,6 +56,7 @@ urlpatterns = [
     path('api/colleges/<int:id>/', views.college, name='college'),
     path('api/colleges/', CollegeListView.as_view()),
     path('api/colleges/<int:college_id>/', views.CollegeDetailView.as_view()),
+    path('api/colleges/featured/', views.FeaturedCollegesView.as_view(), name='featured-colleges'),
     path('api/colleges/filtered/', views.FilteredCollegeListView.as_view(),
          name='filtered-college-list'),
     path('api/smart-colleges/filtered/', views.FilteredSmartCollegeListView.as_view(),
