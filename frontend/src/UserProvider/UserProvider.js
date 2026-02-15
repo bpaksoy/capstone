@@ -81,12 +81,13 @@ export const UserProvider = ({ children }) => {
         setUser(null);
         setLoggedIn(false);
         setAppLoading(false);
+        setFriendRequests([]); // Clear friend requests
     }, []);
 
-    const updateLoggedInStatus = (isLoggedIn) => {
+    const updateLoggedInStatus = async (isLoggedIn) => {
         setLoggedIn(isLoggedIn);
         if (isLoggedIn) {
-            fetchUser();
+            await fetchUser();
         } else {
             handleLogout();
         }

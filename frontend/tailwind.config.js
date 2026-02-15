@@ -19,7 +19,7 @@ module.exports = {
                     100: "#CDCDE0",
                 },
                 'white': '#ffffff',
-                'purple': '#3f3cbb',
+                'purple': '#A855F7',
                 'midnight': '#121063',
                 'metal': '#565584',
                 'tahiti': '#3ab7bf',

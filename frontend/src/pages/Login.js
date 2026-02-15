@@ -24,8 +24,8 @@ export default function Login() {
             const response = await axios.post(`${baseUrl}api/login/`, { username, password });
             localStorage.setItem('access', response.data.access);
             localStorage.setItem('refresh', response.data.refresh);
-            updateLoggedInStatus(true);
-            navigate(location?.state?.previousUrl || '/');
+            await updateLoggedInStatus(true);
+            navigate('/');
         } catch (error) {
             setError(error.response?.data?.detail || "An error occurred.");
             console.error("Login error:", error);
@@ -37,7 +37,7 @@ export default function Login() {
 
     return (
         <>
-            {loggedIn && <Navigate to="/" />}
+            {/* {loggedIn && <Navigate to="/" />} - Removed to allow re-login if needed */}
             <div className="py-16">
                 <div className="flex bg-white rounded-lg shadow-lg overflow-hidden mx-auto max-w-sm lg:max-w-4xl">
                     <img className="hidden lg:block lg:w-1/2 bg-cover"

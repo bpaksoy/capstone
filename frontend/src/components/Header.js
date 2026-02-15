@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from 'react';
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { images } from "../constants";
 import { useCurrentUser } from '../UserProvider/UserProvider';
 import { baseUrl } from '../shared';
@@ -22,6 +22,7 @@ function classNames(...classes) {
 
 
 const Header = (props) => {
+    const navigate = useNavigate();
     const { user, handleLogout, loading, loggedIn, forceFetchFriendRequests, setForceFetchFriendRequests } = useCurrentUser();
     const [friendRequestCount, setFriendRequestCount] = useState(0);
     //console.log("friendRequestCount", friendRequestCount);
@@ -93,7 +94,7 @@ const Header = (props) => {
 
     return (
         <>
-            <Disclosure as="nav" className="bg-gray-800">
+            <Disclosure as="nav" className="bg-gray-800 relative z-50">
                 <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
                     <div className="relative flex h-16 items-center justify-between">
                         <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
@@ -150,20 +151,27 @@ const Header = (props) => {
                                         </NavLink>
                                     ))}
                                     {loggedIn ?
-                                        <NavLink to={'/login'}
-                                            onClick={() => {
+                                        <button
+                                            onClick={(e) => {
+                                                e.preventDefault();
                                                 handleLogout();
-                                                console.log("logout");
-
+                                                window.location.href = '/login';
                                             }}
-                                            className="px-3 py-2 rounded-md text-sm font-medium no-underline text-gray-300 hover:text-white">
+                                            className="px-3 py-2 rounded-md text-sm font-medium no-underline text-gray-300 hover:text-white cursor-pointer"
+                                        >
                                             Logout
-                                        </NavLink>
+                                        </button>
                                         :
                                         <NavLink to={'/login'}
                                             className="px-3 py-2 rounded-md text-sm font-medium no-underline text-gray-300 hover:text-white">
                                             Login
+                                            Login
                                         </NavLink>
+                                    }
+                                    {/* DEBUG: Remove after fixing logout */
+                                        <div className="text-white text-xs px-2 fixed top-0 right-0 bg-red-500 z-50">
+                                            DEBUG: LoggedIn={loggedIn ? "YES" : "NO"} User={user?.username}
+                                        </div>
                                     }
                                 </div>
                             </div>
@@ -235,19 +243,20 @@ const Header = (props) => {
                                     </MenuItem>
                                     <MenuItem>
                                         {loggedIn ?
-                                            <a href={'/login'}
-                                                onClick={() => {
+                                            <button
+                                                onClick={(e) => {
+                                                    e.preventDefault();
                                                     handleLogout();
-                                                    console.log("logout");
+                                                    window.location.href = '/login';
                                                 }}
-                                                className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100" >
+                                                className="block w-full text-left px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 cursor-pointer" >
                                                 Logout
-                                            </a> :
-                                            <a href={'/login'}
-                                                onClick={() => <NavLink to={'/login'} />}
-                                                className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100" >
+                                            </button> :
+                                            <button
+                                                onClick={() => window.location.href = '/login'}
+                                                className="block w-full text-left px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 cursor-pointer" >
                                                 Login
-                                            </a>
+                                            </button>
                                         }
                                     </MenuItem>
                                 </MenuItems>

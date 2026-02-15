@@ -147,12 +147,36 @@ const Bookmarks = () => {
 
   if (error) return <p>Error: {error.message}</p>;
 
+  function CustomNextArrow(props) {
+    const { className, style, onClick } = props;
+    return (
+      <div
+        className={className}
+        style={{ ...style, display: "block", right: "-35px" }}
+        onClick={onClick}
+      />
+    );
+  }
+
+  function CustomPrevArrow(props) {
+    const { className, style, onClick } = props;
+    return (
+      <div
+        className={className}
+        style={{ ...style, display: "block", left: "-35px" }}
+        onClick={onClick}
+      />
+    );
+  }
+
   const settings = {
     dots: true,
     infinite: true,
     speed: 500,
     slidesToShow: 3,
     slidesToScroll: 1,
+    nextArrow: <CustomNextArrow />,
+    prevArrow: <CustomPrevArrow />,
     responsive: [
       {
         breakpoint: 1024,
@@ -188,23 +212,9 @@ const Bookmarks = () => {
           <h2 className="text-xl font-semibold mb-4 text-white">Recommended Colleges</h2>
           <Slider {...settings}>
             {recommendedColleges.map((recommendedCollege) => (
-              <div key={recommendedCollege.id} className="px-2">
-                <div className="bg-white p-4 rounded-lg h-full flex flex-col">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z" />
-                  </svg>
-                  <h5 className="block font-sans text-xl antialiased font-medium leading-snug tracking-normal text-blue-gray-900 mb-2">{recommendedCollege.name}</h5>
-                  <p className="mb-4">
-                    {recommendedCollege.city}, {recommendedCollege.state}
-                  </p>
-                  <p className="mb-4">
-                    Acceptance Rate: {(recommendedCollege.admission_rate * 100).toFixed(2)}%
-                  </p>
-                  <Link to={`/colleges/${recommendedCollege.id}/details`}
-                    className="mt-auto block w-full select-none rounded-lg bg-gray-800 hover:bg-gray-700 py-3.5 px-7 text-center align-middle font-sans text-sm font-bold uppercase text-white shadow-md shadow-gray-900/10 transition-all hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
-                  >
-                    More
-                  </Link>
+              <div key={recommendedCollege.id} className="px-2 pb-4">
+                <div className="flex justify-center h-full">
+                  <College {...recommendedCollege} />
                 </div>
               </div>
             ))}
