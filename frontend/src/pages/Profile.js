@@ -93,7 +93,7 @@ const Profile = () => {
     useEffect(() => {
         const fetchFriends = async () => {
             if (user?.id) {
-                fetchFriendsData(`${baseUrl}api/users/${user.id}/friends/`);
+                fetchFriendsData(`${baseUrl}api/users/${user.id}/friends/`, 'get');
             }
         }
         fetchFriends();

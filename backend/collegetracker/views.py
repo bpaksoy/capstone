@@ -109,7 +109,7 @@ class UserDetailView(APIView):
             is_friend = False
             if current_user.is_authenticated:
                 is_friend = Friendship.objects.filter(
-                    (models.Q(user1=target_user, user2=current_user) | models.Q(user1=current_user, user2=target_user)),
+                    (Q(user1=target_user, user2=current_user) | Q(user1=current_user, user2=target_user)),
                     status='accepted'
                 ).exists()
 
@@ -922,9 +922,9 @@ class UserPostsView(APIView):
         target_user = get_object_or_404(User, pk=user_id)
         current_user = request.user
 
-        is_own_profile = (target_user == current_user)
+        is_own_profile = (target_user.id == current_user.id)
         is_friend = Friendship.objects.filter(
-            (models.Q(user1=target_user, user2=current_user) | models.Q(user1=current_user, user2=target_user)),
+            (Q(user1=target_user, user2=current_user) | Q(user1=current_user, user2=target_user)),
             status='accepted'
         ).exists()
 
@@ -1023,9 +1023,9 @@ class UserCommentsView(APIView):
         target_user = get_object_or_404(User, pk=user_id)
         current_user = request.user
 
-        is_own_profile = (target_user == current_user)
+        is_own_profile = (target_user.id == current_user.id)
         is_friend = Friendship.objects.filter(
-            (models.Q(user1=target_user, user2=current_user) | models.Q(user1=current_user, user2=target_user)),
+            (Q(user1=target_user, user2=current_user) | Q(user1=current_user, user2=target_user)),
             status='accepted'
         ).exists()
 
@@ -1273,16 +1273,16 @@ class FriendsView(APIView):
             
             # Check friendship status for privacy and response
             is_friend = Friendship.objects.filter(
-                (models.Q(user1=user, user2=current_user) | models.Q(user1=current_user, user2=user)),
+                (Q(user1=user, user2=current_user) | Q(user1=current_user, user2=user)),
                 status='accepted'
             ).exists()
 
             is_pending = Friendship.objects.filter(
-                (models.Q(user1=user, user2=current_user) | models.Q(user1=current_user, user2=user)),
+                (Q(user1=user, user2=current_user) | Q(user1=current_user, user2=user)),
                 status='pending'
             ).exists()
 
-            is_own_profile = (user == current_user)
+            is_own_profile = (user.id == current_user.id)
 
             # If profile is private and requester is not friend/self, restricted friends list
             if user.is_private and not (is_friend or is_own_profile):
