@@ -131,17 +131,20 @@ const PostList = ({ posts, onAddPost }) => {
         };
 
         try {
-            if (navigator.share) {
+            if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
                 await navigator.share(shareData);
-                console.log('Shared successfully');
             } else {
-                await navigator.clipboard.writeText(window.location.href);
-                alert('Link copied to clipboard!');
-                console.log('Copied to clipboard');
+                throw new Error("Web Share Web API not supported or data not valid");
             }
         } catch (err) {
-            console.error('Error sharing:', err);
-            // Fallback if share fails (e.g. user cancels) - optional
+            console.log('Share failed/unsupported, attempting clipboard copy:', err);
+            try {
+                await navigator.clipboard.writeText(window.location.href);
+                alert('Link copied to clipboard!');
+            } catch (clipboardErr) {
+                console.warn('Clipboard write failed, showing prompt:', clipboardErr);
+                window.prompt('Copy this link:', window.location.href);
+            }
         }
     };
 
