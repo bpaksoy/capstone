@@ -10,14 +10,18 @@ import { useCurrentUser } from '../UserProvider/UserProvider';
 import axios from 'axios';
 import { baseUrl } from '../shared';
 
+import { useLocation } from 'react-router-dom';
+
 const AIAgent = () => {
     const { user, loggedIn } = useCurrentUser();
     const [isOpen, setIsOpen] = useState(false);
     const [message, setMessage] = useState('');
+    const location = useLocation();
+
     const [chatHistory, setChatHistory] = useState([
         {
             role: 'assistant',
-            content: "Hello! I'm Wormie, your personal college admissions assistant. I can help you find universities, compare statistics, and manage your applications. How can I help you today?"
+            content: "Hello! I'm Wormie, your personal college admissions assistant. I'm analyzing your profile to give you the best advice..."
         }
     ]);
     const [isThinking, setIsThinking] = useState(false);
@@ -30,6 +34,37 @@ const AIAgent = () => {
     useEffect(() => {
         scrollToBottom();
     }, [chatHistory, isThinking]);
+
+    // Proactive: Fetch personalized greeting on mount or location change
+    useEffect(() => {
+        if (isOpen && loggedIn) {
+            const fetchProactiveMessage = async () => {
+                try {
+                    const token = localStorage.getItem('access');
+                    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+                    // Send empty message with context to trigger proactive greeting
+                    const response = await axios.post(`${baseUrl}api/ai/chat/`, {
+                        message: "PROACTIVE_GREETING",
+                        context: {
+                            path: location.pathname,
+                            search: location.search
+                        }
+                    }, { headers });
+
+                    if (response.data && response.data.reply) {
+                        setChatHistory(prev => {
+                            // Avoid duplicate greetings if the last message is same
+                            if (prev.length > 0 && prev[prev.length - 1].content === response.data.reply) return prev;
+                            return [...prev, { role: 'assistant', content: response.data.reply }];
+                        });
+                    }
+                } catch (error) {
+                    console.error("Proactive fetch error", error);
+                }
+            };
+            fetchProactiveMessage();
+        }
+    }, [isOpen, location.pathname, loggedIn]); // Re-trigger when path changes
 
     const handleSendMessage = async (e) => {
         e.preventDefault();
@@ -44,7 +79,12 @@ const AIAgent = () => {
             const token = localStorage.getItem('access');
             const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
 
-            const response = await axios.post(`${baseUrl}api/ai/chat/`, { message: userMessage }, { headers });
+            const response = await axios.post(`${baseUrl}api/ai/chat/`, {
+                message: userMessage,
+                context: {
+                    path: location.pathname
+                }
+            }, { headers });
 
             if (response.data && response.data.reply) {
                 setChatHistory(prev => [...prev, { role: 'assistant', content: response.data.reply }]);
