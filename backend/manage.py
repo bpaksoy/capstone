@@ -8,7 +8,6 @@ def main():
     """Run administrative tasks."""
     try:
         from dotenv import load_dotenv
-        import os
         load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
     except ImportError:
         pass

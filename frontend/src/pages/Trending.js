@@ -5,8 +5,10 @@ import usePosts from '../hooks/FetchPosts';
 import { useCurrentUser } from '../UserProvider/UserProvider';
 import { baseUrl } from '../shared';
 import axios from 'axios';
+import Loader from '../components/Loader';
 
 import InfiniteScroll from 'react-infinite-scroll-component';
+import ScrollToTop from '../components/ScrollToTop';
 
 function Trending() {
     const { posts, updatePosts, loading: postsLoading } = usePosts();
@@ -32,10 +34,12 @@ function Trending() {
             }
         };
         fetchNews();
+        window.scrollTo(0, 0); // Direct user to top on mount
     }, []);
 
     const handleAddPost = () => {
         updatePosts();
+        window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top after posting
     };
 
     const getMixedFeed = () => {
@@ -44,8 +48,11 @@ function Trending() {
         const postsList = posts || [];
         const newsList = news || [];
 
+        console.log(`Mixing Feed: ${postsList.length} posts, ${newsList.length} news`);
+
         while (p < postsList.length || n < newsList.length) {
-            for (let i = 0; i < 3 && p < postsList.length; i++) {
+            // Facebook-like interleaved feed
+            if (p < postsList.length) {
                 combined.push({ isPost: true, itemType: 'post', ...postsList[p++] });
             }
             if (n < newsList.length) {
@@ -66,8 +73,13 @@ function Trending() {
         }, 500);
     };
 
+    if ((postsLoading || newsLoading) && displayFeed.length === 0) {
+        return <Loader text="Uncovering the latest trends..." />;
+    }
+
     return (
-        <div className="bg-primary min-h-screen flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="bg-primary min-h-screen flex flex-col items-center justify-start py-12 px-4 sm:px-6 lg:px-8">
+            <ScrollToTop />
             {loggedIn && <PostModal onAddPost={handleAddPost} />}
 
             <InfiniteScroll

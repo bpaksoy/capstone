@@ -237,13 +237,14 @@ const PostList = ({ posts, onAddPost }) => {
                                     {post.title && <h3 className="text-lg font-bold text-gray-900 mb-1 leading-snug">{post.title}</h3>}
                                     {(() => {
                                         const isExpanded = expandedPosts[post.id];
-                                        const lineCount = post.content.split('\n').length;
-                                        const shouldTruncate = post.content.length > 450 || lineCount > 10;
+                                        const content = post.content || "";
+                                        const lineCount = content.split('\n').length;
+                                        const shouldTruncate = content.length > 450 || lineCount > 10;
                                         const displayContent = shouldTruncate && !isExpanded
                                             ? (lineCount > 10
-                                                ? post.content.split('\n').slice(0, 10).join('\n') + '...'
-                                                : post.content.substring(0, 450) + '...')
-                                            : post.content;
+                                                ? content.split('\n').slice(0, 10).join('\n') + '...'
+                                                : content.substring(0, 450) + '...')
+                                            : content;
 
                                         return (
                                             <>
@@ -286,7 +287,7 @@ const PostList = ({ posts, onAddPost }) => {
                                     )}
                                 </div>
                                 <div className="hover:underline cursor-pointer" onClick={() => toggleComments(post.id)}>
-                                    {post.comment_count + (post.reply_count || 0) > 0 ? `${post.comment_count + (post.reply_count || 0)} Comments` : ''}
+                                    {post.comments_count > 0 ? `${post.comments_count} Comments` : ''}
                                 </div>
                             </div>
 

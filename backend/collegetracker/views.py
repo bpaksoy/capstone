@@ -749,10 +749,14 @@ class PostListView(APIView):
     parser_classes = [MultiPartParser, FormParser]
 
     def get(self, request):
-        posts = Post.objects.all()
-        serializer = PostSerializer(posts, many=True)
-        # print("posts:", serializer.data)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        try:
+            posts = Post.objects.all()
+            serializer = PostSerializer(posts, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            import traceback
+            print(traceback.format_exc())
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def post(self, request, format=None):
         try:
@@ -805,6 +809,14 @@ class PostDetailView(APIView):
             return Response({'error': 'Post not found'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class GlobalCommentListView(generics.ListAPIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    serializer_class = CommentSerializer
+
+    def get_queryset(self):
+        return Comment.objects.all().order_by('-created_at')[:30]
 
 
 class UserPostsView(APIView):

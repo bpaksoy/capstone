@@ -100,6 +100,7 @@ urlpatterns = [
          views.DeletePostView.as_view(), name='delete-post'),
     path('api/news/', views.NewsFeedView.as_view(), name='news-feed'),
     path('api/news-api/', views.NewsAPIView.as_view(), name='news-api-feed'),
+    path('api/comments/all/', views.GlobalCommentListView.as_view(), name='global-comments'),
     path('api/likes/', views.LikeListView.as_view(), name='like-list'),
     path('api/likes/create/', views.LikeCreateView.as_view(), name='like-create'),
     path('api/likes/<int:like_id>/',

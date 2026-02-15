@@ -22,19 +22,12 @@ const usePosts = () => {
                     }
                 });
 
-                const postsWithCountsPromises = response.data.map(async (post) => {
-                    const commentCountResponse = await axios.get(`${baseUrl}api/posts/${post.id}/comment_counts/`, {
-                        headers: {
-                            'Content-Type': 'application/json',
-                            ...(localStorage.getItem('access') ? { 'Authorization': `Bearer ${localStorage.getItem('access')}` } : {})
-                        }
-                    });
-                    return { ...post, comment_count: commentCountResponse.data.comment_count, reply_count: commentCountResponse.data.reply_count };
-                });
-
-                const postsWithCounts = await Promise.all(postsWithCountsPromises);
-                setPosts(postsWithCounts);
+                // The serializer already provides comments_count and likes_count
+                // We map them to the expected names if necessary, or just use what we have
+                setPosts(response.data);
+                console.log("Fetched posts count:", response.data.length);
             } catch (error) {
+                console.error("Error fetching posts:", error);
                 setError(error);
             } finally {
                 setLoading(false);
