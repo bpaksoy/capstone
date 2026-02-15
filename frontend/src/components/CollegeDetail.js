@@ -193,7 +193,10 @@ const CollegeDetail = () => {
                                         <div className="mt-8 rounded-lg shadow-md overflow-hidden">
                                             <MapContainer
                                                 center={mapCenter}
-                                                zoom={13}
+                                                zoom={10}
+                                                scrollWheelZoom={false}
+                                                doubleClickZoom={false}
+                                                touchZoom={false}
                                                 style={{ height: '300px', width: '100%' }}
                                                 className="rounded-lg" // Applying border-radius to MapContainer
                                             >
