@@ -165,13 +165,7 @@ const Header = (props) => {
                                         <NavLink to={'/login'}
                                             className="px-3 py-2 rounded-md text-sm font-medium no-underline text-gray-300 hover:text-white">
                                             Login
-                                            Login
                                         </NavLink>
-                                    }
-                                    {/* DEBUG: Remove after fixing logout */
-                                        <div className="text-white text-xs px-2 fixed top-0 right-0 bg-red-500 z-50">
-                                            DEBUG: LoggedIn={loggedIn ? "YES" : "NO"} User={user?.username}
-                                        </div>
                                     }
                                 </div>
                             </div>
