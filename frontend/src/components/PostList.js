@@ -204,18 +204,25 @@ const PostList = ({ posts, onAddPost }) => {
                                 </div>
                             </div>
 
-                            {/* Content */}
-                            <div className="px-6 pb-4">
-                                {post.title && <h3 className="text-lg font-bold text-gray-900 mb-1 leading-snug">{post.title}</h3>}
-                                <p className="text-gray-800 text-base leading-relaxed whitespace-pre-wrap">{post.content}</p>
-                            </div>
-
-                            {/* Image */}
-                            {post.image && (
-                                <div className="w-full bg-gray-100">
-                                    <img src={post.image.startsWith('http') ? post.image : `${baseUrl}${post.image.startsWith('/') ? post.image.substring(1) : post.image}`} alt="Post Content" className="w-full h-auto max-h-[600px] object-cover" />
+                            {/* Inner Content Container */}
+                            <div className="mx-6 mb-4 bg-gray-50 rounded-lg border border-gray-100 overflow-hidden">
+                                {/* Content */}
+                                <div className="p-4">
+                                    {post.title && <h3 className="text-lg font-bold text-gray-900 mb-1 leading-snug">{post.title}</h3>}
+                                    <p className="text-gray-800 text-base leading-relaxed whitespace-pre-wrap">{post.content}</p>
                                 </div>
-                            )}
+
+                                {/* Image */}
+                                {post.image && (
+                                    <div className="w-full relative group">
+                                        <img
+                                            src={post.image.startsWith('http') ? post.image : `${baseUrl}${post.image.startsWith('/') ? post.image.substring(1) : post.image}`}
+                                            alt="Post Content"
+                                            className="w-full h-auto max-h-[600px] object-cover transition-transform duration-700 hover:scale-[1.01]"
+                                        />
+                                    </div>
+                                )}
+                            </div>
 
                             {/* Stats Row */}
                             <div className="px-6 py-3 flex items-center justify-between text-sm text-gray-500 border-b border-gray-50">
