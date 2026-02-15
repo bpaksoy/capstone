@@ -189,6 +189,7 @@ function SearchResults() {
                                         admission_rate={college.admission_rate}
                                         sat_score={college.sat_score}
                                         cost_of_attendance={college.cost_of_attendance}
+                                        image={college.image}
                                     />
                                 </div>
                             );

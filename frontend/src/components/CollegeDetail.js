@@ -109,7 +109,7 @@ const CollegeDetail = () => {
                     <div className="bg-white rounded-lg shadow-md p-6">
                         <div className="flex flex-col md:flex-row items-start gap-8">
                             <img
-                                src={images.collegeImages[(parseInt(collegeId) || 0) % images.collegeImages.length]}
+                                src={college.image ? (college.image.startsWith('http') ? college.image : baseUrl + college.image.replace(/^\//, '')) : images.collegeImages[(parseInt(collegeId) || 0) % images.collegeImages.length]}
                                 onError={(e) => { e.target.onerror = null; e.target.src = images.collegeImg; }}
                                 alt={college.name}
                                 className="w-64 h-64 rounded-lg object-cover shadow-md md:w-auto md:max-w-[300px]"

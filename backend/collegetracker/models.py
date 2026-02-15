@@ -67,6 +67,7 @@ class College(models.Model):
         max_length=255, unique=True, null=True, blank=True)
     application_deadline = models.CharField(max_length=100, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
+    image = models.ImageField(upload_to='college_images/', blank=True, null=True)
 
     def __str__(self):
         return self.name + ' - ' + self.city + ', ' + self.state + ', ' + self.website + ', ' + str(self.admission_rate) + ', ' + str(self.sat_score) + ', ' + str(self.cost_of_attendance) + ', ' + str(self.tuition_in_state) + ', ' + str(self.tuition_out_state) + ', ' + str(self.latitude) + ', ' + str(self.longitude) + ', ' + str(self.ft_faculty_rate)

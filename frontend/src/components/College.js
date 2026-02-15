@@ -17,7 +17,7 @@ const formatter = new Intl.NumberFormat('en-US', {
     maximumFractionDigits: 0,
 })
 
-const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, cost_of_attendance }) => {
+const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, cost_of_attendance, image }) => {
     const { loggedIn } = useCurrentUser();
     const navigate = useNavigate();
     const location = useLocation();
@@ -80,7 +80,7 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
                 {/* Image Section */}
                 <div className="relative aspect-video overflow-hidden shrink-0">
                     <img
-                        src={images.collegeImages[(parseInt(collegeId) || 0) % images.collegeImages.length]}
+                        src={image ? (image.startsWith('http') ? image : baseUrl + image.replace(/^\//, '')) : images.collegeImages[(parseInt(collegeId) || 0) % images.collegeImages.length]}
                         onError={(e) => { e.target.onerror = null; e.target.src = images.collegeImg; }}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                         alt={name}
