@@ -11,7 +11,7 @@ const Footer = () => {
                         <Link to="/" className="flex items-center mb-4">
                             <img
                                 alt="Worm Logo"
-                                src={images.logo6}
+                                src={images.wormLogoFull}
                                 className="h-8 w-auto"
                             />
                         </Link>

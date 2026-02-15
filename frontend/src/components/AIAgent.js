@@ -37,33 +37,33 @@ const AIAgent = () => {
 
     // Proactive: Fetch personalized greeting on mount or location change
     useEffect(() => {
-        if (isOpen && loggedIn) {
-            const fetchProactiveMessage = async () => {
-                try {
-                    const token = localStorage.getItem('access');
-                    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-                    // Send empty message with context to trigger proactive greeting
-                    const response = await axios.post(`${baseUrl}api/ai/chat/`, {
-                        message: "PROACTIVE_GREETING",
-                        context: {
-                            path: location.pathname,
-                            search: location.search
-                        }
-                    }, { headers });
+        // if (isOpen && loggedIn) {
+        //     const fetchProactiveMessage = async () => {
+        //         try {
+        //             const token = localStorage.getItem('access');
+        //             const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        //             // Send empty message with context to trigger proactive greeting
+        //             const response = await axios.post(`${baseUrl}api/ai/chat/`, {
+        //                 message: "PROACTIVE_GREETING",
+        //                 context: {
+        //                     path: location.pathname,
+        //                     search: location.search
+        //                 }
+        //             }, { headers });
 
-                    if (response.data && response.data.reply) {
-                        setChatHistory(prev => {
-                            // Avoid duplicate greetings if the last message is same
-                            if (prev.length > 0 && prev[prev.length - 1].content === response.data.reply) return prev;
-                            return [...prev, { role: 'assistant', content: response.data.reply }];
-                        });
-                    }
-                } catch (error) {
-                    console.error("Proactive fetch error", error);
-                }
-            };
-            fetchProactiveMessage();
-        }
+        //             if (response.data && response.data.reply) {
+        //                 setChatHistory(prev => {
+        //                     // Avoid duplicate greetings if the last message is same
+        //                     if (prev.length > 0 && prev[prev.length - 1].content === response.data.reply) return prev;
+        //                     return [...prev, { role: 'assistant', content: response.data.reply }];
+        //                 });
+        //             }
+        //         } catch (error) {
+        //             console.error("Proactive fetch error", error);
+        //         }
+        //     };
+        //     fetchProactiveMessage();
+        // }
     }, [isOpen, location.pathname, loggedIn]); // Re-trigger when path changes
 
     const handleSendMessage = async (e) => {

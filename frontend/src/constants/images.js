@@ -12,6 +12,7 @@ import logoColor from "../assets/images/logo-color.png";
 import toss from "../assets/images/toss.jpg";
 import avatar from "../assets/images/avatar.png";
 import collegeImg from "../assets/images/college.jpg";
+import wormLogoFull from "../assets/images/worm_logo_full.svg";
 
 
 const collegeImages = [
@@ -32,4 +33,6 @@ const collegeImages = [
     "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
 ];
 
-export default { profile, thumbnail, cards, cards2, path, logo, logoSmall, empty, logoNew, logoColor, toss, avatar, logo6, collegeImg, collegeImages };
+
+
+export default { profile, thumbnail, cards, cards2, path, logo, logoSmall, empty, logoNew, logoColor, toss, avatar, logo6, collegeImg, collegeImages, wormLogoFull };

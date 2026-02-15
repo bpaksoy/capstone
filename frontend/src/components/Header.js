@@ -95,11 +95,7 @@ const Header = (props) => {
                                         window.dispatchEvent(new Event('resetHomeView'));
                                     }
                                 }}>
-                                    <img
-                                        alt="College Tracker"
-                                        src={images.logo6}
-                                        className="h-8 w-auto cursor-pointer"
-                                    />
+                                    <img src={images.wormLogoFull} alt="Worm" className="h-8 w-auto" />
                                 </NavLink>
                             </div>
                             <div className="hidden sm:ml-6 sm:block">

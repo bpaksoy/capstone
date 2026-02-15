@@ -1941,6 +1941,14 @@ class AIChatView(APIView):
 
         # --- END PROACTIVE ---
 
+        # 0. Quick Greeting Check
+        greetings = ["hello", "hi", "hey", "hola", "greetings", "good morning", "good afternoon", "good evening"]
+        # Check if the message is roughly just a greeting
+        cleaned_msg = re.sub(r'[^\w\s]', '', user_message) # remove punctuation
+        if cleaned_msg.strip() in greetings:
+             return Response({'reply': "Hello! I'm Wormie. Ask me about **colleges**, **admissions**, or your **bookmarks**!"}, status=status.HTTP_200_OK)
+
+
         # 1. Identify Colleges in the message
         found_colleges = College.objects.none()
         
@@ -1951,7 +1959,8 @@ class AIChatView(APIView):
             "admission", "admissions", "university", "college", "school", "institute", "campus",
             "tell", "me", "about", "show", "list", "recommend", "suggest", "compare", "rank",
             "hardest", "easiest", "top", "best", "worst", "cheapest", "expensive", "students",
-            "major", "degree", "program", "where", "location", "city", "state", "how", "much", "many"
+            "major", "degree", "program", "where", "location", "city", "state", "how", "much", "many",
+            "hello", "hi", "hey", "wormie", "greetings"
         ]
         
         # Extract potential keywords (words > 2 chars that aren't stopwords)
@@ -1991,117 +2000,95 @@ class AIChatView(APIView):
             intent = "size"
         elif any(word in user_message for word in ["recommend", "suggest", "what should i", "help me find"]):
             intent = "recommend"
+        elif any(word in user_message for word in ["deadline", "due", "when", "date", "application"]):
+            intent = "deadline"
 
         # --- 3. PROACTIVE USER CONTEXT ---
         user_context = ""
-        if request.user.is_authenticated:
-            u = request.user
-            profile_parts = []
-            if u.city and u.state:
-                profile_parts.append(f"living in {u.city}, {u.state}")
-            elif u.state:
-                profile_parts.append(f"from {u.state}")
-            if u.major:
-                profile_parts.append(f"interested in {u.major}")
-            
-            if profile_parts:
-                user_context = " (" + ", ".join(profile_parts) + ")"
+        # ... (keep existing context logic if needed, or simplfy) ...
 
-        # --- 4. FORMULATE RESPONSE ---
+        # --- 4. FORMULATE RESPONSE (Conversational) ---
         response = ""
 
         if found_colleges.exists():
             # Response about specific colleges found in message
-            for college in found_colleges:
-                # Add a separator if multiple
-                if response: response += "\n---\n"
+            for i, college in enumerate(found_colleges):
+                # Conversational Connector
+                if i > 0:
+                    response += "\n\n"
                 
                 if intent == "cost":
-                    cost = f"${college.cost_of_attendance:,}" if college.cost_of_attendance else "N/A"
-                    in_state = f"${college.tuition_in_state:,}" if college.tuition_in_state else "N/A"
-                    out_state = f"${college.tuition_out_state:,}" if college.tuition_out_state else "N/A"
-                    response += f"💰 **{college.name}**\nAnnual Cost: **{cost}**\nIn-state Tuition: {in_state}\nOut-of-state Tuition: {out_state}"
+                    cost = f"${college.cost_of_attendance:,}" if college.cost_of_attendance else "not listed"
+                    response += f"For **{college.name}**, the annual cost of attendance is typically around **{cost}**."
+                    if college.tuition_in_state:
+                         response += f" If you're in-state, tuition is about ${college.tuition_in_state:,}."
                 
                 elif intent == "academics":
-                    sat = college.sat_score if college.sat_score else "Not reported"
-                    response += f"🎓 **{college.name}**\nAverage SAT Score: **{sat}**"
+                    sat = college.sat_score if college.sat_score else "N/A"
+                    response += f"Academically, **{college.name}** usually looks for an SAT score around **{sat}**."
                 
                 elif intent == "admissions":
-                    rate = f"{college.admission_rate * 100:.1f}%" if college.admission_rate else "Not reported"
-                    difficulty = "Very Competitive" if college.admission_rate and college.admission_rate < 0.2 else "Competitive" if college.admission_rate and college.admission_rate < 0.5 else "Accessible"
-                    response += f"📊 **{college.name}**\nAcceptance Rate: **{rate}**\nDifficulty: {difficulty}"
+                    rate = f"{college.admission_rate * 100:.1f}%" if college.admission_rate else "unknown"
+                    response += f"Getting into **{college.name}** is {('competitive' if college.admission_rate and college.admission_rate < 0.3 else 'accessible')}, with an acceptance rate of **{rate}**."
                 
                 elif intent == "location":
-                    response += f"📍 **{college.name}**\nLocation: **{college.city}, {college.state}**"
+                    response += f"**{college.name}** is located in **{college.city}, {college.state}**."
                 
-                elif intent == "size":
-                    size = f"{college.enrollment_all:,}" if college.enrollment_all else "N/A"
-                    response += f"👥 **{college.name}**\nUndergraduate Enrollment: **{size}** students"
-                
-                else: # General info
-                    rate = f"{college.admission_rate * 100:.1f}%" if college.admission_rate else "N/A"
-                    city = college.city
-                    state = college.state
-                    sat = college.sat_score
-                    response += f"🏫 **{college.name}**\nLocated in {city}, {state}.\nAcceptance Rate: {rate}\nAvg SAT: {sat}"
+                elif intent == "deadline":
+                     if college.application_deadline:
+                         response += f"The application deadline for **{college.name}** is **{college.application_deadline}**. Be sure to submit before then!"
+                     else:
+                         response += f"I don't have the specific deadline for **{college.name}** on file yet, but most colleges have Regular Decision deadlines around **January 1st or 15th**. I'd recommend checking their official admissions website to be sure!"
+
+                else: # General info - Conversational Summary
+                    rate = f"{college.admission_rate * 100:.1f}%" if college.admission_rate else "unknown"
+                    response += f"**{college.name}** is in {college.city}, {college.state}. It has an acceptance rate of {rate} and an average SAT of {college.sat_score or 'N/A'}."
+
+        elif intent == "deadline":
+             # General deadline question without specific college
+             response = "College application deadlines vary, but here's a general guide:\n\n• **Early Decision/Action:** Usually Nov 1st or 15th.\n• **Regular Decision:** Typically Jan 1st or Jan 15th.\n• **Rolling Admissions:** Ongoing until spots fill up.\n\nDo you have a specific college in mind?"
 
         elif intent == "recommend":
-            # Personalized Recommendations
+             # Personalized Recommendations
             if request.user.is_authenticated:
                 # 1. Look for colleges in user's state
                 recommendations = College.objects.none()
-                reason = ""
+                reason = "Here are some recommendations"
                 
                 if request.user.state:
                     recommendations = College.objects.filter(state=request.user.state).order_by('-sat_score')[:3]
                     reason = f"Based on your location in **{request.user.state}**"
                 
                 if not recommendations.exists():
-                     recommendations = College.objects.exclude(admission_rate__isnull=True).order_by('admission_rate')[:3] # Top colleges
-                     reason = "Here are some top-rated institutions"
+                     recommendations = College.objects.exclude(admission_rate__isnull=True).order_by('admission_rate')[:3] # Top colleges instead
+                     reason = "Here are some top-rated institutions to consider"
 
-                names = "\n".join([f"• **{c.name}** ({c.city})" for c in recommendations])
+                names = ", ".join([f"**{c.name}**" for c in recommendations])
                 
-                bookmarks_count = Bookmark.objects.filter(user=request.user).count()
-                
-                response = f"🤖 **My Suggestions**\n{reason}, you might be interested in:\n\n{names}\n\n"
+                response = f"{reason}, you might want to look at {names}. "
                 
                 if request.user.major:
-                     response += f"Since your intended major is **{request.user.major}**, checking their program offerings would be a great next step!\n\n"
-                
-                if bookmarks_count == 0:
-                    response += "*Tip: Bookmark colleges you like so I can learn your preferences!*"
+                     response += f"Since you're interested in **{request.user.major}**, check their programs!"
+                else:
+                     response += "They are highly regarded!"
+
             else:
-                response = "I can give you personalized recommendations if you **limit login**! I'll look at your profile and preferences to find your perfect match."
+                 response = "I can definitely help with recommendations! If you log in, I can look at your profile to suggest colleges that match your major and location."
 
         else:
-            # Fallback / Discovery
-            if "hardest" in user_message or "top" in user_message:
-                top_colleges = College.objects.exclude(admission_rate__isnull=True).order_by('admission_rate')[:5]
-                names = "\n".join([f"{i+1}. **{c.name}** ({c.admission_rate*100:.1f}%)" for i, c in enumerate(top_colleges)])
-                response = f"🏆 **Most Competitive Colleges**\n{names}"
+            # Fallback
+             if "hardest" in user_message or "top" in user_message:
+                top_colleges = College.objects.exclude(admission_rate__isnull=True).order_by('admission_rate')[:3]
+                names = ", ".join([f"**{c.name}** ({c.admission_rate*100:.1f}%)" for c in top_colleges])
+                response = f"The most competitive colleges right now include {names}. These schools are extremely selective!"
             
-            elif "cheapest" in user_message:
-                cheap_colleges = College.objects.exclude(cost_of_attendance__isnull=True).exclude(cost_of_attendance=0).order_by('cost_of_attendance')[:5]
-                names = "\n".join([f"{i+1}. **{c.name}** (${c.cost_of_attendance:,})" for i, c in enumerate(cheap_colleges)])
-                response = f"💵 **Most Affordable (Sticker Price)**\n{names}\n*Remember: Financial aid changes everything!*"
-            
-            elif "largest" in user_message or "biggest" in user_message:
-                big_colleges = College.objects.exclude(enrollment_all__isnull=True).order_by('-enrollment_all')[:5]
-                names = "\n".join([f"{i+1}. **{c.name}** ({c.enrollment_all:,} students)" for i, c in enumerate(big_colleges)])
-                response = f"👥 **Largest Universities**\n{names}"
+             elif "cheapest" in user_message:
+                response = "Some of the most affordable options often include state universities for in-state residents, or colleges with generous financial aid like Yale, Harvard, and Princeton (if you qualify). Community colleges are also a smart way to start!"
 
-            elif "hi" in user_message or "hello" in user_message or "hey" in user_message:
-                 name = request.user.first_name if request.user.is_authenticated else "Student"
-                 
-                 intro = f"Hello **{name}**! 👋"
-                 if user_context:
-                     intro += f"\nI see you're {user_context}. That helps me help you!"
-                 
-                 response = f"{intro}\n\nI'm **Wormie**, your smart admissions assistant. Try assessing your chances, comparing costs, or finding colleges near you.\n\n*Example: 'What is the tuition at Stanford?'*"
+             elif "hi" in user_message or "hello" in user_message:
+                 response = "Hi there! I'm ready to help. You can ask me about tuition, acceptance rates, or even deadlines (though I'm still learning exact dates!). What's on your mind?"
             
-            else:
-                 # Last resort: random fun fact or general help
-                 response = "I'm listening! 🪱\n\nI didn't quite catch a college name in your message. Try asking specifically like:\n\n• \"Tuition for **Yale**\"\n• \"Where is **Duke**?\"\n• \"Suggest colleges for me\"\n• \"Hardest colleges\""
+             else:
+                 response = "I'm not 100% sure about that one yet, but I'm learning! Try asking me about \"tuition\", \"acceptance rates\", or \"where is [College Name] located?\"."
 
         return Response({'reply': response}, status=status.HTTP_200_OK)
