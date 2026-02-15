@@ -1,9 +1,9 @@
 import re
 from goose3 import Goose
-from .models import User, College, Comment, Post, Bookmark, Reply, Like, Friendship, SmartCollege, CollegeProgram
+from .models import User, College, Comment, Post, Bookmark, Reply, Like, Friendship, SmartCollege, CollegeProgram, Article
 from django.http import JsonResponse, Http404
 from django.db import IntegrityError
-from .serializers import CollegeSerializer, UserSerializer, UploadFileSerializer, LoginSerializer, CommentSerializer, PostSerializer, BookmarkSerializer, ReplySerializer, LikeSerializer, FriendshipSerializer, SmartCollegeSerializer, CollegeProgramSerializer
+from .serializers import CollegeSerializer, UserSerializer, UploadFileSerializer, LoginSerializer, CommentSerializer, PostSerializer, BookmarkSerializer, ReplySerializer, LikeSerializer, FriendshipSerializer, SmartCollegeSerializer, CollegeProgramSerializer, ArticleSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -32,7 +32,6 @@ import feedparser
 import requests
 import os
 from bs4 import BeautifulSoup
-from newspaper import Article
 from dotenv import load_dotenv
 from django.conf import settings
 from datetime import datetime, timedelta
@@ -1212,58 +1211,101 @@ class FriendRequestReadView(APIView):
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-
 # class NewsFeedView(APIView):
 #     permission_classes = [IsAuthenticated]
 
 #     def get(self, request):
 #         try:
-#             url = 'https://www.insidehighered.com/rss.xml'
-#             response = requests.get(url)
-#             response.raise_for_status()  # Raise HTTPError for bad responses (4xx or 5xx)
-#             feed = feedparser.parse(response.text)
-#             news = []
-#             g = Goose()
-#             for entry in feed.entries:
+#             api_key = os.environ.get('NEWS_API_KEY')
+#             if not api_key:
+#                 return Response({'error': 'News API key not configured'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+#             news_items = []
+
+#             # 1. News API
+#             news_api_url = 'https://newsapi.org/v2/everything'
+#             today = datetime.now().date()
+#             from_date = today - timedelta(days=7)
+
+#             news_api_params = {
+#                 'q': 'college OR university OR "higher education" AND (student OR faculty OR professor OR research OR "campus life" OR admissions OR tuition OR scholarships) NOT sports',
+#                 'from': from_date.strftime('%Y-%m-%d'),
+#                 'language': 'en',
+#                 'sortBy': 'relevancy',
+#                 'apiKey': api_key,
+#                 'pageSize': 3,
+#             }
+#             news_api_response = requests.get(
+#                 news_api_url, params=news_api_params)
+#             news_api_response.raise_for_status()
+#             news_api_data = news_api_response.json()
+
+#             for item in news_api_data.get('articles', []):
+#                 description = item.get('description', '')
+#                 if description:
+#                     description = "\n".join(description.split("\n")[:10])
+#                 news_items.append({
+#                     'title': item.get('title'),
+#                     'description': description,
+#                     'link': item.get('url'),
+#                     'image_url': item.get('urlToImage'),
+#                     'article_id': item.get('url'),
+#                     'source': 'News API'
+#                 })
+
+#             # 2. Inside Higher Ed RSS Feed
+#             inside_higher_ed_url = 'https://www.insidehighered.com/rss.xml'
+#             inside_higher_ed_feed = feedparser.parse(
+#                 requests.get(inside_higher_ed_url).text)
+#             for entry in inside_higher_ed_feed.entries[:3]:
+#                 summary = BeautifulSoup(
+#                     entry.summary, 'html.parser').get_text().strip()
+#                 if summary:
+#                     summary = "\n".join(summary.split("\n")[:10])
+#                 news_items.append({
+#                     'title': entry.title,
+#                     'description': summary,
+#                     'link': entry.link,
+#                     'image_url': None,
+#                     'article_id': entry.id,
+#                     'source': 'Inside Higher Ed RSS'
+#                 })
+
+#             # 3. College RSS Feeds
+#             college_rss_feeds = [
+#                 {'name': 'MIT News', 'url': 'http://news.mit.edu/rss/feed.xml'},
+#                 {'name': 'Harvard Gazette', 'url': 'https://news.harvard.edu/feed/'},
+#                 {'name': 'Stanford News', 'url': 'https://news.stanford.edu/feed/'},
+#                 {'name': 'Yale News', 'url': 'https://news.yale.edu/rss'},
+#                 {'name': 'Caltech News',
+#                     'url': 'https://www.caltech.edu/about/news/feed'},
+#                 {'name': 'Princeton News', 'url': 'https://www.princeton.edu/news/feed'},
+#                 {'name': 'UChicago News', 'url': 'https://news.uchicago.edu/rss'}
+
+#             ]
+
+#             for college in college_rss_feeds:
 #                 try:
-#                     article = g.extract(url=entry.link)
+#                     feed = feedparser.parse(requests.get(college['url']).text)
+#                     for entry in feed.entries[:2]:
+#                         summary = BeautifulSoup(
+#                             entry.summary, 'html.parser').get_text().strip()
+#                         if summary:
+#                             summary = "\n".join(summary.split("\n")[:10])
+#                         news_items.append({
+#                             'title': entry.title,
+#                             'description': summary,
+#                             'link': entry.link,
+#                             'image_url': None,
+#                             'article_id': entry.id,
+#                             'source': college['name']
+#                         })
+#                 except Exception as e:
+#                     print(
+#                         f"Error fetching RSS feed for {college['name']}: {e}")
 
-#                     cleaned_text = article.cleaned_text
+#             return Response({'results': news_items}, status=status.HTTP_200_OK)
 
-#                     # Regex to remove the paywall text
-#                     cleaned_text_regex = re.sub(
-#                         r'(You have\s*\d+/\d+\s*articles left\.?\s*(?:Sign up for a free account|Log in|Sign in).*\s*)',
-#                         '',
-#                         cleaned_text,
-#                         flags=re.IGNORECASE
-#                     ).strip()
-
-#                     # Additional method to clean text using split
-#                     cleaned_text_split = ' '.join(part for part in cleaned_text.split(
-#                         '\n') if 'You have' not in part).strip()
-
-#                     # Select the method that returns the longest text
-#                     if len(cleaned_text_regex) > len(cleaned_text_split):
-#                         cleaned_text = cleaned_text_regex
-#                     else:
-#                         cleaned_text = cleaned_text_split
-
-#                     news.append({
-#                         'title': entry.title,
-#                         'description': cleaned_text,
-#                         'link': entry.link,
-#                         'image_url': article.top_image,
-#                         'article_id': entry.id
-#                     })
-#                 except Exception:
-#                     news.append({
-#                         'title': entry.title,
-#                         'description':  BeautifulSoup(entry.summary, 'html.parser').get_text().strip(),
-#                         'link': entry.link,
-#                         'image_url': None,
-#                         'article_id': entry.id
-#                     })
-#             return Response({'results': news}, status=status.HTTP_200_OK)
 #         except requests.exceptions.RequestException as e:
 #             print("request exception:", e)
 #             return Response({'error': f"An unexpected error occurred: {e}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -1279,7 +1321,7 @@ class NewsFeedView(APIView):
         try:
             api_key = os.environ.get('NEWS_API_KEY')
             if not api_key:
-                 return Response({'error': 'News API key not configured'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response({'error': 'News API key not configured'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
             news_items = []
 
@@ -1296,71 +1338,118 @@ class NewsFeedView(APIView):
                 'apiKey': api_key,
                 'pageSize': 3,
             }
-            news_api_response = requests.get(news_api_url, params=news_api_params)
+            news_api_response = requests.get(
+                news_api_url, params=news_api_params)
             news_api_response.raise_for_status()
             news_api_data = news_api_response.json()
 
             for item in news_api_data.get('articles', []):
                 description = item.get('description', '')
                 if description:
-                  description = "\n".join(description.split("\n")[:10])
+                    description = "\n".join(description.split("\n")[:10])
+                image_url = item.get('urlToImage')
+                if image_url:
+                    try:
+                        image_response = requests.get(
+                            image_url, stream=True, timeout=3)
+                        image_response.raise_for_status()
+                        if not image_response.headers.get('Content-Type', '').startswith('image/'):
+                            image_url = None
+                    except requests.exceptions.RequestException:
+                        image_url = None
                 news_items.append({
-                   'title': item.get('title'),
-                   'description': description,
-                   'link': item.get('url'),
-                   'image_url': item.get('urlToImage'),
-                   'article_id': item.get('url'),
+                    'title': item.get('title'),
+                    'description': description,
+                    'link': item.get('url'),
+                    'image_url': image_url,
+                    'article_id': item.get('url'),
                     'source': 'News API'
                 })
 
-
             # 2. Inside Higher Ed RSS Feed
             inside_higher_ed_url = 'https://www.insidehighered.com/rss.xml'
-            inside_higher_ed_feed = feedparser.parse(requests.get(inside_higher_ed_url).text)
+            inside_higher_ed_feed = feedparser.parse(
+                requests.get(inside_higher_ed_url).text)
             for entry in inside_higher_ed_feed.entries[:3]:
-               summary = BeautifulSoup(entry.summary, 'html.parser').get_text().strip()
-               if summary:
-                  summary = "\n".join(summary.split("\n")[:10])
-               news_items.append({
-                  'title': entry.title,
-                  'description': summary,
-                  'link': entry.link,
-                  'image_url': None,
-                  'article_id': entry.id,
-                  'source': 'Inside Higher Ed RSS'
-               })
+                summary = BeautifulSoup(
+                    entry.summary, 'html.parser').get_text().strip()
+                if summary:
+                    summary = "\n".join(summary.split("\n")[:10])
+                image_url = None
+                try:
+                    response = requests.get(entry.link, timeout=3)
+                    response.raise_for_status()
+                    soup = BeautifulSoup(response.text, 'html.parser')
+                    og_image_tag = soup.find(
+                        'meta', attrs={'property': 'og:image'})
+                    if og_image_tag:
+                        image_url = og_image_tag.get('content')
+                        if image_url:
+                            image_response = requests.get(
+                                image_url, stream=True, timeout=3)
+                            image_response.raise_for_status()
+                            if not image_response.headers.get('Content-Type', '').startswith('image/'):
+                                image_url = None
+                except requests.exceptions.RequestException:
+                    image_url = None
+                news_items.append({
+                    'title': entry.title,
+                    'description': summary,
+                    'link': entry.link,
+                    'image_url': image_url,
+                    'article_id': entry.id,
+                    'source': 'Inside Higher Ed RSS'
+                })
 
-
-            # 3. College RSS Feeds
+              # 3. College RSS Feeds
             college_rss_feeds = [
                 {'name': 'MIT News', 'url': 'http://news.mit.edu/rss/feed.xml'},
                 {'name': 'Harvard Gazette', 'url': 'https://news.harvard.edu/feed/'},
                 {'name': 'Stanford News', 'url': 'https://news.stanford.edu/feed/'},
-                 {'name': 'Yale News', 'url': 'https://news.yale.edu/rss'},
-               {'name': 'Caltech News', 'url': 'https://www.caltech.edu/about/news/feed'},
-               {'name': 'Princeton News', 'url': 'https://www.princeton.edu/news/feed'},
-              {'name': 'UChicago News', 'url': 'https://news.uchicago.edu/rss'}
+                {'name': 'Yale News', 'url': 'https://news.yale.edu/rss'},
+                {'name': 'Caltech News',
+                    'url': 'https://www.caltech.edu/about/news/feed'},
+                {'name': 'Princeton News', 'url': 'https://www.princeton.edu/news/feed'},
+                {'name': 'UChicago News', 'url': 'https://news.uchicago.edu/rss'}
 
             ]
-
 
             for college in college_rss_feeds:
                 try:
                     feed = feedparser.parse(requests.get(college['url']).text)
                     for entry in feed.entries[:2]:
-                       summary = BeautifulSoup(entry.summary, 'html.parser').get_text().strip()
-                       if summary:
-                         summary = "\n".join(summary.split("\n")[:10])
-                       news_items.append({
-                         'title': entry.title,
-                         'description': summary,
-                         'link': entry.link,
-                         'image_url': None,
-                         'article_id': entry.id,
-                         'source': college['name']
-                       })
+                        summary = BeautifulSoup(
+                            entry.summary, 'html.parser').get_text().strip()
+                        if summary:
+                            summary = "\n".join(summary.split("\n")[:10])
+                        image_url = None
+                        try:
+                            response = requests.get(entry.link, timeout=3)
+                            response.raise_for_status()
+                            soup = BeautifulSoup(response.text, 'html.parser')
+                            og_image_tag = soup.find(
+                                'meta', attrs={'property': 'og:image'})
+                            if og_image_tag:
+                                image_url = og_image_tag.get('content')
+                                if image_url:
+                                    image_response = requests.get(
+                                        image_url, stream=True, timeout=3)
+                                    image_response.raise_for_status()
+                                    if not image_response.headers.get('Content-Type', '').startswith('image/'):
+                                        image_url = None
+                        except requests.exceptions.RequestException:
+                            image_url = None
+                        news_items.append({
+                            'title': entry.title,
+                            'description': summary,
+                            'link': entry.link,
+                            'image_url': image_url,
+                            'article_id': entry.id,
+                            'source': college['name']
+                        })
                 except Exception as e:
-                    print(f"Error fetching RSS feed for {college['name']}: {e}")
+                    print(
+                        f"Error fetching RSS feed for {college['name']}: {e}")
 
             return Response({'results': news_items}, status=status.HTTP_200_OK)
 
@@ -1370,7 +1459,6 @@ class NewsFeedView(APIView):
         except Exception as e:
             print("Exception:", e)
             return Response({'error': f"An unexpected error occurred: {e}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 # class NewsAPIView(APIView):
 #     permission_classes = [IsAuthenticated]
@@ -1433,7 +1521,6 @@ class NewsFeedView(APIView):
 #             return Response({'error': f"An unexpected error occurred: {e}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-
 class NewsAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -1441,7 +1528,7 @@ class NewsAPIView(APIView):
         try:
             api_key = os.environ.get('NEWS_API_KEY')
             if not api_key:
-                 return Response({'error': 'News API key not configured'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response({'error': 'News API key not configured'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
             url = 'https://newsapi.org/v2/everything'
             today = datetime.now().date()
@@ -1451,7 +1538,7 @@ class NewsAPIView(APIView):
                 'q': 'college OR university OR "higher education" AND (student OR faculty OR professor OR research OR "campus life" OR admissions OR tuition OR scholarships) NOT sports',
                 'from': from_date.strftime('%Y-%m-%d'),
                 'language': 'en',
-                 'sortBy': 'relevancy',
+                'sortBy': 'relevancy',
                 'apiKey': api_key,
                 'pageSize': 5,
             }
@@ -1462,25 +1549,25 @@ class NewsAPIView(APIView):
             articles = []
             g = Goose()
             for article in data.get('articles', []):
-              try:
-                article_goose = g.extract(url=article.get('url'))
-                cleaned_text = article_goose.cleaned_text.strip()
-                paragraphs = [p.strip() for p in cleaned_text.split("\n")]
-               
-                articles.append({
-                    'title': article.get('title'),
-                    'description': paragraphs,
-                    'link': article.get('url'),
-                    'image_url': article_goose.top_image if article_goose else None,
-                    'article_id': article.get('url')
-                })
-              except Exception:
-                articles.append({
-                    'title': article.get('title'),
-                    'description': article.get('description'),
-                    'link': article.get('url'),
-                    'image_url': None,
-                     'article_id': article.get('url')
+                try:
+                    article_goose = g.extract(url=article.get('url'))
+                    cleaned_text = article_goose.cleaned_text.strip()
+                    paragraphs = [p.strip() for p in cleaned_text.split("\n")]
+
+                    articles.append({
+                        'title': article.get('title'),
+                        'description': paragraphs,
+                        'link': article.get('url'),
+                        'image_url': article_goose.top_image if article_goose else None,
+                        'article_id': article.get('url')
+                    })
+                except Exception:
+                    articles.append({
+                        'title': article.get('title'),
+                        'description': article.get('description'),
+                        'link': article.get('url'),
+                        'image_url': None,
+                        'article_id': article.get('url')
                     })
 
             return Response({'results': articles}, status=status.HTTP_200_OK)
@@ -1491,3 +1578,102 @@ class NewsAPIView(APIView):
         except Exception as e:
             print("Exception:", e)
             return Response({'error': f"An unexpected error occurred: {e}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ArticleListView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get(self, request, format=None):
+        page = int(request.query_params.get('page', 1))
+        page_size = int(request.query_params.get('page_size', 10))
+
+        # Filter the queryset based on the published date and order by the published date or created date
+        published_param = request.query_params.get('published', None)
+        published_only = published_param == 'true'
+
+        # Apply the filters to Article model using the class
+        if published_only:
+            articles = Article.objects.filter(published_date__isnull=False)
+        else:
+            articles = Article.objects.all()
+
+        paginator = Paginator(articles, page_size)
+        try:
+            articles_page = paginator.page(page)
+        except PageNotAnInteger:
+            articles_page = paginator.page(1)
+        except EmptyPage:
+            articles_page = paginator.page(paginator.num_pages)
+
+        serializer = ArticleSerializer(articles_page, many=True)
+        return Response({
+            'articles': serializer.data,
+            'has_more': articles_page.has_next()
+        }, status=status.HTTP_200_OK)
+
+    def post(self, request, format=None):
+        try:
+            serializer = ArticleSerializer(
+                data=request.data, context={'request': request})
+            serializer.is_valid(raise_exception=True)
+            serializer.save(author=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        except ValidationError as e:
+            return Response({'error': e.detail}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ArticleDetailView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get_object(self, slug):
+        try:
+            return Article.objects.get(slug=slug)
+        except Article.DoesNotExist:
+            raise Http404("Article not found")
+
+    def get(self, request, slug, format=None):
+        article = self.get_object(slug)
+        serializer = ArticleSerializer(article)
+        return Response(serializer.data)
+
+
+class EditArticleView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, slug, format=None):
+        article = self.get_object(slug)
+        if article.author != request.user:
+            return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+        serializer = ArticleSerializer(
+            article, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get_object(self, slug):
+        try:
+            return Article.objects.get(slug=slug)
+        except Article.DoesNotExist:
+            raise Http404("Article not found")
+
+
+class DeleteArticleView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, slug, format=None):
+        article = self.get_object(slug)
+        if article.author != request.user:
+            return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+        article.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def get_object(self, slug):
+        try:
+            return Article.objects.get(slug=slug)
+        except Article.DoesNotExist:
+            raise Http404("Article not found")

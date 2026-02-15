@@ -92,7 +92,7 @@ react-leaflet
 1.  **Clone the Repository:**
 
     ```bash
-    git clone https://github.com/me50/bpaksoy/tree/web50/projects/2020/x/capstone
+    git clone https://github.com/bpaksoy/capstone.git
     cd [your-repo-directory]
     ```
 
