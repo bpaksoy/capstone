@@ -17,7 +17,7 @@ const AIAgent = () => {
     const [chatHistory, setChatHistory] = useState([
         {
             role: 'assistant',
-            content: "Hello! I'm your College Guru. I can help you find the perfect university, understand admission requirements, or analyze your bookmarks. How can I assist you today?"
+            content: "Hello! I'm Wormie, your personal college admissions assistant. I can help you find universities, compare statistics, and manage your applications. How can I help you today?"
         }
     ]);
     const [isThinking, setIsThinking] = useState(false);
@@ -61,41 +61,41 @@ const AIAgent = () => {
     };
 
     return (
-        <div className="fixed bottom-6 right-6 z-[100] flex flex-col items-end">
+        <div className="fixed top-1/2 right-6 -translate-y-1/2 z-[100] flex flex-col items-end pointer-events-none">
             {/* Chat Window */}
             {isOpen && (
-                <div className="mb-4 w-[380px] h-[500px] bg-white/80 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/40 overflow-hidden flex flex-col animate-slideUp">
-                    {/* Header */}
-                    <div className="p-5 bg-primary text-white flex items-center justify-between">
+                <div className="mb-4 w-full max-w-[420px] h-[550px] bg-white/95 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/40 overflow-hidden flex flex-col animate-slideUp pointer-events-auto">
+                    {/* Header - Clean & Professional */}
+                    <div className="p-6 bg-gray-800 text-white flex items-center justify-between border-b border-white/10">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-white/20 rounded-xl">
-                                <SparklesIcon className="w-5 h-5" />
+                            <div className="p-2 bg-[#A855F7] rounded-2xl">
+                                <img src="/wormie-logo.svg" alt="Wormie" className="w-8 h-8" />
                             </div>
                             <div>
-                                <h3 className="font-bold text-sm tracking-tight">College Guru</h3>
+                                <h3 className="font-bold text-lg tracking-tight">Wormie</h3>
                                 <div className="flex items-center gap-1.5">
-                                    <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
-                                    <span className="text-[10px] text-teal-100 font-medium uppercase tracking-wider">AI Assistant Online</span>
+                                    <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(74,222,128,0.8)]"></span>
+                                    <span className="text-[10px] text-white/70 font-bold uppercase tracking-widest">Global Admissions Agent</span>
                                 </div>
                             </div>
                         </div>
                         <button
                             onClick={() => setIsOpen(false)}
-                            className="p-1 hover:bg-white/20 rounded-lg transition-colors"
+                            className="p-1.5 hover:bg-white/10 rounded-xl transition-colors"
                         >
                             <XMarkIcon className="w-6 h-6" />
                         </button>
                     </div>
 
                     {/* Messages Area */}
-                    <div className="flex-1 overflow-y-auto p-5 space-y-4 custom-scrollbar bg-gray-50/30">
+                    <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar bg-gray-50/30">
                         {chatHistory.map((chat, index) => (
                             <div
                                 key={index}
                                 className={`flex ${chat.role === 'user' ? 'justify-end' : 'justify-start'}`}
                             >
-                                <div className={`max-w-[85%] p-3.5 rounded-2xl text-sm leading-relaxed ${chat.role === 'user'
-                                    ? 'bg-primary text-white rounded-tr-none shadow-lg shadow-teal-500/10'
+                                <div className={`max-w-[85%] p-4 rounded-3xl text-sm leading-relaxed ${chat.role === 'user'
+                                    ? 'bg-purple text-white rounded-tr-none shadow-lg shadow-purple-500/20'
                                     : 'bg-white text-gray-800 rounded-tl-none border border-gray-100 shadow-sm'
                                     }`}>
                                     {chat.content}
@@ -104,11 +104,11 @@ const AIAgent = () => {
                         ))}
                         {isThinking && (
                             <div className="flex justify-start">
-                                <div className="bg-white border border-gray-100 p-3.5 rounded-2xl rounded-tl-none shadow-sm">
-                                    <div className="flex gap-1">
-                                        <div className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce"></div>
-                                        <div className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce [animation-delay:0.2s]"></div>
-                                        <div className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce [animation-delay:0.4s]"></div>
+                                <div className="bg-white border border-gray-100 p-4 rounded-3xl rounded-tl-none shadow-sm">
+                                    <div className="flex gap-1.5">
+                                        <div className="w-2 h-2 bg-purple/40 rounded-full animate-bounce"></div>
+                                        <div className="w-2 h-2 bg-purple/40 rounded-full animate-bounce [animation-delay:0.2s]"></div>
+                                        <div className="w-2 h-2 bg-purple/40 rounded-full animate-bounce [animation-delay:0.4s]"></div>
                                     </div>
                                 </div>
                             </div>
@@ -117,18 +117,18 @@ const AIAgent = () => {
                     </div>
 
                     {/* Input Area */}
-                    <form onSubmit={handleSendMessage} className="p-4 bg-white border-t border-gray-100 flex gap-2 items-center">
+                    <form onSubmit={handleSendMessage} className="p-5 bg-white border-t border-gray-100 flex gap-3 items-center">
                         <input
                             type="text"
                             value={message}
                             onChange={(e) => setMessage(e.target.value)}
-                            placeholder="Ask the Guru..."
-                            className="flex-1 bg-gray-50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 transition-all outline-none text-gray-700"
+                            placeholder="Type your message..."
+                            className="flex-1 bg-gray-50 border-none rounded-2xl px-5 py-3 text-sm focus:ring-2 focus:ring-purple/20 transition-all outline-none text-gray-700 font-medium"
                         />
                         <button
                             type="submit"
                             disabled={!message.trim() || isThinking}
-                            className="p-2.5 bg-primary text-white rounded-xl hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 flex-shrink-0"
+                            className="p-3 bg-black text-white rounded-2xl hover:bg-black/80 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 flex-shrink-0 shadow-lg shadow-black/30"
                         >
                             <PaperAirplaneIcon className="w-5 h-5" />
                         </button>
@@ -136,25 +136,16 @@ const AIAgent = () => {
                 </div>
             )}
 
-            {/* Floating Bubble */}
-            <button
-                onClick={() => setIsOpen(!isOpen)}
-                className={`group relative p-4 rounded-full shadow-2xl transition-all duration-500 hover:scale-110 active:scale-90 flex items-center justify-center ${isOpen
-                    ? 'bg-white text-primary'
-                    : 'bg-primary text-white animate-bounce-slow'
-                    }`}
-            >
-                <div className="absolute inset-0 rounded-full bg-primary animate-ping opacity-20 group-hover:opacity-40"></div>
-                {isOpen ? (
-                    <XMarkIcon className="w-8 h-8 relative z-10" />
-                ) : (
-                    <SparklesIcon className="w-8 h-8 relative z-10" />
-                )}
-
-                {!isOpen && (
-                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 border-2 border-white rounded-full"></div>
-                )}
-            </button>
+            {/* Floating Open Button - Only shows when closed */}
+            {!isOpen && (
+                <button
+                    onClick={() => setIsOpen(true)}
+                    className="group relative p-5 rounded-full shadow-2xl transition-all duration-500 hover:scale-110 active:scale-90 flex items-center justify-center pointer-events-auto bg-[#A855F7] text-white border border-white/10"
+                >
+                    <div className="absolute inset-0 rounded-full bg-purple animate-ping opacity-20 group-hover:opacity-40"></div>
+                    <img src="/wormie-logo.svg" alt="Wormie" className="w-10 h-10 relative z-10" />
+                </button>
+            )}
         </div>
     );
 };

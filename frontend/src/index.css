@@ -259,3 +259,17 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: rgba(23, 113, 125, 0.2);
 }
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-150%) skewX(-20deg);
+    }
+
+    100% {
+        transform: translateX(150%) skewX(-20deg);
+    }
+}
+
+.animate-shimmer {
+    animation: shimmer 2s infinite;
+}
