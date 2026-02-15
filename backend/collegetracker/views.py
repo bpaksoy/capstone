@@ -1,9 +1,9 @@
 import re
 from goose3 import Goose
-from .models import User, College, Comment, Post, Bookmark, Reply, Like, Friendship, SmartCollege, CollegeProgram, Article
+from .models import User, College, Comment, Post, Bookmark, Reply, Like, Friendship, SmartCollege, CollegeProgram, Article, Notification
 from django.http import JsonResponse, Http404
 from django.db import IntegrityError
-from .serializers import CollegeSerializer, UserSerializer, UploadFileSerializer, LoginSerializer, CommentSerializer, PostSerializer, BookmarkSerializer, ReplySerializer, LikeSerializer, FriendshipSerializer, SmartCollegeSerializer, CollegeProgramSerializer, ArticleSerializer
+from .serializers import CollegeSerializer, UserSerializer, UploadFileSerializer, LoginSerializer, CommentSerializer, PostSerializer, BookmarkSerializer, ReplySerializer, LikeSerializer, FriendshipSerializer, SmartCollegeSerializer, CollegeProgramSerializer, ArticleSerializer, NotificationSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -157,6 +157,45 @@ class UserUpdateView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class NotificationListView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = NotificationSerializer
+
+    def get_queryset(self):
+        return Notification.objects.filter(recipient=self.request.user).order_by('-created_at')
+
+
+class NotificationMarkReadView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, format=None):
+        try:
+            notification_id = request.data.get('notification_id')
+            if notification_id:
+                notification = Notification.objects.get(
+                    pk=notification_id, recipient=request.user)
+                notification.is_read = True
+                notification.save()
+            else:
+                Notification.objects.filter(
+                    recipient=request.user, is_read=False).update(is_read=True)
+            return Response({'message': 'Notifications updated'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class NotificationCountView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        try:
+            unread_count = Notification.objects.filter(
+                recipient=request.user, is_read=False).count()
+            return Response({'unread_count': unread_count}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 api_view(['GET', 'POST'])
@@ -688,8 +727,25 @@ class LikeCreateView(APIView):
             content_type = ContentType.objects.get(model=content_type_str)
             object_id = int(object_id_str)
 
-            Like.objects.create(user=request.user,
+            like = Like.objects.create(user=request.user,
                                 content_type=content_type, object_id=object_id)
+            
+            # Create notification
+            target_obj = like.content_object
+            recipient = None
+            if hasattr(target_obj, 'author'):
+                recipient = target_obj.author
+            elif hasattr(target_obj, 'user'):
+                recipient = target_obj.user
+                
+            if recipient and recipient != request.user:
+                Notification.objects.create(
+                    recipient=recipient,
+                    sender=request.user,
+                    notification_type='like',
+                    content_object=target_obj
+                )
+
             return Response({'message': 'Like created successfully'}, status=status.HTTP_201_CREATED)
 
         except ContentType.DoesNotExist:
@@ -902,7 +958,17 @@ class CommentListView(APIView):
             return Response({'error': 'Post not found'}, status=status.HTTP_404_NOT_FOUND)
         serializer = CommentSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(author=request.user, post=post)
+            comment = serializer.save(author=request.user, post=post)
+            
+            # Create notification for post owner
+            if post.author and post.author != request.user:
+                Notification.objects.create(
+                    recipient=post.author,
+                    sender=request.user,
+                    notification_type='comment',
+                    content_object=post
+                )
+                
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -1035,9 +1101,17 @@ class ReplyCreateView(generics.CreateAPIView):
             comment = Comment.objects.get(pk=comment_pk)
         except Comment.DoesNotExist:
             raise serializers.ValidationError({'error': 'Comment not found'})
-        serializer.save(author=self.request.user, comment=comment)
-        serializer = CommentSerializer(comment)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        reply = serializer.save(author=self.request.user, comment=comment)
+
+        # Create notification for comment owner
+        if comment.author and comment.author != self.request.user:
+            Notification.objects.create(
+                recipient=comment.author,
+                sender=self.request.user,
+                notification_type='comment',
+                content_object=comment
+            )
 
 
 class BookmarkToggleView(APIView):
@@ -1109,6 +1183,13 @@ class FriendRequestCreateView(APIView):
                 user2=friend,
             )
             if created:
+                # Create notification
+                Notification.objects.create(
+                    recipient=friend,
+                    sender=request.user,
+                    notification_type='friend_request',
+                    content_object=friendship
+                )
                 return Response({'message': 'Friend request sent'}, status=status.HTTP_201_CREATED)
             else:
                 return Response({'message': 'Friend request already exists'}, status=status.HTTP_200_OK)
@@ -1150,6 +1231,15 @@ class FriendRequestRespondView(APIView):
             if action == 'accept':
                 friendship.status = 'accepted'
                 friendship.save()
+                
+                # Create notification for the original sender
+                Notification.objects.create(
+                    recipient=friendship.user1,
+                    sender=request.user,
+                    notification_type='accepted_request',
+                    content_object=friendship
+                )
+                
                 return Response({'message': 'Friend request accepted'}, status=status.HTTP_200_OK)
             elif action == 'reject':
                 friendship.delete()

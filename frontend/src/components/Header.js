@@ -23,74 +23,53 @@ function classNames(...classes) {
 
 const Header = (props) => {
     const navigate = useNavigate();
-    const { user, handleLogout, loading, loggedIn, forceFetchFriendRequests, setForceFetchFriendRequests } = useCurrentUser();
-    const [friendRequestCount, setFriendRequestCount] = useState(0);
-    //console.log("friendRequestCount", friendRequestCount);
-    const [acceptedFriendRequestCount, setAcceptedFriendRequestCount] = useState(0);
-    //console.log("acceptedFriendRequestCount", acceptedFriendRequestCount);
-    const [showPopup, setShowPopup] = useState(false);
-    const [friendRequests, setFriendRequests] = useState([]);
-    const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+    const [notifications, setNotifications] = useState([]);
+    const [unreadCount, setUnreadCount] = useState(0);
 
-    useEffect(() => {
-        const fetchFriendRequestCount = async () => {
-            try {
-                if (loggedIn) {
-                    const response = await axios.get(`${baseUrl}api/friend-request-count/`, {
-                        headers: {
-                            Authorization: `Bearer ${localStorage.getItem('access')}`,
-                        },
-                    });
-                    setFriendRequestCount(response.data.pending_count);
-                    setAcceptedFriendRequestCount(response.data.accepted_count);
-                }
-            } catch (error) {
-                console.error('Error fetching friend request count:', error);
-            }
-        };
-
-        fetchFriendRequestCount();
-    }, [loggedIn, forceFetchFriendRequests]);
-
-    useEffect(() => {
-        const fetchFriendRequests = async () => {
-            try {
-                if (loggedIn) {
-                    const response = await axios.get(`${baseUrl}api/friend-requests/`, {
-                        headers: {
-                            Authorization: `Bearer ${localStorage.getItem('access')}`,
-                        },
-                    });
-                    setFriendRequests(response.data);
-
-                }
-            } catch (error) {
-                console.error("Error fetching friend requests:", error);
-            }
-        };
-        fetchFriendRequests();
-    }, [loggedIn, forceFetchFriendRequests]);
-
-
-    useEffect(() => {
-        setFriendRequestCount(friendRequests.filter(request => request.status === 'pending').length);
-    }, [friendRequests]);
-
-
-    const handleClosePopup = async () => {
-        setShowPopup(false);
-        await Promise.all(friendRequests.map(async (request) => {
-            if (request.status === 'accepted') {
-                await axios.put(`${baseUrl}api/friend-requests/${request.id}/read/`, {}, {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('access')}`,
-                    },
-                });
-            }
-        }));
-        setAcceptedFriendRequestCount(0);
+    const fetchNotifications = async () => {
+        if (!loggedIn) return;
+        try {
+            const config = { headers: { Authorization: `Bearer ${localStorage.getItem('access')}` } };
+            const [notifsRes, countRes] = await Promise.all([
+                axios.get(`${baseUrl}api/notifications/`, config),
+                axios.get(`${baseUrl}api/notifications/count/`, config)
+            ]);
+            setNotifications(notifsRes.data);
+            setUnreadCount(countRes.data.unread_count);
+        } catch (error) {
+            console.error('Error fetching notifications:', error);
+        }
     };
 
+    useEffect(() => {
+        fetchNotifications();
+        // Refresh every minute
+        const interval = setInterval(fetchNotifications, 60000);
+        return () => clearInterval(interval);
+    }, [loggedIn, forceFetchFriendRequests]);
+
+    const markAsRead = async (id = null) => {
+        try {
+            await axios.post(`${baseUrl}api/notifications/mark-read/`,
+                { notification_id: id },
+                { headers: { Authorization: `Bearer ${localStorage.getItem('access')}` } }
+            );
+            fetchNotifications();
+        } catch (error) {
+            console.error('Error marking as read:', error);
+        }
+    };
+
+    const getNotificationMessage = (notif) => {
+        const sender = notif.sender.username;
+        switch (notif.notification_type) {
+            case 'like': return <><b>{sender}</b> liked your activity</>;
+            case 'comment': return <><b>{sender}</b> commented on your post</>;
+            case 'friend_request': return <><b>{sender}</b> sent you a connection request</>;
+            case 'accepted_request': return <><b>{sender}</b> accepted your connection request</>;
+            default: return <>New activity from <b>{sender}</b></>;
+        }
+    };
 
     return (
         <>
@@ -136,10 +115,6 @@ const Header = (props) => {
                                                 }
                                             }}
                                             aria-current={item.current ? 'page' : undefined}
-                                            /* className={classNames(
-                                                item.current ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white',
-                                                'rounded-md px-3 py-2 text-sm font-medium',
-                                            )} */
                                             className={({ isActive }) => {
                                                 return classNames(
                                                     isActive ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white',
@@ -170,40 +145,73 @@ const Header = (props) => {
                             </div>
                         </div>
                         <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-                            <button
-                                type="button"
-                                onClick={() => setShowPopup(!showPopup)}
-                                className="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
-                            >
-                                <span className="absolute -inset-1.5" />
-                                <span className="sr-only">View notifications</span>
-                                <BellIcon aria-hidden="true" className="h-6 w-6" />
-                                {friendRequestCount > 0 && (
-                                    <span className="absolute top-0 right-0 inline-flex items-center justify-center w-4 h-4 rounded-full bg-red-600 text-white">
-                                        {friendRequestCount}
-                                    </span>
-                                )}
-                                {acceptedFriendRequestCount > 0 && (
-                                    <span className="absolute top-0 right-5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-green-600 text-white">
-                                        {acceptedFriendRequestCount}
-                                    </span>
-                                )}
-                            </button>
-                            {showPopup && (
-                                <div className="absolute z-50 bg-white rounded shadow-lg p-4 top-12 right-2">
-                                    {friendRequests.map((request) => (
-                                        <div key={request.id} className="flex justify-between items-center mb-2">
-                                            <p className="text-gray-800 font-medium">
-                                                {request.user1.id === user.id ?  // Check if the current user is the sender or receiver of the friend request
-                                                    (request.status === 'pending' ? `Friend request sent to ${request.user2.username}` : `Friend request sent to ${request.user2.username} accepted`)
-                                                    : (request.status === 'pending' ? `Friend request from ${request.user1.username}` : `Friend request from ${request.user1.username} accepted`)
-                                                }
-                                            </p>
-                                        </div>
-                                    ))}
-                                    <button onClick={handleClosePopup} className="mt-2 bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-1 px-2 rounded">Close</button>
+
+                            {/* Unified Notifications Menu */}
+                            <Menu as="div" className="relative">
+                                <div>
+                                    <MenuButton className="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
+                                        <span className="sr-only">View notifications</span>
+                                        <BellIcon aria-hidden="true" className="h-6 w-6" />
+                                        {unreadCount > 0 && (
+                                            <span className="absolute -top-1 -right-1 inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold text-white bg-red-600 rounded-full border-2 border-gray-800 shadow-sm animate-pulse">
+                                                {unreadCount > 9 ? '9+' : unreadCount}
+                                            </span>
+                                        )}
+                                    </MenuButton>
                                 </div>
-                            )}
+                                <MenuItems
+                                    transition
+                                    className="absolute right-0 z-[100] mt-3 w-80 origin-top-right rounded-2xl bg-white p-2 shadow-2xl ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
+                                >
+                                    <div className="px-4 py-3 border-b border-gray-100 flex justify-between items-center mb-2">
+                                        <span className="text-sm font-bold text-gray-900">Notifications</span>
+                                        {unreadCount > 0 && (
+                                            <button
+                                                onClick={() => markAsRead()}
+                                                className="text-[10px] font-bold text-primary hover:text-teal-700 uppercase tracking-wider"
+                                            >
+                                                Mark all read
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    <div className="max-h-96 overflow-y-auto custom-scrollbar">
+                                        {notifications.length > 0 ? (
+                                            notifications.map((notif) => (
+                                                <MenuItem key={notif.id}>
+                                                    <div
+                                                        onClick={() => markAsRead(notif.id)}
+                                                        className={`flex items-start gap-3 px-4 py-3 rounded-xl transition-all hover:bg-gray-50 cursor-pointer ${!notif.is_read ? 'bg-teal-50/30 border-l-2 border-primary' : ''}`}
+                                                    >
+                                                        <div className="flex-shrink-0 mt-1">
+                                                            <div className={`p-2 rounded-lg ${!notif.is_read ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-gray-400'}`}>
+                                                                {notif.notification_type === 'like' && <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a2 2 0 00-.8 1.6z" /></svg>}
+                                                                {notif.notification_type === 'comment' && <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" /></svg>}
+                                                                {(notif.notification_type === 'friend_request' || notif.notification_type === 'accepted_request') && <UserIcon className="w-4 h-4" />}
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <p className="text-sm text-gray-700 leading-tight">
+                                                                {getNotificationMessage(notif)}
+                                                            </p>
+                                                            <span className="text-[10px] text-gray-400 font-medium mt-1 inline-block uppercase">
+                                                                {new Date(notif.created_at).toLocaleDateString()}
+                                                            </span>
+                                                        </div>
+                                                        {!notif.is_read && (
+                                                            <div className="w-2 h-2 rounded-full bg-primary mt-2"></div>
+                                                        )}
+                                                    </div>
+                                                </MenuItem>
+                                            ))
+                                        ) : (
+                                            <div className="py-8 text-center">
+                                                <p className="text-sm text-gray-400 italic">No new activity</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </MenuItems>
+                            </Menu>
 
                             {/* Profile dropdown */}
                             <Menu as="div" className="relative ml-3">

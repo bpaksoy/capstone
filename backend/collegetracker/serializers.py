@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import College
 from django.contrib.auth import authenticate
-from .models import Comment, Post, Bookmark, Reply, User, Like, Friendship, SmartCollege, CollegeProgram, Article
+from .models import Comment, Post, Bookmark, Reply, User, Like, Friendship, SmartCollege, CollegeProgram, Article, Notification
 from django.contrib.contenttypes.models import ContentType
 from rest_framework.validators import UniqueTogetherValidator
 
@@ -33,19 +33,6 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ('id', 'username', 'email', 'password', 'first_name', 'last_name',
                   'city', 'state', 'country', 'major', 'education', 'bio', 'image', 'friends', 'is_private')
-
-    # def create(self, validated_data):
-    #     print("validated data", validated_data)
-    #     user = User.objects.create(
-    #         first_name=validated_data['first_name'],
-    #         last_name=validated_data['last_name'],
-    #         username=validated_data['username'],
-    #         email=validated_data['email']
-    #     )
-
-    #     user.set_password(validated_data['password'])
-    #     user.save()
-    #     return user
 
     def create(self, validated_data):
         password = validated_data.pop('password', None)
@@ -107,7 +94,6 @@ class PostSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = self.context['request'].user
         if 'image' in validated_data:
-            # Remove image from validated_data, to avoid passing it to Post.objects.create
             image = validated_data.pop('image')
             post = Post.objects.create(author=user, **validated_data)
             post.image = image
@@ -155,10 +141,10 @@ class ReplySerializer(serializers.ModelSerializer):
 class BookmarkSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bookmark
-        fields = '__all__'  # Include all fields (user, post, created_at)
+        fields = '__all__'
 
 
-class LikeSerializer(serializers.Serializer):  # Example Serializer
+class LikeSerializer(serializers.Serializer):
     content_type = serializers.CharField()
     object_id = serializers.IntegerField()
     user = UserSerializer(read_only=True)
@@ -191,3 +177,12 @@ class ArticleSerializer(serializers.ModelSerializer):
 
     def get_likes_count(self, obj):
         return obj.likes.count()
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    sender = UserSerializer(read_only=True)
+    recipient = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Notification
+        fields = '__all__'
