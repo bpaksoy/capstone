@@ -156,15 +156,29 @@ const CollegeDetail = () => {
 
                                 <p className="text-gray-700 mb-4">Lorem ipsum.....</p>
                                 {programs && programs.length > 0 && (
-                                    <div className="mt-4">
-                                        <h3 className="text-xl font-semibold mb-2">Programs Offered</h3>
-                                        <ul>
+                                    <div className="mt-8">
+                                        <h3 className="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">Programs Offered</h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             {programs.map(program => (
-                                                <li key={program.id} className="ml-4 list-disc">
-                                                    {program.cipdesc}
-                                                </li>
+                                                <div key={program.id} className="bg-gray-50 hover:bg-white border border-gray-100 p-4 rounded-xl transition-all duration-300 hover:shadow-md hover:border-blue-100 group flex items-start gap-3">
+                                                    <div className="bg-white p-2 rounded-lg text-blue-500 group-hover:text-blue-600 transition-colors shadow-sm">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5" />
+                                                        </svg>
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-semibold text-gray-800 leading-tight group-hover:text-blue-800 transition-colors">
+                                                            {program.cipdesc}
+                                                        </p>
+                                                        {program.creddesc && (
+                                                            <p className="text-sm text-gray-500 mt-1 font-medium">
+                                                                {program.creddesc}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
                                             ))}
-                                        </ul>
+                                        </div>
                                     </div>
                                 )}
 

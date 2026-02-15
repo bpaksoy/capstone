@@ -17,6 +17,7 @@ import PublicProfile from "./components/PublicProfile";
 import SmartBookmarks from "./components/SmartBookmarks";
 import SmartCollegeDetail from "./components/SmartCollegeDetail";
 import DetailedSearch from "./components/DetailedSearch";
+import Footer from "./components/Footer";
 
 
 const App = () => {
@@ -45,6 +46,7 @@ const App = () => {
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
+        <Footer />
       </BrowserRouter>
     </UserProvider>
   );

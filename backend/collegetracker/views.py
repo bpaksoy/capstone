@@ -155,6 +155,18 @@ def colleges(request):
     return JsonResponse({"colleges": serializer.data})
 
 
+class FeaturedCollegesView(generics.ListAPIView):
+    serializer_class = CollegeSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        return College.objects.filter(
+            state__in=['MA', 'NY', 'CA'],
+            admission_rate__isnull=False,
+            admission_rate__gt=0.0
+        ).order_by('admission_rate')[:9]
+
+
 class CollegeListView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
