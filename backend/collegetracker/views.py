@@ -113,6 +113,7 @@ class UserDetailView(APIView):
 
 class UserUpdateView(APIView):
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request, format=None):
         user = self.request.user
@@ -139,6 +140,7 @@ class UserUpdateView(APIView):
         serializer = UserSerializer(
             user, data=request.data, partial=True)  # partial=True is key
 
+        
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)

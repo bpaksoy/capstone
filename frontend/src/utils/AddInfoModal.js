@@ -64,79 +64,110 @@ const AddInfoModal = ({ initialValues = {}, fetchUser }) => {
                     <span className="block sm:inline">Something went wrong! </span>
                 </div>
             )}
-            <button onClick={handleOpenModal} className="hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
-                <img src={icons.plus} alt="add comment" className='size-8' />
+            <button
+                onClick={handleOpenModal}
+                className="bg-primary hover:bg-teal-700 text-white text-sm font-bold py-2 px-6 rounded-full shadow hover:shadow-lg transition-all transform hover:-translate-y-0.5 flex items-center gap-2 mx-auto"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                </svg>
+                Edit Profile
             </button>
 
             {isOpen && (
-                <div className="fixed inset-0 z-10 overflow-y-auto">
-                    <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" />
+                <div className="fixed inset-0 z-50 overflow-y-auto">
+                    <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                        <div className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" aria-hidden="true" onClick={handleCloseModal} />
 
-                        <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true" />
+                        <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
-                        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full" role="dialog" aria-modal="true" aria-labelledby="modal-headline">
-                            <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                                <div className="sm:flex sm:items-start">
-                                    <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
-                                        {/* Icon or image here */}
-                                    </div>
-                                    <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                                        <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-headline">
+                        <div className="inline-block w-full max-w-lg overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-xl sm:my-8" role="dialog" aria-modal="true" aria-labelledby="modal-headline">
+                            <div className="px-8 pt-8 pb-6 bg-white">
+                                <div className="flex items-start">
+                                    <div className="w-full">
+                                        <h3 className="text-xl font-bold leading-6 text-gray-900 mb-6" id="modal-headline">
                                             Add Profile Info
                                         </h3>
-                                        <div className="mt-2">
-                                            <form onSubmit={handleSubmit}>
-                                                <div className="mb-4">
-                                                    {/* <label htmlFor="content" className="block text-gray-700 text-sm font-bold mb-2">
-                                                    Content
-                                                </label> */}
-                                                    <textarea
-                                                        className="shadow appearance-none border rounded w-1/2 py-1 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                                        id="city"
-                                                        value={city}
-                                                        onChange={(e) => setCity(e.target.value)}
-                                                        placeholder='City'
-                                                    />
-                                                    <textarea
-                                                        className="shadow appearance-none border rounded w-1/2 py-1 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                                        id="state"
-                                                        value={state}
-                                                        onChange={(e) => setState(e.target.value)}
-                                                        placeholder='State'
-                                                    />
-                                                    <textarea
-                                                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                        <form onSubmit={handleSubmit}>
+                                            <div className="space-y-4">
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label htmlFor="city" className="sr-only">City</label>
+                                                        <input
+                                                            type="text"
+                                                            id="city"
+                                                            value={city}
+                                                            onChange={(e) => setCity(e.target.value)}
+                                                            className="w-full px-3 py-3 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder-gray-400"
+                                                            placeholder="City"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label htmlFor="state" className="sr-only">State</label>
+                                                        <input
+                                                            type="text"
+                                                            id="state"
+                                                            value={state}
+                                                            onChange={(e) => setState(e.target.value)}
+                                                            className="w-full px-3 py-3 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder-gray-400"
+                                                            placeholder="State"
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <label htmlFor="country" className="sr-only">Country</label>
+                                                    <input
+                                                        type="text"
                                                         id="country"
                                                         value={country}
                                                         onChange={(e) => setCountry(e.target.value)}
-                                                        placeholder='Country'
+                                                        className="w-full px-3 py-3 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder-gray-400"
+                                                        placeholder="Country"
                                                     />
-                                                    <textarea
-                                                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                                </div>
+
+                                                <div>
+                                                    <label htmlFor="major" className="sr-only">Major</label>
+                                                    <input
+                                                        type="text"
                                                         id="major"
                                                         value={major}
                                                         onChange={(e) => setMajor(e.target.value)}
-                                                        placeholder='Major'
+                                                        className="w-full px-3 py-3 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder-gray-400"
+                                                        placeholder="Major"
                                                     />
-                                                    <textarea
-                                                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                                </div>
+
+                                                <div>
+                                                    <label htmlFor="education" className="sr-only">Education</label>
+                                                    <input
+                                                        type="text"
                                                         id="education"
                                                         value={education}
                                                         onChange={(e) => setEducation(e.target.value)}
-                                                        placeholder='Education'
+                                                        className="w-full px-3 py-3 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder-gray-400"
+                                                        placeholder="Education"
                                                     />
                                                 </div>
-                                                <div className="flex justify-end">
-                                                    <button type="submit" className="bg-primary hover:bg-gray-900 text-white font-bold py-2 px-4 rounded">
-                                                        Save
-                                                    </button>
-                                                    <button type="button" onClick={handleCloseModal} className="ml-2 bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
-                                                        Cancel
-                                                    </button>
-                                                </div>
-                                            </form>
-                                        </div>
+                                            </div>
+
+                                            <div className="flex justify-end gap-3 mt-8">
+                                                <button
+                                                    type="submit"
+                                                    className="px-6 py-2 text-sm font-bold text-white transition-colors rounded-lg bg-primary hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                                                >
+                                                    Save
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={handleCloseModal}
+                                                    className="px-6 py-2 text-sm font-bold text-gray-700 transition-colors bg-gray-200 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400"
+                                                >
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        </form>
                                     </div>
                                 </div>
                             </div>
