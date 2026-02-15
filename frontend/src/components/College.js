@@ -112,9 +112,11 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
 
             <div className="relative flex max-w-[26rem] flex-col rounded-xl bg-white bg-clip-border text-gray-700 shadow-lg m-3 h-full">
                 <div
-                    className="relative mx-4 mt-4 overflow-hidden text-white shadow-lg rounded-xl bg-blue-gray-500 bg-clip-border shadow-blue-gray-500/40 ">
+                    className="relative mx-4 mt-4 overflow-hidden text-white shadow-lg rounded-xl bg-blue-gray-500 bg-clip-border shadow-blue-gray-500/40 h-56">
                     <img
-                        src={images.toss}
+                        src={images.collegeImages[(parseInt(collegeId) || 0) % images.collegeImages.length]}
+                        onError={(e) => { e.target.onerror = null; e.target.src = images.collegeImg; }}
+                        className="w-full h-full object-cover"
                         alt="college" />
                     <div
                         className="absolute inset-0 w-full h-full to-bg-black-10 bg-gradient-to-tr from-transparent via-transparent to-black/60">

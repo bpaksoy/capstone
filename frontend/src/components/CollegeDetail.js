@@ -109,7 +109,12 @@ const CollegeDetail = () => {
                 <div className="container mx-auto px-4 py-8">
                     <div className="bg-white rounded-lg shadow-md p-6">
                         <div className="flex flex-col md:flex-row items-start gap-8">
-                            <img src={images.collegeImg} alt={college.name} className="w-64 h-64 rounded-lg object-cover shadow-md md:w-auto md:max-w-[300px]" />
+                            <img
+                                src={images.collegeImages[(parseInt(collegeId) || 0) % images.collegeImages.length]}
+                                onError={(e) => { e.target.onerror = null; e.target.src = images.collegeImg; }}
+                                alt={college.name}
+                                className="w-64 h-64 rounded-lg object-cover shadow-md md:w-auto md:max-w-[300px]"
+                            />
                             <div>
                                 <h1 className="text-3xl font-bold mb-2">{college.name}</h1>
                                 <p className="text-gray-600 text-lg mb-4">{college.city}, {college.state}</p>
