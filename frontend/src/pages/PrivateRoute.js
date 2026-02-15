@@ -19,7 +19,7 @@ function PrivateRoute() {
     }, [appLoading, loggedIn, navigate, location.pathname]);
 
     if (appLoading) {
-        return <Loader text="Authenticating secure session..." />;
+        return <Loader text="Checking whether the user is authenticated..." />;
     }
 
     return loggedIn ? <Outlet /> : <Navigate to="/login" state={{ previousUrl: location }} />;

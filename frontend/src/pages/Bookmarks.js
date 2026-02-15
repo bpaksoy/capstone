@@ -29,7 +29,7 @@ const MIN_SIMILARITY_THRESHOLD = 0.3;
 
 const Bookmarks = () => {
   const navigate = useNavigate();
-  const { loggedIn, loading: authLoading } = useCurrentUser();
+  const { loggedIn, appLoading: authLoading } = useCurrentUser();
   const [bookmarkedColleges, setBookmarkedColleges] = useState([]);
   const [recommendedColleges, setRecommendedColleges] = useState([]);
   const [error, setError] = useState(null);
@@ -140,7 +140,7 @@ const Bookmarks = () => {
 
   if (authLoading || isLoading || isRecommending) {
     let loaderText = loadingStep;
-    if (authLoading) loaderText = "Authenticating secure session...";
+    if (authLoading) loaderText = "Checking whether the user is authenticated...";
 
     return <Loader text={loaderText} />;
   }

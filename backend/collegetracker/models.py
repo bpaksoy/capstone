@@ -149,7 +149,6 @@ class Post(models.Model):
     likes = GenericRelation('Like', related_query_name='posts')
     image = models.ImageField(upload_to='post_images/', blank=True, null=True,
                               validators=[FileExtensionValidator(['png', 'jpg', 'jpeg'])])
-    type = models.CharField(max_length=20, default='post')
 
     # @cached_property
     # def author_username(self):
