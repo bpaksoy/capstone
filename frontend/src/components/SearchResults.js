@@ -173,19 +173,24 @@ function SearchResults() {
             <Search />
             {searchResult && searchResult.length > 0 && (
                 <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-8 w-full max-w-7xl mx-auto mt-12">
+                    <div className={
+                        searchResult.length === 1
+                            ? "flex justify-center px-8 w-full max-w-7xl mx-auto mt-12"
+                            : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-8 w-full max-w-7xl mx-auto mt-12"
+                    }>
                         {searchResult.map((college) => {
                             return (
-                                <College
-                                    key={college.id}
-                                    id={college.id}
-                                    name={college.name}
-                                    city={college.city}
-                                    state={college.state}
-                                    admission_rate={college.admission_rate}
-                                    sat_score={college.sat_score}
-                                    cost_of_attendance={college.cost_of_attendance}
-                                />
+                                <div key={college.id} className={searchResult.length === 1 ? "w-full max-w-md" : ""}>
+                                    <College
+                                        id={college.id}
+                                        name={college.name}
+                                        city={college.city}
+                                        state={college.state}
+                                        admission_rate={college.admission_rate}
+                                        sat_score={college.sat_score}
+                                        cost_of_attendance={college.cost_of_attendance}
+                                    />
+                                </div>
                             );
                         })}
                     </div>
