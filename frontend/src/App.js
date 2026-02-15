@@ -20,11 +20,14 @@ import DetailedSearch from "./components/DetailedSearch";
 import Footer from "./components/Footer";
 
 
+import ScrollToTopOnNavigate from "./utils/ScrollToTopOnNavigate";
+
 const App = () => {
 
   return (
     <UserProvider>
       <BrowserRouter>
+        <ScrollToTopOnNavigate />
         <Header />
         <Routes>
           <Route path="/" element={<Colleges />} />

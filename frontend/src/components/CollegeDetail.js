@@ -87,9 +87,8 @@ const CollegeDetail = () => {
 
         fetchCollegeDetails();
         fetchCollegePrograms();
-
-        fetchCollegeDetails();
-    }, []);
+        window.scrollTo(0, 0);
+    }, [collegeId]);
 
 
     if (isLoading) {

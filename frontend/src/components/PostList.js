@@ -126,10 +126,18 @@ const PostList = ({ posts, onAddPost }) => {
 
     const [shareModalOpen, setShareModalOpen] = useState(false);
     const [postToShare, setPostToShare] = useState(null);
+    const [expandedPosts, setExpandedPosts] = useState({});
 
     const handleShare = (post) => {
         setPostToShare(post);
         setShareModalOpen(true);
+    };
+
+    const toggleExpandPost = (postId) => {
+        setExpandedPosts((prev) => ({
+            ...prev,
+            [postId]: !prev[postId]
+        }));
     };
 
 
@@ -227,7 +235,30 @@ const PostList = ({ posts, onAddPost }) => {
                                 {/* Content */}
                                 <div className="p-4">
                                     {post.title && <h3 className="text-lg font-bold text-gray-900 mb-1 leading-snug">{post.title}</h3>}
-                                    <p className="text-gray-800 text-base leading-relaxed whitespace-pre-wrap">{post.content}</p>
+                                    {(() => {
+                                        const isExpanded = expandedPosts[post.id];
+                                        const lineCount = post.content.split('\n').length;
+                                        const shouldTruncate = post.content.length > 450 || lineCount > 10;
+                                        const displayContent = shouldTruncate && !isExpanded
+                                            ? (lineCount > 10
+                                                ? post.content.split('\n').slice(0, 10).join('\n') + '...'
+                                                : post.content.substring(0, 450) + '...')
+                                            : post.content;
+
+                                        return (
+                                            <>
+                                                <p className="text-gray-800 text-base leading-relaxed whitespace-pre-wrap">{displayContent}</p>
+                                                {shouldTruncate && (
+                                                    <button
+                                                        onClick={() => toggleExpandPost(post.id)}
+                                                        className="text-blue-500 hover:text-blue-700 text-sm font-semibold mt-2 focus:outline-none"
+                                                    >
+                                                        {isExpanded ? 'See less' : 'See more...'}
+                                                    </button>
+                                                )}
+                                            </>
+                                        );
+                                    })()}
                                 </div>
 
                                 {/* Image */}
