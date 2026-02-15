@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import College from '../components/College';
+import ScrollToTop from '../components/ScrollToTop';
 import axios from 'axios';
 import { baseUrl } from '../shared';
 import { Link, useNavigate } from 'react-router-dom';
@@ -242,7 +243,7 @@ const Bookmarks = () => {
           </div>
         ))}
       </div>
-
+      <ScrollToTop />
     </div>
   )
 }
