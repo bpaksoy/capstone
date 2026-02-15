@@ -117,8 +117,9 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
                         {name}
                     </h5>
 
-                    <div className="flex-1 space-y-3">
-                        {admission_rate > 0 && (
+                    {/* Stats Container - Fixed minimum height to ensure uniformity */}
+                    <div className="flex-1 min-h-[140px] space-y-3">
+                        {admission_rate > 0 ? (
                             <div className="flex items-center gap-3 text-sm text-gray-500 group/item">
                                 <div className="p-2 rounded-lg bg-teal-50 text-primary group-hover/item:bg-primary group-hover/item:text-white transition-colors">
                                     <ChartBarIcon className="w-4 h-4" />
@@ -128,9 +129,11 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
                                     <p className="font-semibold text-gray-900">{(admission_rate * 100).toFixed(1)}%</p>
                                 </div>
                             </div>
+                        ) : (
+                            <div className="h-[44px] invisible" aria-hidden="true" /> // Spacer for missing data
                         )}
 
-                        {sat_score > 0 && (
+                        {sat_score > 0 ? (
                             <div className="flex items-center gap-3 text-sm text-gray-500 group/item">
                                 <div className="p-2 rounded-lg bg-purple-50 text-purple-600 group-hover/item:bg-purple-600 group-hover/item:text-white transition-colors">
                                     <AcademicCapIcon className="w-4 h-4" />
@@ -140,9 +143,11 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
                                     <p className="font-semibold text-gray-900">{sat_score}</p>
                                 </div>
                             </div>
+                        ) : (
+                            <div className="h-[44px] invisible" aria-hidden="true" /> // Spacer for missing data
                         )}
 
-                        {cost_of_attendance > 0 && (
+                        {cost_of_attendance > 0 ? (
                             <div className="flex items-center gap-3 text-sm text-gray-500 group/item">
                                 <div className="p-2 rounded-lg bg-amber-50 text-amber-600 group-hover/item:bg-amber-600 group-hover/item:text-white transition-colors">
                                     <BanknotesIcon className="w-4 h-4" />
@@ -152,10 +157,12 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
                                     <p className="font-semibold text-gray-900">{formatter.format(cost_of_attendance)}</p>
                                 </div>
                             </div>
+                        ) : (
+                            <div className="h-[44px] invisible" aria-hidden="true" /> // Spacer for missing data
                         )}
                     </div>
 
-                    <div className="mt-8">
+                    <div className="mt-6">
                         <button
                             onClick={handleClickMore}
                             className="w-full flex items-center justify-center gap-2 rounded-2xl bg-primary py-4 px-6 text-sm font-bold text-white shadow-lg shadow-teal-500/20 transition-all hover:shadow-xl hover:bg-teal-700 active:scale-95"

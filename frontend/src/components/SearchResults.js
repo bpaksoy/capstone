@@ -173,29 +173,19 @@ function SearchResults() {
             <Search />
             {searchResult && searchResult.length > 0 && (
                 <>
-                    <div className="flex flex-wrap justify-center gap-8 px-8 w-full max-w-7xl mx-auto mt-12">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-8 w-full max-w-7xl mx-auto mt-12">
                         {searchResult.map((college) => {
-                            const name = college.name;
-                            const city = college.city;
-                            const state = college.state;
-
-                            const cost_of_attendance = college.cost_of_attendance
-                            const admission_rate = college.admission_rate
-                            const sat_score = college.sat_score
-
                             return (
-                                <div key={college.id} className="w-full flex justify-center">
-                                    <College
-                                        id={college.id}
-                                        name={name}
-                                        city={city}
-                                        state={state}
-                                        admission_rate={admission_rate}
-                                        sat_score={sat_score}
-                                        cost_of_attendance={cost_of_attendance}
-                                        img="https://images.unsplash.com/photo-1677594334053-afe4b41aa0a3?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTV8fGNvbGxlZ2V8ZW58MHx8MHx8fDA%3D"
-                                    />
-                                </div>
+                                <College
+                                    key={college.id}
+                                    id={college.id}
+                                    name={college.name}
+                                    city={college.city}
+                                    state={college.state}
+                                    admission_rate={college.admission_rate}
+                                    sat_score={college.sat_score}
+                                    cost_of_attendance={college.cost_of_attendance}
+                                />
                             );
                         })}
                     </div>

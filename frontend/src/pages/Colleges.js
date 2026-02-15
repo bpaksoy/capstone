@@ -59,9 +59,7 @@ const Colleges = () => {
     }, []);
 
     const renderCollege = (college, index) => (
-        <div key={college.id} className="w-full flex justify-center">
-            <College {...college} />
-        </div>
+        <College key={college.id} {...college} />
     );
 
     const showColleges = true;
@@ -84,12 +82,10 @@ const Colleges = () => {
                                         <p className="text-blue-100 mt-2 text-lg">Discover top-rated institutions</p>
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-8 w-full max-w-7xl mx-auto place-items-center">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-8 w-full max-w-7xl mx-auto">
                                         {featuredColleges.length > 0 ? (
-                                            featuredColleges.map((college, index) => (
-                                                <div key={college.id} className="w-full flex justify-center">
-                                                    <College {...college} />
-                                                </div>
+                                            featuredColleges.map((college) => (
+                                                <College key={college.id} {...college} />
                                             ))
                                         ) : (
                                             <div className="text-white col-span-full">Loading featured colleges...</div>
@@ -129,7 +125,7 @@ const Colleges = () => {
                                     </div>
                                     <div className="w-full">
                                         <InfiniteScrollScreen
-                                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-8 w-full max-w-7xl mx-auto place-items-center"
+                                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-8 w-full max-w-7xl mx-auto"
                                             renderItem={renderCollege}
                                             fetchColleges={fetchColleges}
                                             keyExtractor={college => college.id} />
