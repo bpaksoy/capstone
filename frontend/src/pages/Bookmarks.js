@@ -7,6 +7,7 @@ import { images } from '../constants';
 import Slider from 'react-slick';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import Loader from '../components/Loader';
 
 
 function calculateSimilarityScore(college1, college2) {
@@ -32,6 +33,7 @@ const Bookmarks = () => {
   // console.log("Recommended Colleges", recommendedColleges);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRecommending, setIsRecommending] = useState(false);
 
 
   useEffect(() => {
@@ -67,6 +69,7 @@ const Bookmarks = () => {
   useEffect(() => {
     const recommendColleges = async () => {
       if (bookmarkedColleges.length === 0) return;
+      setIsRecommending(true);
       try {
         const bookmarkedStates = [...new Set(bookmarkedColleges.map(college => college.state))];
 
@@ -113,17 +116,15 @@ const Bookmarks = () => {
       catch (error) {
         setError(error);
         console.error("Error fetching filtered colleges", error);
+      } finally {
+        setIsRecommending(false);
       }
     };
     recommendColleges();
   }, [bookmarkedColleges]);
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="spinner border-4 border-t-4 border-primary rounded-full h-16 w-16 animate-spin"></div>
-      </div>
-    );
+  if (isLoading || isRecommending) {
+    return <Loader text={isLoading ? "Fetching your bookmarks..." : "Gathering personalized recommendations..."} />;
   }
 
   if (error) return <p>Error: {error.message}</p>;
@@ -192,30 +193,21 @@ const Bookmarks = () => {
           </Slider>
         </div>
       )}
-      <div className="flex flex-wrap justify-center mt-6">
-
-        {bookmarkedColleges.map((college) => {
-          const name = college["name"];
-          const city = college["city"];
-          const state = college["state"];
-          const cost_of_attendance = college["cost_of_attendance"]
-          const admission_rate = college["admission_rate"]
-          const sat_score = college["sat_score"]
-
-          return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-8 w-full max-w-7xl mx-auto place-items-center mt-8">
+        {bookmarkedColleges.map((college) => (
+          <div key={college.id} className="w-full flex justify-center">
             <College
-              key={college.id}
               id={college.id}
-              name={name}
-              city={city}
-              state={state}
-              admission_rate={admission_rate}
-              sat_score={sat_score}
-              cost_of_attendance={cost_of_attendance}
+              name={college.name}
+              city={college.city}
+              state={college.state}
+              admission_rate={college.admission_rate}
+              sat_score={college.sat_score}
+              cost_of_attendance={college.cost_of_attendance}
               img={images.college}
             />
-          );
-        })}
+          </div>
+        ))}
       </div>
 
     </div>

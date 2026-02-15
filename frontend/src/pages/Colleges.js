@@ -15,6 +15,14 @@ const Colleges = () => {
     const [viewMode, setViewMode] = useState('featured');
     const [featuredColleges, setFeaturedColleges] = useState([]);
 
+    useEffect(() => {
+        const handleReset = () => {
+            setViewMode('featured');
+        };
+        window.addEventListener('resetHomeView', handleReset);
+        return () => window.removeEventListener('resetHomeView', handleReset);
+    }, []);
+
     const fetchColleges = async (page) => {
         const token = localStorage.getItem('access');
         const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
@@ -51,7 +59,7 @@ const Colleges = () => {
     }, []);
 
     const renderCollege = (college, index) => (
-        <div key={college.id} className="mb-10">
+        <div key={college.id} className="w-full flex justify-center">
             <College {...college} />
         </div>
     );
@@ -90,7 +98,10 @@ const Colleges = () => {
 
                                     <div className="py-12">
                                         <button
-                                            onClick={() => setViewMode('all')}
+                                            onClick={() => {
+                                                setViewMode('all');
+                                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                                            }}
                                             className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-white transition-all duration-200 bg-gray-900 font-pj rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 hover:bg-black hover:scale-105 shadow-xl"
                                         >
                                             Explore All Colleges
@@ -104,7 +115,10 @@ const Colleges = () => {
                                 <div className="animate-fadeIn">
                                     <div className="container mx-auto px-4 py-4 mb-4">
                                         <button
-                                            onClick={() => setViewMode('featured')}
+                                            onClick={() => {
+                                                setViewMode('featured');
+                                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                                            }}
                                             className="flex items-center text-white hover:text-blue-200 transition-colors font-medium"
                                         >
                                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
@@ -113,8 +127,9 @@ const Colleges = () => {
                                             Back to Featured
                                         </button>
                                     </div>
-                                    <div className="flex flex-wrap justify-center">
+                                    <div className="w-full">
                                         <InfiniteScrollScreen
+                                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-8 w-full max-w-7xl mx-auto place-items-center"
                                             renderItem={renderCollege}
                                             fetchColleges={fetchColleges}
                                             keyExtractor={college => college.id} />

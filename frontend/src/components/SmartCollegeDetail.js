@@ -73,7 +73,8 @@ const SmartCollegeDetail = () => {
 
         fetchCollegeDetails();
         fetchCollegePrograms();
-    }, []);
+        window.scrollTo(0, 0);
+    }, [collegeId]);
 
 
     if (isLoading) {

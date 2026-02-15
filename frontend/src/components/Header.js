@@ -107,12 +107,18 @@ const Header = (props) => {
                         </div>
                         <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
                             <div className="flex flex-shrink-0 items-center">
-                                <img
-                                    alt="Your Company"
-                                    src={images.logo6}
-                                    className="h-8 w-auto"
-
-                                />
+                                <NavLink to="/" onClick={() => {
+                                    if (window.location.pathname === '/') {
+                                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                                        window.dispatchEvent(new Event('resetHomeView'));
+                                    }
+                                }}>
+                                    <img
+                                        alt="College Tracker"
+                                        src={images.logo6}
+                                        className="h-8 w-auto cursor-pointer"
+                                    />
+                                </NavLink>
                             </div>
                             <div className="hidden sm:ml-6 sm:block">
                                 <div className="flex space-x-4">
@@ -120,6 +126,14 @@ const Header = (props) => {
                                         <NavLink
                                             key={item.name}
                                             to={item.href}
+                                            onClick={() => {
+                                                if (window.location.pathname === item.href) {
+                                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                    if (item.href === '/') {
+                                                        window.dispatchEvent(new Event('resetHomeView'));
+                                                    }
+                                                }
+                                            }}
                                             aria-current={item.current ? 'page' : undefined}
                                             /* className={classNames(
                                                 item.current ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white',

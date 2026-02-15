@@ -112,9 +112,11 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
 
             <div className="relative flex max-w-[26rem] flex-col rounded-xl bg-white bg-clip-border text-gray-700 shadow-lg m-3 h-full">
                 <div
-                    className="relative mx-4 mt-4 overflow-hidden text-white shadow-lg rounded-xl bg-blue-gray-500 bg-clip-border shadow-blue-gray-500/40 ">
+                    className="relative mx-4 mt-4 overflow-hidden text-white shadow-lg rounded-xl bg-blue-gray-500 bg-clip-border shadow-blue-gray-500/40 h-56">
                     <img
-                        src={images.toss}
+                        src={images.collegeImages[(parseInt(collegeId) || 0) % images.collegeImages.length]}
+                        onError={(e) => { e.target.onerror = null; e.target.src = images.collegeImg; }}
+                        className="w-full h-full object-cover"
                         alt="college" />
                     <div
                         className="absolute inset-0 w-full h-full to-bg-black-10 bg-gradient-to-tr from-transparent via-transparent to-black/60">
@@ -124,7 +126,7 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
                         type="button">
                         <span className="absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                className={`w-6 h-6 ${isBookmarked ? 'fill-pink-500' : 'fill-gray-500'}`}> {/* Added conditional class here */}
+                                className={`w-6 h-6 ${isBookmarked ? 'fill-pink-500' : 'fill-gray-500'} stroke-teal-300 stroke-1`}> {/* Light teal outline */}
                                 <path
                                     d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z">
                                 </path>

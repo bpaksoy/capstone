@@ -123,60 +123,69 @@ function Comment({ postId, lastUpdatedComment, onAddPost, user }) {
 
     return (
         <div>
-            <hr className="mt-2 mb-2" />
-            <div className="mt-4 grid grid-cols-1 gap-x-2 border border-gray-200 rounded">
+            <div className="mt-4 grid grid-cols-1 gap-y-2">
                 {!loading ? (
                     comments.length > 0 ? (
                         comments.map((comment) => (
                             comment &&
-                            <>
-                                <div key={comment.id} className="flex justify-between items-center space-x-2 mt-2 pb-2">
-                                    <div className="flex items-center space-x-2">
-                                        <img src={images.avatar} alt="User Avatar" className="w-6 h-6 rounded-full" />
-                                        <div className="mb-2">
-                                            <p className="text-gray-800 font-semibold">{comment.author.username}</p>
-                                            <p className="text-gray-500 text-sm">{comment.content}</p>
+                            <React.Fragment key={comment.id}>
+                                <div className="pb-3">
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex items-start space-x-3">
+                                            <img src={images.avatar} alt="User Avatar" className="w-6 h-6 rounded-full mt-1 ring-2 ring-primary/30 bg-primary/5 p-0.5 object-cover opacity-80" />
+                                            <div>
+                                                <div className="bg-white px-4 py-2 rounded-2xl shadow-sm inline-block">
+                                                    <p className="text-gray-900 font-semibold text-sm">{comment.author.username}</p>
+                                                    <p className="text-gray-700 text-sm">{comment.content}</p>
+                                                </div>
+                                                {/* Action Row - Now below the bubble */}
+                                                <div className="flex items-center space-x-4 mt-1 px-2">
+                                                    {user && <LikeButton contentType="comment" objectId={comment.id} onLikeStatusChange={updateLikeStatus} refetchComments={refetchComments} className={`text-xs font-semibold hover:underline ${commentLikes[comment.id] ? 'text-blue-600' : 'text-gray-500'}`} >Like</LikeButton>}
+                                                    {user && <AddReplyModal commentId={comment.id} onAddReply={updateReplies} className="text-xs font-semibold text-gray-500 hover:underline" />}
+                                                    {comment.likes_count > 0 && (
+                                                        <div className="flex items-center gap-1 text-xs text-gray-500">
+                                                            <div className="p-0.5 bg-primary rounded-full">
+                                                                <svg className="w-2 h-2 fill-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z" /></svg>
+                                                            </div>
+                                                            <span>{comment.likes_count}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className='flex items-center space-x-2'>
-                                        <button className="flex justify-center items-center gap-2 px-2 hover:bg-gray-50 rounded-full p-1">
-                                            <svg className={`w-5 h-5 fill-current ${commentLikes[comment.id] ? 'fill-pink-500' : ''}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                                <path d="M12 21.35l-1.45-1.32C6.11 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-4.11 6.86-8.55 11.54L12 21.35z" />
-                                            </svg>
-                                            <span>{comment.likes_count} Like</span>
-                                        </button>
-                                        {user && <AddReplyModal commentId={comment.id} onAddReply={updateReplies} />}
-                                        {user && <LikeButton contentType="comment" objectId={comment.id} onLikeStatusChange={updateLikeStatus} refetchComments={refetchComments} />}
-                                    </div>
-                                    <div className="text-gray-500 cursor-pointer relative">
-                                        {comment.author.id === user?.id && (
-                                            <button onClick={() => handleOpenModal(comment.id)} className="hover:bg-gray-50 rounded-full p-1">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                    <circle cx="12" cy="7" r="1" />
-                                                    <circle cx="12" cy="12" r="1" />
-                                                    <circle cx="12" cy="17" r="1" />
-                                                </svg>
-                                            </button>
-                                        )}
-                                        <EditDeleteModal
-                                            isOpen={modalIsOpen === comment.id}
-                                            onClose={handleCloseModal}
-                                            onEdit={() => handleEditComment(comment.id)}
-                                            onDelete={() => handleDeleteComment(comment.id)}
-                                            itemId={comment.id}
-                                            itemType="comment"
-                                            handleConfirmDelete={handleConfirmDelete}
-                                            postIdToDelete={commentIdToDelete}
-                                            handleCloseModal={handleCloseModal}
-                                        />
+
+                                        {/* Edit/Delete Menu */}
+                                        <div className="text-gray-400 cursor-pointer relative mt-2">
+                                            {comment.author.id === user?.id && (
+                                                <button onClick={() => handleOpenModal(comment.id)} className="hover:bg-gray-200 rounded-full p-1 transition-colors">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <circle cx="12" cy="12" r="1" />
+                                                        <circle cx="19" cy="12" r="1" />
+                                                        <circle cx="5" cy="12" r="1" />
+                                                    </svg>
+                                                </button>
+                                            )}
+                                            <EditDeleteModal
+                                                isOpen={modalIsOpen === comment.id}
+                                                onClose={handleCloseModal}
+                                                onEdit={() => handleEditComment(comment.id)}
+                                                onDelete={() => handleDeleteComment(comment.id)}
+                                                itemId={comment.id}
+                                                itemType="comment"
+                                                handleConfirmDelete={handleConfirmDelete}
+                                                postIdToDelete={commentIdToDelete}
+                                                handleCloseModal={handleCloseModal}
+                                            />
+                                        </div>
                                     </div>
                                     {commentIdToEdit &&
                                         <EditCommentModal comment={commentToEdit} isOpen={modalIsOpen} onClose={handleCloseModal} onAddPost={onAddPost} refetchComments={refetchComments} />
                                     }
 
-                                </div >
+
+                                </div>
                                 <Reply commentId={comment.id} lastUpdatedReply={lastUpdatedReply} onAddPost={onAddPost} user={user} />
-                            </>
+                            </React.Fragment>
                         ))
                     ) : (
                         <p className="text-gray-500 text-center p-4">No comments yet.</p>
