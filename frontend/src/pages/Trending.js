@@ -6,10 +6,13 @@ import { useCurrentUser } from '../UserProvider/UserProvider';
 import { baseUrl } from '../shared';
 import axios from 'axios';
 
+import InfiniteScroll from 'react-infinite-scroll-component';
+
 function Trending() {
     const { posts, updatePosts } = usePosts();
     const { loggedIn } = useCurrentUser();
     const [news, setNews] = useState([]);
+    const [displayLimit, setDisplayLimit] = useState(10); // Initial load
 
     useEffect(() => {
         const fetchNews = async () => {
@@ -28,7 +31,7 @@ function Trending() {
     }, []);
 
     const handleAddPost = () => {
-        updatePosts(); // Trigger refetch after adding a post
+        updatePosts();
     };
 
     const getMixedFeed = () => {
@@ -38,11 +41,9 @@ function Trending() {
         const newsList = news || [];
 
         while (p < postsList.length || n < newsList.length) {
-            // Add up to 3 posts
             for (let i = 0; i < 3 && p < postsList.length; i++) {
                 combined.push({ isPost: true, itemType: 'post', ...postsList[p++] });
             }
-            // Add 1 news item
             if (n < newsList.length) {
                 combined.push({ isNews: true, itemType: 'news', ...newsList[n++] });
             }
@@ -50,12 +51,36 @@ function Trending() {
         return combined;
     };
 
-    const displayFeed = getMixedFeed();
+    const fullFeed = getMixedFeed();
+    const displayFeed = fullFeed.slice(0, displayLimit);
+    const hasMore = displayLimit < fullFeed.length;
+
+    const fetchMoreData = () => {
+        // Simulate network delay if needed, or just immediate update
+        setTimeout(() => {
+            setDisplayLimit(prev => prev + 10);
+        }, 500);
+    };
 
     return (
         <div className="bg-primary min-h-screen flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
             {loggedIn && <PostModal onAddPost={handleAddPost} />}
-            <PostList posts={displayFeed} onAddPost={handleAddPost} />
+
+            <InfiniteScroll
+                dataLength={displayFeed.length}
+                next={fetchMoreData}
+                hasMore={hasMore}
+                loader={<h4 className="text-white text-center mt-4">Loading more...</h4>}
+                endMessage={
+                    <p className="text-white text-center mt-4">
+                        <b>You have seen all trends!</b>
+                    </p>
+                }
+                scrollThreshold={0.9}
+                style={{ overflow: 'visible' }} // Important for sticky header/body scrolling
+            >
+                <PostList posts={displayFeed} onAddPost={handleAddPost} />
+            </InfiniteScroll>
         </div>
     )
 }
