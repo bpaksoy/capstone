@@ -183,7 +183,7 @@ const PostList = ({ posts, onAddPost }) => {
                             <div className="flex items-center gap-1">
                                 {post.likes_count > 0 && (
                                     <>
-                                        <div className="p-1 bg-blue-500 rounded-full">
+                                        <div className="p-1 bg-black-100 rounded-full">
                                             <svg className="w-3 h-3 fill-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z" /></svg>
                                         </div>
                                         <span>{post.likes_count}</span>
@@ -202,7 +202,7 @@ const PostList = ({ posts, onAddPost }) => {
                                     contentType="post"
                                     objectId={post.id}
                                     onLikeStatusChange={updateLikeStatus}
-                                    className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg transition-colors ${postLikes[post.id] ? 'text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-100'}`}
+                                    className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg transition-colors ${postLikes[post.id] ? 'text-black-100 font-semibold' : 'text-gray-600 hover:bg-gray-100'}`}
                                 >
                                     <svg className={`w-5 h-5 ${postLikes[post.id] ? 'fill-current' : 'fill-none stroke-current'}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                         <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
