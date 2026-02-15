@@ -1,0 +1,6 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Purple circle background -->
+  <circle cx="32" cy="32" r="32" fill="#A855F7"/>
+  <!-- Black W logo - same as Wormie -->
+  <path d="M12 18L20 46L28 26L36 46L44 26L52 46" stroke="black" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
