@@ -175,7 +175,7 @@ class CollegeListView(APIView):
 
     def get(self, request, format=None):
         page = int(request.query_params.get('page', 1))
-        page_size = int(request.query_params.get('page_size', 10))
+        page_size = int(request.query_params.get('page_size', 9))
 
         # Order the queryset!  Choose an appropriate field for ordering.
         paginator = Paginator(College.objects.all().order_by('id'), page_size)
@@ -289,7 +289,7 @@ class ProgramSearchListView(generics.ListAPIView):
             raise ValidationError("The 'search' query parameter is required.")
 
         page = int(self.request.query_params.get('page', 1))
-        page_size = int(self.request.query_params.get('page_size', 10))
+        page_size = int(self.request.query_params.get('page_size', 9))
 
         queryset = College.objects.filter(
             programs__cipdesc__icontains=search_query
@@ -327,7 +327,7 @@ class DetailedSearchListView(generics.ListAPIView):
         max_sat_param = self.request.query_params.get('max_sat', None)
         name_param = self.request.query_params.get('name', None)
         page = int(self.request.query_params.get('page', 1))
-        page_size = int(self.request.query_params.get('page_size', 10))
+        page_size = int(self.request.query_params.get('page_size', 9))
 
         if state_param:
             queryset = queryset.filter(state__iexact=state_param)
@@ -1689,3 +1689,37 @@ class DeleteArticleView(APIView):
             return Article.objects.get(slug=slug)
         except Article.DoesNotExist:
             raise Http404("Article not found")
+
+class CityAutoCompleteView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get(self, request):
+        query = request.query_params.get('query', '')
+        if len(query) < 2:
+            return Response([])
+        cities = College.objects.filter(city__icontains=query).values_list(
+            'city', flat=True).distinct()[:10]
+        return Response(list(cities))
+
+
+class ProgramAutoCompleteView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get(self, request):
+        query = request.query_params.get('query', '')
+        if len(query) < 2:
+            return Response([])
+        programs = CollegeProgram.objects.filter(cipdesc__icontains=query).values_list(
+            'cipdesc', flat=True).distinct()[:10]
+        return Response(list(programs))
+
+class CollegeAutoCompleteView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get(self, request):
+        query = request.query_params.get('query', '')
+        if len(query) < 2:
+            return Response([])
+        colleges = College.objects.filter(name__icontains=query).values_list(
+            'name', flat=True).distinct()[:10]
+        return Response(list(colleges))

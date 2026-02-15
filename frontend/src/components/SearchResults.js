@@ -173,7 +173,7 @@ function SearchResults() {
             <Search />
             {searchResult && searchResult.length > 0 && (
                 <>
-                    <div className="flex flex-wrap justify-center">
+                    <div className="flex flex-wrap justify-center gap-8 px-8 w-full max-w-7xl mx-auto mt-12">
                         {searchResult.map((college) => {
                             const name = college.name;
                             const city = college.city;
@@ -184,27 +184,50 @@ function SearchResults() {
                             const sat_score = college.sat_score
 
                             return (
-                                <College
-                                    key={college.id}
-                                    id={college.id}
-                                    name={name}
-                                    city={city}
-                                    state={state}
-                                    admission_rate={admission_rate}
-                                    sat_score={sat_score}
-                                    cost_of_attendance={cost_of_attendance}
-                                    img="https://images.unsplash.com/photo-1677594334053-afe4b41aa0a3?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTV8fGNvbGxlZ2V8ZW58MHx8MHx8fDA%3D"
-                                />
+                                <div key={college.id} className="w-full flex justify-center">
+                                    <College
+                                        id={college.id}
+                                        name={name}
+                                        city={city}
+                                        state={state}
+                                        admission_rate={admission_rate}
+                                        sat_score={sat_score}
+                                        cost_of_attendance={cost_of_attendance}
+                                        img="https://images.unsplash.com/photo-1677594334053-afe4b41aa0a3?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTV8fGNvbGxlZ2V8ZW58MHx8MHx8fDA%3D"
+                                    />
+                                </div>
                             );
                         })}
                     </div>
-                    {hasMore ?
-                        <div className="flex justify-center">
-                            <button onClick={loadMore} className="mt-4  select-none rounded-lg bg-gray-800 py-3.5 px-7 text-center align-middle font-sans text-sm font-bold uppercase text-white shadow-md shadow-gray-900/10 transition-all hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none">
-                                Load More
+                    {hasMore ? (
+                        <div className="flex justify-center py-12 pb-20">
+                            <button
+                                onClick={loadMore}
+                                className="group relative inline-flex items-center justify-center px-6 py-2 text-sm font-medium text-white transition-all duration-200 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/50 shadow-sm"
+                            >
+                                {isLoading ? (
+                                    <span className="flex items-center">
+                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Loading...
+                                    </span>
+                                ) : (
+                                    <>
+                                        Load More Results
+                                        <svg className="w-5 h-5 ml-2 -mr-1 transition-transform group-hover:translate-x-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                                        </svg>
+                                    </>
+                                )}
                             </button>
-                        </div> : null
-                    }
+                        </div>
+                    ) : (
+                        <div className="pb-20 text-center">
+                            <p className="text-white/60 font-medium">No more colleges to display</p>
+                        </div>
+                    )}
                 </>
             )}
         </div>

@@ -162,9 +162,10 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
                 <div className="p-6 pt-0 mt-auto">
                     <button
                         onClick={handleClickMore}
-                        className="block w-full select-none rounded-lg bg-gray-800 py-3.5 px-7 text-center align-middle font-sans text-sm font-bold uppercase text-white shadow-md hover:bg-gray-700 shadow-gray-900/10 transition-all hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
-                        type="button">
-                        More
+                        className="block w-full select-none rounded-full bg-primary py-3.5 px-7 text-center align-middle font-sans text-xs font-bold uppercase text-white shadow-lg shadow-teal-500/20 transition-all hover:shadow-xl hover:bg-teal-700 hover:scale-105 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none border border-teal-500/20"
+                        type="button"
+                    >
+                        View Details
                     </button>
                 </div>
             </div>

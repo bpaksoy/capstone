@@ -1,17 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import College from '../components/College';
+import React, { useState } from 'react';
 import { baseUrl } from '../shared';
 import axios from 'axios';
 import { useCurrentUser } from '../UserProvider/UserProvider';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import NotFound from './NotFound';
 import { states } from '../constants/states';
+import AutocompleteInput from '../utils/AutocompleteInput';
 
 const DetailedSearch = () => {
     const [colleges, setColleges] = useState([]);
-    //console.log("colleges", colleges);
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState(null);
     const [name, setName] = useState('');
     const [state, setState] = useState('');
     const [city, setCity] = useState('');
@@ -22,12 +20,11 @@ const DetailedSearch = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { updateLoggedInStatus } = useCurrentUser();
-    const [errorStatus, setErrorStatus] = useState();
-    const [notFound, setNotFound] = useState(false);
+    const [errorStatus] = useState();
 
     const fetchColleges = async () => {
         setIsLoading(true);
-        setError(null);
+        setSearchError('');
         try {
             const response = await axios.get(`${baseUrl}api/colleges/detailed/`, {
                 params: { state, city, program, min_sat: minSat, max_sat: maxSat, name },
@@ -35,9 +32,7 @@ const DetailedSearch = () => {
                     'Authorization': `Bearer ${localStorage.getItem('access')}`
                 }
             })
-            console.log("response for detailed search", response);
             if (response.status === 404) {
-                setNotFound(true);
                 navigate("/404");
             } else if (response.status === 401) {
                 updateLoggedInStatus(false);
@@ -47,8 +42,7 @@ const DetailedSearch = () => {
                     }
                 });
             }
-            const data = await response.data;
-            console.log("data!!!!", data)
+            const data = response.data;
             setColleges(data.colleges);
             const searchQuery = { state, city, program, min_sat: minSat, max_sat: maxSat, name };
             navigate(`/search/detailed/`, { state: { colleges: data.colleges, hasMore: data.has_more, searchQuery: searchQuery } });
@@ -72,18 +66,6 @@ const DetailedSearch = () => {
         fetchColleges();
     };
 
-    // const isFormValid = () => {
-    //     return state || city || program || minSat || maxSat || name;
-    // }
-
-    // useEffect(() => {
-    //     if (colleges.length > 0) {
-    //         const searchQuery = `state=${state}&city=${city}&program=${program}&min_sat=${minSat}&max_sat=${maxSat}&name=${name}`;
-    //         console.log("is it coming here?")
-    //         navigate(`/search/${encodeURIComponent(searchQuery)}`, { state: { colleges: colleges } });
-    //     }
-    // }, [colleges, navigate, city, program, state, minSat, maxSat, name]);
-
 
     if (errorStatus === 404) {
         return (
@@ -103,18 +85,9 @@ const DetailedSearch = () => {
         );
     }
 
-    // if (isLoading) {
-    //     return (
-    //         <div className="flex justify-center items-center h-screen">
-    //             <div className="spinner border-4 border-t-4 border-primary rounded-full h-16 w-16 animate-spin"></div>
-    //         </div>
-    //     );
-    // }
-
     return (
         <div className="bg-primary min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-2xl w-full space-y-8 bg-white p-10 rounded-3xl shadow-xl border border-gray-100 relative overflow-visible">
-                {/* Decorative element (optional) */}
                 <div className="absolute top-0 right-0 -mt-20 -mr-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
 
                 <div className="text-center">
@@ -130,34 +103,21 @@ const DetailedSearch = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="md:col-span-2">
                             <label htmlFor="name" className="sr-only">College Name</label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-                                    </svg>
-                                </div>
-                                <input
-                                    id="name"
-                                    name="name"
-                                    type="text"
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                    className="appearance-none rounded-xl relative block w-full pl-10 px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm shadow-sm transition-all"
-                                    placeholder="College Name"
-                                />
-                            </div>
+                            <AutocompleteInput
+                                placeholder="College Name"
+                                value={name}
+                                onChange={setName}
+                                endpoint="api/colleges/autocomplete/"
+                            />
                         </div>
 
                         <div>
                             <label htmlFor="city" className="sr-only">City</label>
-                            <input
-                                id="city"
-                                name="city"
-                                type="text"
-                                value={city}
-                                onChange={(e) => setCity(e.target.value)}
-                                className="appearance-none rounded-xl relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm shadow-sm transition-all"
+                            <AutocompleteInput
                                 placeholder="City"
+                                value={city}
+                                onChange={setCity}
+                                endpoint="api/cities/autocomplete/"
                             />
                         </div>
 
@@ -184,14 +144,11 @@ const DetailedSearch = () => {
 
                         <div className="md:col-span-2">
                             <label htmlFor="program" className="sr-only">Program</label>
-                            <input
-                                id="program"
-                                name="program"
-                                type="text"
-                                value={program}
-                                onChange={(e) => setProgram(e.target.value)}
-                                className="appearance-none rounded-xl relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm shadow-sm transition-all"
+                            <AutocompleteInput
                                 placeholder="Program of Study (e.g., Computer Science)"
+                                value={program}
+                                onChange={setProgram}
+                                endpoint="api/programs/autocomplete/"
                             />
                         </div>
 
