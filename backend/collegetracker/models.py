@@ -22,6 +22,7 @@ class User(AbstractUser):
     bio = models.TextField(blank=True, null=True)
     major = models.CharField(max_length=255, blank=True, null=True)
     education = models.CharField(max_length=255, blank=True, null=True)
+    is_private = models.BooleanField(default=False)
 
     # Friendships - Many-to-many relationship, symmetrical (friend = mutual)
     friends = models.ManyToManyField(

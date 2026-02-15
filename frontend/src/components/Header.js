@@ -242,13 +242,13 @@ const Header = (props) => {
                                     </MenuItem>
 
                                     <MenuItem>
-                                        <a
-                                            href="#"
+                                        <NavLink
+                                            to="/settings"
                                             className="group flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 rounded-xl transition-all hover:bg-teal-50 hover:text-primary data-[focus]:bg-teal-50 data-[focus]:text-primary"
                                         >
                                             <Cog6ToothIcon className="h-4 w-4 text-gray-400 group-hover:text-primary" />
                                             Settings
-                                        </a>
+                                        </NavLink>
                                     </MenuItem>
 
                                     <div className="my-1 border-t border-gray-100"></div>

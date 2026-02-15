@@ -17,6 +17,7 @@ import PublicProfile from "./components/PublicProfile";
 import SmartBookmarks from "./components/SmartBookmarks";
 import SmartCollegeDetail from "./components/SmartCollegeDetail";
 import DetailedSearch from "./components/DetailedSearch";
+import Settings from "./pages/Settings";
 import Footer from "./components/Footer";
 
 
@@ -44,6 +45,7 @@ const App = () => {
             <Route path="/smart-bookmarks" element={<SmartBookmarks />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/profile/:userId" element={<PublicProfile />} />
+            <Route path="/settings" element={<Settings />} />
             <Route path="/detailed-search" element={<DetailedSearch />} />
             <Route path="/404" element={<NotFound />} />
             <Route path="*" element={<NotFound />} />

@@ -103,9 +103,20 @@ class UserDetailView(APIView):
 
     def get(self, request, user_id, format=None):
         try:
-            user = get_object_or_404(User, pk=user_id)
-            serializer = UserSerializer(user)
-            return Response(serializer.data)
+            target_user = get_object_or_404(User, pk=user_id)
+            current_user = request.user
+            
+            is_friend = False
+            if current_user.is_authenticated:
+                is_friend = Friendship.objects.filter(
+                    (models.Q(user1=target_user, user2=current_user) | models.Q(user1=current_user, user2=target_user)),
+                    status='accepted'
+                ).exists()
+
+            serializer = UserSerializer(target_user)
+            data = serializer.data
+            data['is_friend'] = is_friend
+            return Response(data)
         except Http404:
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
@@ -752,7 +763,24 @@ class PostListView(APIView):
 
     def get(self, request):
         try:
-            posts = Post.objects.all()
+            from django.db.models import Q
+            user = request.user
+            
+            if user.is_authenticated:
+                # Visibility logic:
+                # 1. Author is NOT private
+                # 2. OR Author is the current user themselves
+                # 3. OR Author is private but current user is an accepted friend
+                posts = Post.objects.filter(
+                    Q(author__is_private=False) |
+                    Q(author=user) |
+                    Q(author__friendship_user1__user2=user, author__friendship_user1__status='accepted') |
+                    Q(author__friendship_user2__user1=user, author__friendship_user2__status='accepted')
+                ).distinct()
+            else:
+                # Unauthenticated users only see posts from non-private profiles
+                posts = Post.objects.filter(author__is_private=False)
+
             serializer = PostSerializer(posts, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
@@ -818,13 +846,35 @@ class GlobalCommentListView(generics.ListAPIView):
     serializer_class = CommentSerializer
 
     def get_queryset(self):
-        return Comment.objects.all().order_by('-created_at')[:30]
+        from django.db.models import Q
+        user = self.request.user
+        if user.is_authenticated:
+            return Comment.objects.filter(
+                Q(author__is_private=False) |
+                Q(author=user) |
+                Q(author__friendship_user1__user2=user, author__friendship_user1__status='accepted') |
+                Q(author__friendship_user2__user1=user, author__friendship_user2__status='accepted')
+            ).distinct().order_by('-created_at')[:30]
+        else:
+            return Comment.objects.filter(author__is_private=False).order_by('-created_at')[:30]
 
 
 class UserPostsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, user_id, format=None):
+        target_user = get_object_or_404(User, pk=user_id)
+        current_user = request.user
+
+        is_own_profile = (target_user == current_user)
+        is_friend = Friendship.objects.filter(
+            (models.Q(user1=target_user, user2=current_user) | models.Q(user1=current_user, user2=target_user)),
+            status='accepted'
+        ).exists()
+
+        if target_user.is_private and not (is_own_profile or is_friend):
+            return Response({'error': 'This profile is private'}, status=status.HTTP_403_FORBIDDEN)
+
         posts = Post.objects.filter(author_id=user_id)
         serializer = PostSerializer(posts, many=True)
         return Response(serializer.data)
@@ -904,6 +954,18 @@ class UserCommentsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, user_id, format=None):
+        target_user = get_object_or_404(User, pk=user_id)
+        current_user = request.user
+
+        is_own_profile = (target_user == current_user)
+        is_friend = Friendship.objects.filter(
+            (models.Q(user1=target_user, user2=current_user) | models.Q(user1=current_user, user2=target_user)),
+            status='accepted'
+        ).exists()
+
+        if target_user.is_private and not (is_own_profile or is_friend):
+            return Response({'error': 'This profile is private'}, status=status.HTTP_403_FORBIDDEN)
+
         comments = Comment.objects.filter(author_id=user_id)
         serializer = CommentSerializer(comments, many=True)
         return Response(serializer.data)
@@ -1117,6 +1179,30 @@ class FriendsView(APIView):
     def get(self, request, user_id, format=None):
         try:
             user = get_object_or_404(User, pk=user_id)
+            current_user = request.user
+            
+            # Check friendship status for privacy and response
+            is_friend = Friendship.objects.filter(
+                (models.Q(user1=user, user2=current_user) | models.Q(user1=current_user, user2=user)),
+                status='accepted'
+            ).exists()
+
+            is_pending = Friendship.objects.filter(
+                (models.Q(user1=user, user2=current_user) | models.Q(user1=current_user, user2=user)),
+                status='pending'
+            ).exists()
+
+            is_own_profile = (user == current_user)
+
+            # If profile is private and requester is not friend/self, restricted friends list
+            if user.is_private and not (is_friend or is_own_profile):
+                return Response({
+                    'friends': [], 
+                    'is_friend': is_friend, 
+                    'is_pending': is_pending,
+                    'restricted': True
+                })
+
             friendships = Friendship.objects.filter(
                 user1=user,
                 status='accepted',
@@ -1127,27 +1213,6 @@ class FriendsView(APIView):
 
             friends = [friendship.user1 for friendship in friendships if friendship.user1 != user] + \
                       [friendship.user2 for friendship in friendships if friendship.user2 != user]
-
-            current_user = request.user
-            is_friend = Friendship.objects.filter(
-                user1=user,
-                user2=current_user,
-                status='accepted',
-            ).exists() | Friendship.objects.filter(
-                user1=current_user,
-                user2=user,
-                status='accepted',
-            ).exists()
-
-            is_pending = Friendship.objects.filter(
-                user1=current_user,
-                user2=user,
-                status='pending',
-            ).exists() | Friendship.objects.filter(
-                user1=user,
-                user2=current_user,
-                status='pending',
-            ).exists()
 
             serializer = UserSerializer(friends, many=True)
             return Response({'friends': serializer.data, 'is_friend': is_friend, 'is_pending': is_pending})
