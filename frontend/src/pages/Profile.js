@@ -314,7 +314,7 @@ const Profile = () => {
                                         <p className="mb-4 text-lg leading-relaxed text-gray-700">
                                             {user?.bio ? user.bio : <span className="text-gray-400 italic">No bio added yet.</span>}
                                         </p>
-                                        <AddBioModal initialValues={{ bio: user?.bio }} fetchUser={fetchUser} />
+                                        <AddBioModal initialValues={user} fetchUser={fetchUser} />
                                     </div>
                                 </div>
                             </div>

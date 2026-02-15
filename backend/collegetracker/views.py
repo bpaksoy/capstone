@@ -34,6 +34,7 @@ import os
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from django.conf import settings
+from django.core.cache import cache
 from datetime import datetime, timedelta
 load_dotenv()
 
@@ -1320,6 +1321,12 @@ class NewsFeedView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request):
+        cache_key = 'trending_news_feed'
+        cached_data = cache.get(cache_key)
+        
+        if cached_data:
+            return Response({'results': cached_data}, status=status.HTTP_200_OK)
+
         try:
             api_key = os.environ.get('NEWS_API_KEY')
             if not api_key:
@@ -1453,6 +1460,9 @@ class NewsFeedView(APIView):
                     print(
                         f"Error fetching RSS feed for {college['name']}: {e}")
 
+            # Store in cache for 30 minutes (1800 seconds)
+            cache.set('trending_news_feed', news_items, 1800)
+            
             return Response({'results': news_items}, status=status.HTTP_200_OK)
 
         except requests.exceptions.RequestException as e:

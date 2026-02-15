@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { images } from "../constants";
 
 const Footer = () => {
     return (
@@ -7,10 +8,12 @@ const Footer = () => {
             <div className="container mx-auto px-4">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
                     <div className="col-span-1 md:col-span-1">
-                        <Link to="/" className="flex items-center gap-2 mb-4">
-                            <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
-                                Worm
-                            </h2>
+                        <Link to="/" className="flex items-center mb-4">
+                            <img
+                                alt="Worm Logo"
+                                src={images.logo6}
+                                className="h-8 w-auto"
+                            />
                         </Link>
                         <p className="text-gray-400 text-sm leading-relaxed">
                             Empowering students to find their perfect college match through data-driven insights and community connection.
