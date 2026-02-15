@@ -17,7 +17,6 @@ import PublicProfile from "./components/PublicProfile";
 import SmartBookmarks from "./components/SmartBookmarks";
 import SmartCollegeDetail from "./components/SmartCollegeDetail";
 import DetailedSearch from "./components/DetailedSearch";
-import ArticleDetails from "./components/ArticleDetails";
 
 
 const App = () => {
@@ -27,24 +26,24 @@ const App = () => {
       <BrowserRouter>
         <Header />
         <Routes>
-          <Route path="/" element={<PrivateRoute />} >
-            <Route path="/" element={<Colleges />} />
-            <Route path="/colleges/:id" element={<College />} />
-            <Route path="/colleges/:id/details" element={<CollegeDetail />} />
-            <Route path="/smart-colleges/:id/details" element={<SmartCollegeDetail />} />
+          <Route path="/" element={<Colleges />} />
+          <Route path="/trending" element={<Trending />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+
+          <Route path="/colleges/:id" element={<College />} />
+          <Route path="/colleges/:id/details" element={<CollegeDetail />} />
+          <Route path="/smart-colleges/:id/details" element={<SmartCollegeDetail />} />
+          <Route path="/search/:query" element={<SearchResults />} />
+          <Route element={<PrivateRoute />} >
             <Route path="/bookmarks" element={<Bookmarks />} />
             <Route path="/smart-bookmarks" element={<SmartBookmarks />} />
-            <Route path="/trending" element={<Trending />} />
-            <Route path="/articles/:slug" element={<ArticleDetails />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/profile/:userId" element={<PublicProfile />} />
-            <Route path="/search/:query" element={<SearchResults />} />
             <Route path="/detailed-search" element={<DetailedSearch />} />
             <Route path="/404" element={<NotFound />} />
             <Route path="*" element={<NotFound />} />
           </Route>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
         </Routes>
       </BrowserRouter>
     </UserProvider>

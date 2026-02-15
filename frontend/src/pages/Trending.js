@@ -1,115 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import PostList from '../components/PostList';
 import PostModal from '../utils/PostModal';
 import usePosts from '../hooks/FetchPosts';
-import NewsFeed from '../components/NewsFeed';
-import axios from 'axios';
-import { baseUrl } from '../shared';
-import ArticleItem from '../components/ArticleItem';
 import { useCurrentUser } from '../UserProvider/UserProvider';
-import { useNavigate, useLocation } from 'react-router-dom';
+import NewsFeed from '../components/NewsFeed';
 
 function Trending() {
     const { posts, updatePosts } = usePosts();
-    const [articles, setArticles] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [allMixedItems, setAllMixedItems] = useState([]) // to hold all the items mixed
+    const { loggedIn } = useCurrentUser();
     const handleAddPost = () => {
         updatePosts(); // Trigger refetch after adding a post
     };
 
-    const { updateLoggedInStatus } = useCurrentUser();
-    const navigate = useNavigate();
-    const location = useLocation();
-
-    useEffect(() => {
-        const fetchArticles = async () => {
-            try {
-                const response = await axios.get(`${baseUrl}api/articles/?published=true`, {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('access')}`
-                    }
-                });
-                if (response.status === 401) {
-                    updateLoggedInStatus(false);
-                    navigate("/login", {
-                        state: {
-                            previousUrl: location.pathname
-                        }
-                    });
-                } else {
-                    setArticles(response.data.articles);
-                    setLoading(false);
-                }
-                console.log("article data", response.data);
-
-            } catch (error) {
-                console.log("error here", error);
-                setError(error);
-                if (axios.isAxiosError(error) && error.response && error.response.status === 401) {
-                    updateLoggedInStatus(false);
-                    navigate("/login", {
-                        state: {
-                            previousUrl: location.pathname
-                        }
-                    });
-                }
-                else {
-                    setError(error);
-                }
-            }
-        };
-        fetchArticles();
-    }, [updateLoggedInStatus, navigate, location.pathname]);
-
-
-    useEffect(() => {
-        if (!loading) {
-            const allItems = [...posts, ...articles];
-            const shuffledItems = seededShuffle(allItems, Date.now());
-            setAllMixedItems(shuffledItems);
-        }
-    }, [posts, articles, loading]);
-
-
-    const seededShuffle = (array, seed) => {
-        const random = (seed) => {
-            let x = Math.sin(seed++) * 10000;
-            return x - Math.floor(x);
-        };
-        const shuffled = [...array];
-        let currentSeed = seed;
-        for (let i = shuffled.length - 1; i > 0; i--) {
-            const j = Math.floor(random(currentSeed) * (i + 1));
-            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-            currentSeed++;
-        }
-        return shuffled;
-    };
-
-    if (error) return <p>Error: {error.message}</p>
     return (
         <div className="bg-primary min-h-screen flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-            <PostModal onAddPost={handleAddPost} />
-            {loading ? (
-                <div className="flex justify-center items-center h-screen">
-                    <div className="spinner border-4 border-t-4 border-primary rounded-full h-16 w-16 animate-spin"></div>
-                </div>
-            ) :
-                (allMixedItems.length > 0 ? (
-                    allMixedItems.map((item) => {
-                        if (item.type === "post") {
-                            return <PostList key={item.id} posts={[item]} onAddPost={handleAddPost} />
-                        } else if (item.type === "article") {
-                            return <ArticleItem key={item.id} {...item} />;
-                        }
-                    })
-                ) : <p>No articles or posts yet</p>)
-            }
+            {loggedIn && <PostModal onAddPost={handleAddPost} />}
+            <PostList posts={posts} onAddPost={handleAddPost} />
             <NewsFeed />
         </div>
-    );
+    )
 }
 
 export default Trending;

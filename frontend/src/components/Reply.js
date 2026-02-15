@@ -4,7 +4,7 @@ import axios from 'axios';
 import { baseUrl } from '../shared';
 import { images } from '../constants';
 
-function Reply({ commentId, lastUpdatedReply, onAddPost }) {
+function Reply({ commentId, lastUpdatedReply, onAddPost, user }) {
     const [replies, setReplies] = useState([]);
     // console.log("replies", replies);
     const [isLoading, setIsLoading] = useState(false);
@@ -23,7 +23,7 @@ function Reply({ commentId, lastUpdatedReply, onAddPost }) {
                     `${baseUrl}api/comments/${commentId}/replies/`,
                     {
                         headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('access')}`,
+                            ...(localStorage.getItem('access') ? { 'Authorization': `Bearer ${localStorage.getItem('access')}` } : {})
                         },
                     }
                 );
@@ -60,7 +60,7 @@ function Reply({ commentId, lastUpdatedReply, onAddPost }) {
                             <p className="text-gray-800 font-semibold">{reply.author.username}</p>
                             <p className="text-gray-500 text-sm">{reply.content}</p>
                         </div>
-                        <AddReplyModal commentId={commentId} onAddReply={updateReplies} />
+                        {user && <AddReplyModal commentId={commentId} onAddReply={updateReplies} />}
                     </div>
 
                 </div>

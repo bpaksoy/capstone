@@ -6,6 +6,7 @@ import NotFound from '../components/NotFound';
 import { baseUrl } from '../shared';
 import Search from '../components/Search';
 import { useCurrentUser } from '../UserProvider/UserProvider';
+import ScrollToTop from '../components/ScrollToTop';
 
 const Colleges = () => {
     const { user, loading, loggedIn } = useCurrentUser();
@@ -16,8 +17,10 @@ const Colleges = () => {
 
     const fetchColleges = async (page) => {
         // console.log("fetchColleges page", page);
+        const token = localStorage.getItem('access');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
         const response = await fetch(`${baseUrl}api/colleges/?page=${page}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('access')}` }
+            headers: headers
         });
         const data = await response.json();
         // console.log("data", data);
@@ -25,7 +28,7 @@ const Colleges = () => {
     };
 
     const renderCollege = (college, index) => (
-        <div key={college.id}>
+        <div key={college.id} className="mb-10">
             <College {...college} />
         </div>
     );
@@ -37,24 +40,24 @@ const Colleges = () => {
 
     return (
         <>
-            {loggedIn &&
-                <div>
-                    {notFound && <NotFound />}
-                    <div className="bg-primary min-h-screen">
-                        <Search />
-                        {showColleges ? (
-                            <>
-                                <div className="flex flex-wrap justify-center">
-                                    <InfiniteScrollScreen
-                                        renderItem={renderCollege}
-                                        fetchColleges={fetchColleges}
-                                        keyExtractor={college => college.id} />
-                                </div>
-                            </>
-                        ) : null}
-                    </div>
+            <ScrollToTop />
+            <div>
+                {notFound && <NotFound />}
+                <div className="bg-primary min-h-screen">
+                    <Search />
+                    {showColleges ? (
+                        <>
+                            <div className="flex flex-wrap justify-center">
+                                <InfiniteScrollScreen
+                                    renderItem={renderCollege}
+                                    fetchColleges={fetchColleges}
+                                    keyExtractor={college => college.id} />
+                            </div>
+                        </>
+                    ) : null}
                 </div>
-            }
+            </div>
+
         </>
     );
 }

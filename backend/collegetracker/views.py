@@ -148,7 +148,7 @@ class UserUpdateView(APIView):
 api_view(['GET', 'POST'])
 
 
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticatedOrReadOnly])
 def colleges(request):
     data = College.objects.all()
     serializer = CollegeSerializer(data, many=True)
@@ -156,7 +156,7 @@ def colleges(request):
 
 
 class CollegeListView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request, format=None):
         page = int(request.query_params.get('page', 1))
@@ -180,7 +180,7 @@ class CollegeListView(APIView):
 
 
 class CollegeDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request, college_id, format=None):
         try:
@@ -193,7 +193,7 @@ class CollegeDetailView(APIView):
 
 
 class SmartCollegeDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request, college_id, format=None):
         try:
@@ -237,7 +237,7 @@ class FilteredSmartCollegeListView(generics.ListAPIView):
 
 
 class CollegeProgramListView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request, college_id):
         try:
@@ -266,7 +266,7 @@ class CollegeProgramListView(APIView):
 
 class ProgramSearchListView(generics.ListAPIView):
     serializer_class = CollegeSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
         search_query = self.request.query_params.get('search', '')
@@ -301,7 +301,7 @@ class ProgramSearchListView(generics.ListAPIView):
 
 class DetailedSearchListView(generics.ListAPIView):
     serializer_class = CollegeSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
         queryset = College.objects.all()
@@ -371,7 +371,7 @@ def college(request, id):
 api_view(['GET', 'POST'])
 
 
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticatedOrReadOnly])
 def search(request, name):
     try:
         data = College.objects.filter(name__contains=name)
@@ -732,7 +732,7 @@ def post_detail(request, pk):
 
 
 class PostListView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     parser_classes = [MultiPartParser, FormParser]
 
     def get(self, request):
@@ -804,7 +804,7 @@ class UserPostsView(APIView):
 
 
 class CommentListView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request, post_pk):
         """
@@ -912,7 +912,7 @@ class PostCommentCountsView(APIView):
 
 
 class ReplyListView(generics.ListAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = ReplySerializer
 
     def get_queryset(self):
@@ -1291,7 +1291,7 @@ class FriendRequestReadView(APIView):
 
 
 class NewsFeedView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request):
         try:

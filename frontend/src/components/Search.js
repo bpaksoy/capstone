@@ -21,23 +21,25 @@ function Search() {
     };
 
     return (
-        <form
-            className="flex space-between space-x-2 max-w-full p-2"
-            onSubmit={handleSearch}
-        >
-            <input
-                className="shrink min-w-0 px-2 py-2 rounded focus:outline-none focus:ring-2 focus:ring-gray-400 w-fit"
-                placeholder="Search for a college/program"
-                type="text"
-                onChange={(e) => {
-                    setQuery(e.target.value);
-                }}
-            />
-            <button type="submit" className="bg-gray-800 hover:bg-black text-white font-bold py-1 px-2 rounded">
-                Search
-            </button>
-            {searchWarning && <p className="text-red-500">{searchWarning}</p>}
-        </form>
+        <div className="w-full p-4 mb-8 flex flex-col items-center">
+            <form
+                className="flex items-center w-full md:w-[36rem] bg-white rounded-full shadow-md border border-gray-200 overflow-hidden"
+                onSubmit={handleSearch}
+            >
+                <input
+                    className="flex-grow px-6 py-1.5 text-base text-gray-700 placeholder-gray-500 bg-transparent outline-none border-none focus:ring-0"
+                    placeholder="Search for a college/program"
+                    type="text"
+                    onChange={(e) => {
+                        setQuery(e.target.value);
+                    }}
+                />
+                <button type="submit" className="bg-gray-800 hover:bg-black text-white font-bold py-1.5 px-8 text-base shrink-0 transition-colors duration-200">
+                    Search
+                </button>
+            </form>
+            {searchWarning && <p className="text-red-500 mt-2 font-medium">{searchWarning}</p>}
+        </div>
     );
 }
 
