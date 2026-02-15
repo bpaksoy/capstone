@@ -124,6 +124,7 @@ const PostList = ({ posts, onAddPost }) => {
     };
 
     const handleShare = async (post) => {
+        console.log("handleShare called for post:", post.id);
         try {
             const username = post.author?.username || "Someone";
             const contentText = post.content ? post.content.substring(0, 100) : (post.title || "Check this out");
