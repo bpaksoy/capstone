@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { useCurrentUser } from '../UserProvider/UserProvider';
 import axios from 'axios';
 import { baseUrl } from '../shared';
-import { LockClosedIcon, GlobeAltIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
+import { LockClosedIcon, GlobeAltIcon, ShieldCheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { useNavigate } from 'react-router-dom';
 
 const Settings = () => {
     const { user, fetchUser } = useCurrentUser();
     const [isUpdating, setIsUpdating] = useState(false);
+    const navigate = useNavigate();
 
     const togglePrivacy = async (newValue) => {
         setIsUpdating(true);
@@ -32,7 +34,16 @@ const Settings = () => {
     return (
         <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto">
-                <div className="bg-white shadow-2xl rounded-3xl overflow-hidden border border-gray-100">
+                <div className="bg-white shadow-2xl rounded-3xl overflow-hidden border border-gray-100 relative">
+                    {/* Close out button (top right) */}
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="absolute top-6 right-6 text-teal-100 hover:text-white transition-colors z-10 p-2 hover:bg-white/10 rounded-full"
+                        title="Close Settings"
+                    >
+                        <XMarkIcon className="w-8 h-8" />
+                    </button>
+
                     <div className="bg-primary px-8 py-10 text-white">
                         <h1 className="text-3xl font-extrabold flex items-center gap-3">
                             <ShieldCheckIcon className="w-10 h-10" />
@@ -93,8 +104,16 @@ const Settings = () => {
                             </div>
                         </section>
 
-                        <div className="pt-6 border-t border-gray-100 italic text-gray-400 text-xs text-center">
-                            Last updated: {new Date().toLocaleDateString()}
+                        <div className="flex flex-col items-center gap-4 pt-6 border-t border-gray-100">
+                            <button
+                                onClick={() => navigate('/profile')}
+                                className="text-primary hover:text-teal-700 font-bold text-sm transition-colors"
+                            >
+                                ← Return to Profile
+                            </button>
+                            <div className="italic text-gray-400 text-xs text-center">
+                                Last updated: {new Date().toLocaleDateString()}
+                            </div>
                         </div>
                     </div>
                 </div>
