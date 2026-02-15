@@ -1878,3 +1878,55 @@ class CollegeAutoCompleteView(APIView):
         colleges = College.objects.filter(name__icontains=query).values_list(
             'name', flat=True).distinct()[:10]
         return Response(list(colleges))
+
+class AIChatView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def post(self, request):
+        user_message = request.data.get('message', '').lower()
+        if not user_message:
+            return Response({'error': 'Message is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Basic context gathering
+        bookmarks = []
+        if request.user.is_authenticated:
+            bookmarks = Bookmark.objects.filter(user=request.user).select_related('college')
+        
+        # Smart Response Logic
+        response = ""
+        
+        if "recommend" in user_message or "suggest" in user_message:
+            if bookmarks.exists():
+                # Based on bookmarked states
+                states = list(set([b.college.state for b in bookmarks]))
+                similar = College.objects.filter(state__in=states).exclude(id__in=[b.college.id for b in bookmarks])[:3]
+                if similar:
+                    names = ", ".join([c.name for c in similar])
+                    response = f"Based on your interest in colleges in {', '.join(states)}, you might also like {names}. They have similar profiles to your bookmarks!"
+                else:
+                    response = "You've already explored many colleges in your preferred states! Maybe try looking at neighboring regions for more variety?"
+            else:
+                top_colleges = College.objects.all()[:3]
+                names = ", ".join([c.name for c in top_colleges])
+                response = f"Since you haven't bookmarked any colleges yet, I'd suggest starting with some popular choices like {names}."
+        
+        elif "sat" in user_message:
+            if bookmarks.exists():
+                avg_sat = bookmarks.aggregate(Sum('college__sat_score'))['college__sat_score__sum'] / bookmarks.count()
+                response = f"The average SAT score of your bookmarked colleges is about {int(avg_sat)}. Most competitive programs will look for a score in this range or higher."
+            else:
+                response = "Standardized test scores are a key part of many applications. Most top institutions look for scores above 1400, but many are now test-optional. Which college's specific score are you curious about?"
+        
+        elif "cost" in user_message or "tuition" in user_message or "expensive" in user_message:
+            response = "College costs can vary wildly! On average, public in-state tuition is around k, while private universities can exceed k. Remember to look at 'Net Price' instead of sticker price—financial aid often covers a significant portion!"
+            
+        elif "application" in user_message or "apply" in user_message:
+            response = "The application process usually involves the Common App, personal essays, and recommendation letters. The best time to start is the summer before your senior year!"
+
+        elif "hi" in user_message or "hello" in user_message:
+             response = f"Hello! I am your AI College Guru. How can I assist your search today?"
+            
+        else:
+            response = "I'm your College Guru! I can help with recommendations, application tips, and data analysis. Ask me about specific colleges, SAT requirements, or tuition costs."
+
+        return Response({'reply': response}, status=status.HTTP_200_OK)

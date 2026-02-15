@@ -122,5 +122,6 @@ urlpatterns = [
     path('api/cities/autocomplete/', views.CityAutoCompleteView.as_view(), name='city-autocomplete'),
     path('api/programs/autocomplete/', views.ProgramAutoCompleteView.as_view(), name='program-autocomplete'),
     path('api/colleges/autocomplete/', views.CollegeAutoCompleteView.as_view(), name='college-autocomplete'),
+    path('api/ai/chat/', views.AIChatView.as_view(), name='ai-chat'),
     path('upload4/', views.UploadApiView4.as_view(), name='upload_file4'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

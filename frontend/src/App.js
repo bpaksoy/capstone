@@ -19,6 +19,7 @@ import SmartCollegeDetail from "./components/SmartCollegeDetail";
 import DetailedSearch from "./components/DetailedSearch";
 import Settings from "./pages/Settings";
 import Footer from "./components/Footer";
+import AIAgent from "./components/AIAgent";
 
 
 import ScrollToTopOnNavigate from "./utils/ScrollToTopOnNavigate";
@@ -51,6 +52,7 @@ const App = () => {
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
+        <AIAgent />
         <Footer />
       </BrowserRouter>
     </UserProvider>
