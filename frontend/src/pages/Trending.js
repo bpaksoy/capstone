@@ -73,7 +73,7 @@ function Trending() {
         }, 500);
     };
 
-    if ((postsLoading || newsLoading) && displayFeed.length === 0) {
+    if (postsLoading || newsLoading) {
         return <Loader text="Uncovering the latest trends..." />;
     }
 

@@ -176,7 +176,7 @@ const PostList = ({ posts, onAddPost }) => {
                                     <div className="p-6 bg-gray-50 hover:bg-gray-100 transition-colors">
                                         <p className="text-gray-500 text-xs uppercase tracking-wide mb-1 truncate">{new URL(item.link).hostname.replace('www.', '')}</p>
                                         <h3 className="text-lg font-bold text-gray-900 mb-2 leading-tight group-hover:text-blue-600 transition-colors">{item.title}</h3>
-                                        <p className="text-gray-600 text-sm line-clamp-2">{item.description}</p>
+                                        <p className="text-gray-600 text-sm overflow-hidden" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{item.description}</p>
                                     </div>
                                 </a>
                                 <div className="px-6 py-3 border-t border-gray-100 flex justify-between items-center bg-white">
