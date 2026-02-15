@@ -304,7 +304,7 @@ const Profile = () => {
                                     {user?.education || "University not set"}
                                 </div>
                                 <div className="mt-4">
-                                    <AddInfoModal fetchUser={fetchUser} />
+                                    <AddInfoModal initialValues={user} fetchUser={fetchUser} />
                                 </div>
                             </div>
 

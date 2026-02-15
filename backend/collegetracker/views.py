@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status, generics, serializers
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework_simplejwt.tokens import RefreshToken
 import pandas as pd
 from django.shortcuts import render, redirect,  get_object_or_404
@@ -113,7 +113,7 @@ class UserDetailView(APIView):
 
 class UserUpdateView(APIView):
     permission_classes = [IsAuthenticated]
-    parser_classes = [MultiPartParser, FormParser]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def post(self, request, format=None):
         user = self.request.user

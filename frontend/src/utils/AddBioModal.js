@@ -33,7 +33,7 @@ const AddBioModal = ({ initialValues = {}, fetchUser }) => {
         }
 
         try {
-            const response = await axios.post(`${baseUrl}api/user/update/`, {
+            const response = await axios.patch(`${baseUrl}api/user/update/`, {
                 bio,
             }, {
                 headers: {
@@ -45,8 +45,9 @@ const AddBioModal = ({ initialValues = {}, fetchUser }) => {
             fetchUser();
 
         } catch (err) {
-            setError(err.response.data.detail || 'Error updating bio');
-            console.log("err", err)
+            const msg = err.response?.data?.detail || err.response?.data?.message || 'Error updating bio';
+            setError(msg);
+            console.error("Error updating bio:", err);
         }
         console.log('Submitting user bio:', { bio });
         handleCloseModal();
@@ -55,9 +56,11 @@ const AddBioModal = ({ initialValues = {}, fetchUser }) => {
     return (
         <div>
             {error && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-2" role="alert">
-                    <strong className="font-bold">Ops! </strong>
-                    <span className="block sm:inline">{error}</span>
+                <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-3 rounded shadow-sm mb-4 text-xs flex items-center gap-2" role="alert">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+                    </svg>
+                    <span className="font-medium">{error}</span>
                 </div>
             )}
             <button
