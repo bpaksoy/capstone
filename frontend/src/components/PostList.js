@@ -123,9 +123,39 @@ const PostList = ({ posts, onAddPost }) => {
         }));
     };
 
+    const handleShare = async (post) => {
+        const shareData = {
+            title: `Check out ${post.author.username}'s post`,
+            text: post.title || post.content.substring(0, 100),
+            url: window.location.href,
+        };
+
+        try {
+            if (navigator.share) {
+                await navigator.share(shareData);
+                console.log('Shared successfully');
+            } else {
+                await navigator.clipboard.writeText(window.location.href);
+                alert('Link copied to clipboard!');
+                console.log('Copied to clipboard');
+            }
+        } catch (err) {
+            console.error('Error sharing:', err);
+            // Fallback if share fails (e.g. user cancels) - optional
+        }
+    };
+
     return (
         <div className="container mx-auto p-4">
-            <h1 className="text-3xl font-bold mb-4 text-gray-800 text-center">Trending</h1>
+            <div className="flex items-center justify-center gap-3 mb-8">
+                <div className="p-3 bg-gray-100 rounded-full shadow-inner">
+                    <svg className="w-8 h-8 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" />
+                    </svg>
+                </div>
+                <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-700 via-gray-900 to-black tracking-tight drop-shadow-sm">Trending</h1>
+            </div>
             <div className="flex flex-col items-center">
                 {posts?.map((item) => {
                     if (item.isNews) {
@@ -272,7 +302,10 @@ const PostList = ({ posts, onAddPost }) => {
                                     <span>Comment</span>
                                 </button>
 
-                                <button className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium text-sm">
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); handleShare(post); }}
+                                    className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium text-sm"
+                                >
                                     <svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                                     </svg>
