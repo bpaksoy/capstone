@@ -1887,46 +1887,110 @@ class AIChatView(APIView):
         if not user_message:
             return Response({'error': 'Message is required'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Basic context gathering
-        bookmarks = []
-        if request.user.is_authenticated:
-            bookmarks = Bookmark.objects.filter(user=request.user).select_related('college')
+        # 1. Identify Colleges in the message
+        # Fetch all college names to check against (optimized)
+        all_college_names = list(College.objects.values_list('name', flat=True))
+        found_colleges_names = []
         
-        # Smart Response Logic
-        response = ""
+        # Simple heuristic: Check if the college name appears in the message
+        # We process names from longest to shortest to catch "University of California Los Angeles" before "University of California"
+        all_college_names.sort(key=len, reverse=True)
         
-        if "recommend" in user_message or "suggest" in user_message:
-            if bookmarks.exists():
-                # Based on bookmarked states
-                states = list(set([b.college.state for b in bookmarks]))
-                similar = College.objects.filter(state__in=states).exclude(id__in=[b.college.id for b in bookmarks])[:3]
-                if similar:
-                    names = ", ".join([c.name for c in similar])
-                    response = f"Based on your interest in colleges in {', '.join(states)}, you might also like {names}. They have similar profiles to your bookmarks!"
-                else:
-                    response = "You've already explored many colleges in your preferred states! Maybe try looking at neighboring regions for more variety?"
-            else:
-                top_colleges = College.objects.all()[:3]
-                names = ", ".join([c.name for c in top_colleges])
-                response = f"Since you haven't bookmarked any colleges yet, I'd suggest starting with some popular choices like {names}."
+        for name in all_college_names:
+            if name.lower() in user_message:
+                found_colleges_names.append(name)
+                # Remove found name from message to avoid double matching substrings
+                user_message = user_message.replace(name.lower(), "")
+                if len(found_colleges_names) >= 3: # Limit to 3 matches
+                    break
         
-        elif "sat" in user_message:
-            if bookmarks.exists():
-                avg_sat = bookmarks.aggregate(Sum('college__sat_score'))['college__sat_score__sum'] / bookmarks.count()
-                response = f"The average SAT score of your bookmarked colleges is about {int(avg_sat)}. Most competitive programs will look for a score in this range or higher."
-            else:
-                response = "Standardized test scores are a key part of many applications. Most top institutions look for scores above 1400, but many are now test-optional. Which college's specific score are you curious about?"
-        
-        elif "cost" in user_message or "tuition" in user_message or "expensive" in user_message:
-            response = "College costs can vary wildly! On average, public in-state tuition is around k, while private universities can exceed k. Remember to look at 'Net Price' instead of sticker price—financial aid often covers a significant portion!"
-            
-        elif "application" in user_message or "apply" in user_message:
-            response = "The application process usually involves the Common App, personal essays, and recommendation letters. The best time to start is the summer before your senior year!"
+        found_colleges = College.objects.filter(name__in=found_colleges_names)
 
-        elif "hi" in user_message or "hello" in user_message:
-             response = f"Hello! I am your AI College Guru. How can I assist your search today?"
-            
+        # 2. Identify Intent
+        intent = "general"
+        if any(word in user_message for word in ["cost", "tuition", "price", "expensive", "cheap", "financial", "fees"]):
+            intent = "cost"
+        elif any(word in user_message for word in ["sat", "act", "score", "grades", "gpa", "academic"]):
+            intent = "academics"
+        elif any(word in user_message for word in ["rate", "acceptance", "admit", "hard", "easy", "chance"]):
+            intent = "admissions"
+        elif any(word in user_message for word in ["where", "location", "city", "state", "map"]):
+            intent = "location"
+        elif any(word in user_message for word in ["size", "students", "enrollment", "big", "small"]):
+            intent = "size"
+
+        # 3. Formulate Response
+        response = ""
+
+        if found_colleges.exists():
+            # Response about specific colleges
+            for college in found_colleges:
+                if intent == "cost":
+                    cost = f"${college.cost_of_attendance:,}" if college.cost_of_attendance else "N/A"
+                    in_state = f"${college.tuition_in_state:,}" if college.tuition_in_state else "N/A"
+                    out_state = f"${college.tuition_out_state:,}" if college.tuition_out_state else "N/A"
+                    response += f"💰 **{college.name}**: The annual cost of attendance is around {cost}. Tuition is {in_state} for in-state and {out_state} for out-of-state students.\n\n"
+                
+                elif intent == "academics":
+                    sat = college.sat_score if college.sat_score else "Not reported"
+                    response += f"🎓 **{college.name}**: The average SAT score is **{sat}**. \n\n"
+                
+                elif intent == "admissions":
+                    rate = f"{college.admission_rate * 100:.1f}%" if college.admission_rate else "Not reported"
+                    difficulty = "very competitive" if college.admission_rate and college.admission_rate < 0.2 else "competitive" if college.admission_rate and college.admission_rate < 0.5 else "accessible"
+                    response += f"📊 **{college.name}**: The acceptance rate is **{rate}**. It is considered {difficulty}.\n\n"
+                
+                elif intent == "location":
+                    response += f"📍 **{college.name}** is located in **{college.city}, {college.state}**.\n\n"
+                
+                elif intent == "size":
+                    size = f"{college.enrollment_all:,}" if college.enrollment_all else "N/A"
+                    response += f"👥 **{college.name}** has an undergraduate enrollment of about **{size}** students.\n\n"
+                
+                else: # General info
+                    rate = f"{college.admission_rate * 100:.1f}%" if college.admission_rate else "N/A"
+                    response += f"🏫 **{college.name}** is in {college.city}, {college.state}. It has an acceptance rate of {rate} and average SAT of {college.sat_score or 'N/A'}.\n\n"
+
         else:
-            response = "I'm your College Guru! I can help with recommendations, application tips, and data analysis. Ask me about specific colleges, SAT requirements, or tuition costs."
+            # General Discovery / Ranking queries
+            if "hardest" in user_message or "top" in user_message:
+                top_colleges = College.objects.exclude(admission_rate__isnull=True).order_by('admission_rate')[:5]
+                names = "\n".join([f"{i+1}. {c.name} ({c.admission_rate*100:.1f}%)" for i, c in enumerate(top_colleges)])
+                response = f"🏆 **Most Competitive Colleges:**\n{names}"
+            
+            elif "cheapest" in user_message:
+                cheap_colleges = College.objects.exclude(cost_of_attendance__isnull=True).order_by('cost_of_attendance')[:5]
+                names = "\n".join([f"{i+1}. {c.name} (${c.cost_of_attendance:,})" for i, c in enumerate(cheap_colleges)])
+                response = f"💵 **Most Affordable Colleges (Sticker Price):**\n{names}\n*Note: Financial aid can significantly lower costs!*"
+            
+            elif "largest" in user_message or "biggest" in user_message:
+                big_colleges = College.objects.exclude(enrollment_all__isnull=True).order_by('-enrollment_all')[:5]
+                names = "\n".join([f"{i+1}. {c.name} ({c.enrollment_all:,} students)" for i, c in enumerate(big_colleges)])
+                response = f"👥 **Largest Universities:**\n{names}"
+
+            elif "recommend" in user_message or "suggest" in user_message:
+                 # Context aware recommendation based on bookmarks
+                if request.user.is_authenticated:
+                    bookmarks = Bookmark.objects.filter(user=request.user).select_related('college')
+                    if bookmarks.exists():
+                        states = list(set([b.college.state for b in bookmarks]))
+                        # Find similar colleges in those states (simple recommendation)
+                        similar = College.objects.filter(state__in=states).exclude(id__in=[b.college.id for b in bookmarks]).order_by('?')[:3] # Randomize slightly
+                        
+                        if similar:
+                            names = ", ".join([c.name for c in similar])
+                            response = f"Since you like colleges in {', '.join(states)}, check out: **{names}**. They are in similar regions!"
+                        else:
+                             response = "You've explicitly liked colleges in specific states. I can help you find more if you tell me what major you are interested in!"
+                    else:
+                        response = "I can give better recommendations if you **bookmark** some colleges first! Try searching for colleges and hitting the heart icon."
+                else:
+                    response = "I can recommend colleges based on your preferences! **Log in** to bookmark colleges, and I'll learn what you like."
+
+            elif "hi" in user_message or "hello" in user_message:
+                 response = "Hello! I'm **Wormie**, your smart admissions assistant 🪱. \n\nI can help you with:\n- **Specific Data**: 'What is the tuition of Harvard?'\n- **Rankings**: 'Top 5 hardest colleges'\n- **Comparisons**: 'Acceptance rate of Yale vs Stanford'\n\nWhat are you looking for?"
+
+            else:
+                 response = "I'm **Wormie**! \n\nTry asking me specifically about a college (e.g., 'Tell me about MIT'), or ask for rankings like 'hardest colleges' or 'cheapest colleges'."
 
         return Response({'reply': response}, status=status.HTTP_200_OK)

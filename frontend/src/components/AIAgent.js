@@ -92,13 +92,23 @@ const AIAgent = () => {
                         {chatHistory.map((chat, index) => (
                             <div
                                 key={index}
-                                className={`flex ${chat.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                                className={`flex w-full ${chat.role === 'user' ? 'justify-end' : 'justify-start'}`}
                             >
-                                <div className={`max-w-[85%] p-4 rounded-3xl text-sm leading-relaxed ${chat.role === 'user'
-                                    ? 'bg-purple text-white rounded-tr-none shadow-lg shadow-purple-500/20'
-                                    : 'bg-white text-gray-800 rounded-tl-none border border-gray-100 shadow-sm'
+                                <div className={`max-w-[85%] p-4 rounded-2xl text-sm leading-relaxed ${chat.role === 'user'
+                                    ? 'bg-[#A855F7] text-white rounded-tr-none shadow-lg shadow-purple-500/20'
+                                    : 'bg-white text-gray-800 rounded-tl-none border border-gray-200 shadow-sm'
                                     }`}>
-                                    {chat.content}
+                                    {chat.content.split('\n').map((line, i) => (
+                                        <React.Fragment key={i}>
+                                            {line.split(/(\*\*.*?\*\*)/g).map((part, j) => {
+                                                if (part.startsWith('**') && part.endsWith('**')) {
+                                                    return <strong key={j} className="font-bold">{part.slice(2, -2)}</strong>;
+                                                }
+                                                return <span key={j}>{part}</span>;
+                                            })}
+                                            {i < chat.content.split('\n').length - 1 && <br />}
+                                        </React.Fragment>
+                                    ))}
                                 </div>
                             </div>
                         ))}
