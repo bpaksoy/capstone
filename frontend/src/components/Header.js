@@ -30,7 +30,7 @@ const Header = (props) => {
     //console.log("acceptedFriendRequestCount", acceptedFriendRequestCount);
     const [showPopup, setShowPopup] = useState(false);
     const [friendRequests, setFriendRequests] = useState([]);
-    //console.log("friendRequests", friendRequests);
+    const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
     useEffect(() => {
         const fetchFriendRequestCount = async () => {
@@ -154,8 +154,7 @@ const Header = (props) => {
                                         <button
                                             onClick={(e) => {
                                                 e.preventDefault();
-                                                handleLogout();
-                                                window.location.href = '/login';
+                                                setIsLogoutModalOpen(true);
                                             }}
                                             className="px-3 py-2 rounded-md text-sm font-medium no-underline text-gray-300 hover:text-white cursor-pointer"
                                         >
@@ -240,8 +239,7 @@ const Header = (props) => {
                                             <button
                                                 onClick={(e) => {
                                                     e.preventDefault();
-                                                    handleLogout();
-                                                    window.location.href = '/login';
+                                                    setIsLogoutModalOpen(true);
                                                 }}
                                                 className="block w-full text-left px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 cursor-pointer" >
                                                 Logout
@@ -283,6 +281,60 @@ const Header = (props) => {
                     {props.children}
                 </div>
             </div>
+
+            {/* Logout Confirmation Modal */}
+            {isLogoutModalOpen && (
+                <div className="fixed inset-0 z-[100] overflow-y-auto">
+                    <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                        {/* Overlay */}
+                        <div
+                            className="fixed inset-0 transition-opacity bg-gray-900 bg-opacity-75 backdrop-blur-sm"
+                            aria-hidden="true"
+                            onClick={() => setIsLogoutModalOpen(false)}
+                        />
+
+                        {/* Centering trick */}
+                        <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                        {/* Modal Box */}
+                        <div className="inline-block w-full max-w-md overflow-hidden text-left align-middle transition-all transform bg-white shadow-2xl rounded-2xl sm:my-8" role="dialog" aria-modal="true">
+                            <div className="px-8 pt-8 pb-6 bg-white text-center">
+                                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-teal-100 mb-6">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-primary">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+                                    </svg>
+                                </div>
+
+                                <h3 className="text-2xl font-bold text-gray-900 mb-2">Logout</h3>
+                                <p className="text-gray-500 mb-8">
+                                    Are you sure you want to log out of your account? You will need to sign in again to access your bookmarks and profile.
+                                </p>
+
+                                <div className="flex flex-col sm:flex-row-reverse gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            handleLogout();
+                                            setIsLogoutModalOpen(false);
+                                            window.location.href = '/login';
+                                        }}
+                                        className="w-full sm:flex-1 py-3 px-4 text-sm font-bold text-white transition-all rounded-xl bg-primary hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary shadow-lg shadow-teal-100"
+                                    >
+                                        Yes, Log out
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsLogoutModalOpen(false)}
+                                        className="w-full sm:flex-1 py-3 px-4 text-sm font-bold text-gray-700 transition-all bg-gray-100 rounded-xl hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
 
     )
