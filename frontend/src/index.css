@@ -50,13 +50,15 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 1.5rem;
+    gap: 2.5rem;
+    perspective: 1000px;
 }
 
 .modern-loader {
     position: relative;
-    width: 64px;
-    height: 64px;
+    width: 80px;
+    height: 80px;
+    transform-style: preserve-3d;
 }
 
 .modern-loader div {
@@ -64,39 +66,79 @@
     width: 100%;
     height: 100%;
     border: 4px solid transparent;
-    border-top-color: #3b82f6;
-    /* blue-500 */
+    border-top: 4px solid #aaf0d1;
     border-radius: 50%;
-    animation: loader-spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    animation: loader-spin-complex 1.5s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+    filter: drop-shadow(0 0 10px rgba(170, 240, 209, 0.3));
 }
 
 .modern-loader div:nth-child(1) {
-    animation-delay: -0.45s;
+    animation-delay: -0.8s;
 }
 
 .modern-loader div:nth-child(2) {
-    animation-delay: -0.3s;
+    width: 80%;
+    height: 80%;
+    top: 10%;
+    left: 10%;
+    animation-delay: -0.6s;
+    border-top-color: #24adbf;
+    animation-direction: reverse;
 }
 
 .modern-loader div:nth-child(3) {
-    animation-delay: -0.15s;
+    width: 60%;
+    height: 60%;
+    top: 20%;
+    left: 20%;
+    animation-delay: -0.4s;
+    border-top-color: #ffffff;
+}
+
+.modern-loader div:nth-child(4) {
+    width: 40%;
+    height: 40%;
+    top: 30%;
+    left: 30%;
+    animation-delay: -0.2s;
+    border-top-color: #ff9001;
+    animation-direction: reverse;
 }
 
 .loader-text {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: #eff6ff;
-    letter-spacing: 0.05em;
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: center;
+    max-width: 320px;
+    line-height: 1.4;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+    animation: text-float 3s ease-in-out infinite;
 }
 
-@keyframes loader-spin {
+@keyframes loader-spin-complex {
     0% {
-        transform: rotate(0deg);
+        transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
     }
 
     100% {
-        transform: rotate(360deg);
+        transform: rotateX(360deg) rotateY(180deg) rotateZ(360deg);
+    }
+}
+
+@keyframes text-float {
+
+    0%,
+    100% {
+        transform: translateY(0);
+        opacity: 0.8;
+    }
+
+    50% {
+        transform: translateY(-10px);
+        opacity: 1;
     }
 }
 
