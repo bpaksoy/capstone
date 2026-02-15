@@ -131,7 +131,7 @@ const PostList = ({ posts, onAddPost }) => {
                     if (item.isNews) {
                         return (
                             <div key={`news-${item.article_id}`} className="bg-white rounded-xl shadow-sm border border-gray-200 max-w-2xl w-full mb-6 relative overflow-hidden group">
-                                <div className="p-3 flex items-center gap-2 border-b border-gray-50">
+                                <div className="p-5 flex items-center gap-2 border-b border-gray-50">
                                     <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-0.5 rounded">News</span>
                                     <span className="text-gray-400 text-xs">Suggested for you</span>
                                 </div>
@@ -147,13 +147,13 @@ const PostList = ({ posts, onAddPost }) => {
                                             {/* Gradient overlay for readability if needed */}
                                         </div>
                                     </div>
-                                    <div className="p-4 bg-gray-50 hover:bg-gray-100 transition-colors">
+                                    <div className="p-6 bg-gray-50 hover:bg-gray-100 transition-colors">
                                         <p className="text-gray-500 text-xs uppercase tracking-wide mb-1 truncate">{new URL(item.link).hostname.replace('www.', '')}</p>
                                         <h3 className="text-lg font-bold text-gray-900 mb-2 leading-tight group-hover:text-blue-600 transition-colors">{item.title}</h3>
                                         <p className="text-gray-600 text-sm line-clamp-2">{item.description}</p>
                                     </div>
                                 </a>
-                                <div className="px-4 py-2 border-t border-gray-100 flex justify-between items-center bg-white">
+                                <div className="px-6 py-3 border-t border-gray-100 flex justify-between items-center bg-white">
                                     <button className="text-gray-500 hover:bg-gray-100 p-2 rounded-full">
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
                                     </button>
@@ -169,7 +169,7 @@ const PostList = ({ posts, onAddPost }) => {
                     return (
                         <div key={post.id} className="bg-white rounded-xl shadow-sm border border-gray-200 max-w-2xl w-full mb-6 relative overflow-visible">
                             {/* Header */}
-                            <div className="p-4 flex items-center justify-between">
+                            <div className="p-6 flex items-center justify-between">
                                 <div className="flex items-center space-x-3 cursor-pointer" onClick={() => {
                                     if (!user) {
                                         navigate('/login');
@@ -205,7 +205,7 @@ const PostList = ({ posts, onAddPost }) => {
                             </div>
 
                             {/* Content */}
-                            <div className="px-4 pb-3">
+                            <div className="px-6 pb-4">
                                 {post.title && <h3 className="text-lg font-bold text-gray-900 mb-1 leading-snug">{post.title}</h3>}
                                 <p className="text-gray-800 text-base leading-relaxed whitespace-pre-wrap">{post.content}</p>
                             </div>
@@ -218,7 +218,7 @@ const PostList = ({ posts, onAddPost }) => {
                             )}
 
                             {/* Stats Row */}
-                            <div className="px-4 py-2 flex items-center justify-between text-sm text-gray-500 border-b border-gray-50">
+                            <div className="px-6 py-3 flex items-center justify-between text-sm text-gray-500 border-b border-gray-50">
                                 <div className="flex items-center gap-1">
                                     {post.likes_count > 0 && (
                                         <>
@@ -235,7 +235,7 @@ const PostList = ({ posts, onAddPost }) => {
                             </div>
 
                             {/* Action Buttons */}
-                            <div className="flex items-center justify-between px-2 py-1 border-b border-gray-100">
+                            <div className="flex items-center justify-between px-6 py-2 border-b border-gray-100">
                                 {user ? (
                                     <LikeButton
                                         contentType="post"
@@ -275,7 +275,7 @@ const PostList = ({ posts, onAddPost }) => {
 
                             {/* Comments Section */}
                             {visibleComments[post.id] && (
-                                <div className="px-4 py-3 bg-gray-50 rounded-b-xl border-t border-gray-100">
+                                <div className="px-6 py-4 bg-gray-50 rounded-b-xl border-t border-gray-100">
                                     {user && (
                                         <div className="flex flex-row items-center mb-4">
                                             <CommentModal postId={post.id} onAddComment={updateComments} />
