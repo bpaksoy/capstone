@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
-import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon, BellIcon, XMarkIcon, UserIcon, Cog6ToothIcon, ArrowRightOnRectangleIcon, ArrowLeftOnRectangleIcon } from '@heroicons/react/24/outline';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { images } from "../constants";
 import { useCurrentUser } from '../UserProvider/UserProvider';
@@ -222,34 +222,58 @@ const Header = (props) => {
                                 </div>
                                 <MenuItems
                                     transition
-                                    className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
+                                    className="absolute right-0 z-[100] mt-3 w-64 origin-top-right rounded-2xl bg-white p-2 shadow-2xl ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
                                 >
+                                    {loggedIn && user && (
+                                        <div className="px-4 py-3 border-b border-gray-100 mb-2">
+                                            <p className="text-sm font-bold text-gray-900 truncate">{user.username}</p>
+                                            <p className="text-xs font-medium text-gray-500 truncate">{user.email || 'Member'}</p>
+                                        </div>
+                                    )}
+
                                     <MenuItem>
-                                        <a href="#" className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100">
+                                        <NavLink
+                                            to="/profile"
+                                            className="group flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 rounded-xl transition-all hover:bg-teal-50 hover:text-primary data-[focus]:bg-teal-50 data-[focus]:text-primary"
+                                        >
+                                            <UserIcon className="h-4 w-4 text-gray-400 group-hover:text-primary" />
                                             Your Profile
-                                        </a>
+                                        </NavLink>
                                     </MenuItem>
+
                                     <MenuItem>
-                                        <a href="#" className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100">
+                                        <a
+                                            href="#"
+                                            className="group flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 rounded-xl transition-all hover:bg-teal-50 hover:text-primary data-[focus]:bg-teal-50 data-[focus]:text-primary"
+                                        >
+                                            <Cog6ToothIcon className="h-4 w-4 text-gray-400 group-hover:text-primary" />
                                             Settings
                                         </a>
                                     </MenuItem>
+
+                                    <div className="my-1 border-t border-gray-100"></div>
+
                                     <MenuItem>
-                                        {loggedIn ?
+                                        {loggedIn ? (
                                             <button
                                                 onClick={(e) => {
                                                     e.preventDefault();
                                                     setIsLogoutModalOpen(true);
                                                 }}
-                                                className="block w-full text-left px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 cursor-pointer" >
+                                                className="group flex w-full items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-600 rounded-xl transition-all hover:bg-red-50 data-[focus]:bg-red-50"
+                                            >
+                                                <ArrowRightOnRectangleIcon className="h-4 w-4 text-red-400 group-hover:text-red-600" />
                                                 Logout
-                                            </button> :
-                                            <button
-                                                onClick={() => window.location.href = '/login'}
-                                                className="block w-full text-left px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 cursor-pointer" >
-                                                Login
                                             </button>
-                                        }
+                                        ) : (
+                                            <NavLink
+                                                to="/login"
+                                                className="group flex w-full items-center gap-3 px-4 py-2.5 text-sm font-medium text-teal-600 rounded-xl transition-all hover:bg-teal-50 data-[focus]:bg-teal-50"
+                                            >
+                                                <ArrowLeftOnRectangleIcon className="h-4 w-4 text-teal-400 group-hover:text-teal-600" />
+                                                Login
+                                            </NavLink>
+                                        )}
                                     </MenuItem>
                                 </MenuItems>
                             </Menu>
