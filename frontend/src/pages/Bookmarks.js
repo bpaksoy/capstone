@@ -9,6 +9,7 @@ import Slider from 'react-slick';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Loader from '../components/Loader';
+import { ChevronRightIcon, ChevronLeftIcon } from '@heroicons/react/24/outline';
 
 
 function calculateSimilarityScore(college1, college2) {
@@ -148,24 +149,28 @@ const Bookmarks = () => {
   if (error) return <p>Error: {error.message}</p>;
 
   function CustomNextArrow(props) {
-    const { className, style, onClick } = props;
+    const { style, onClick } = props;
     return (
       <div
-        className={className}
-        style={{ ...style, display: "block", right: "-35px" }}
+        className="absolute top-1/2 -translate-y-1/2 flex items-center justify-center bg-gray-900/40 hover:bg-gray-900/60 backdrop-blur-sm rounded-full shadow-xl transition-all border border-white/10 z-10 cursor-pointer group"
+        style={{ ...style, display: "flex", right: "-50px", width: "48px", height: "48px" }}
         onClick={onClick}
-      />
+      >
+        <ChevronRightIcon className="w-7 h-7 text-white transition-transform group-hover:scale-110" />
+      </div>
     );
   }
 
   function CustomPrevArrow(props) {
-    const { className, style, onClick } = props;
+    const { style, onClick } = props;
     return (
       <div
-        className={className}
-        style={{ ...style, display: "block", left: "-35px" }}
+        className="absolute top-1/2 -translate-y-1/2 flex items-center justify-center bg-gray-900/40 hover:bg-gray-900/60 backdrop-blur-sm rounded-full shadow-xl transition-all border border-white/10 z-10 cursor-pointer group"
+        style={{ ...style, display: "flex", left: "-50px", width: "48px", height: "48px" }}
         onClick={onClick}
-      />
+      >
+        <ChevronLeftIcon className="w-7 h-7 text-white transition-transform group-hover:scale-110" />
+      </div>
     );
   }
 
