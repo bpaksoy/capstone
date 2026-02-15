@@ -122,12 +122,15 @@ const PostList = ({ posts, onAddPost }) => {
                     <div key={post.id} className="bg-white p-4 rounded-lg shadow-md max-w-2xl w-full mb-4 relative">
                         <div className="flex justify-between items-center mb-2">
                             <div className="flex items-center space-x-2 cursor-pointer" onClick={() => {
-                                if (post.author.id !== user.id) { handleNavigateToProfile(post.author.id) }
-                                else {
+                                if (!user) {
+                                    navigate('/login');
+                                } else if (post.author.id !== user.id) {
+                                    handleNavigateToProfile(post.author.id)
+                                } else {
                                     navigate('/profile/')
                                 }
                             }}>
-                                <img src={post.author.image ? `${baseUrl}${post.author.image}` : images.profile} alt="User Avatar" className="w-8 h-8 rounded-full" />
+                                <img src={post.author.image ? `${baseUrl}${post.author.image.startsWith('/') ? post.author.image.substring(1) : post.author.image}` : images.profile} alt="User Avatar" className="w-8 h-8 rounded-full" />
                                 <div>
                                     <p className="text-gray-800 font-semibold underline hover:bg-gray-200 rounded px-2">{post.author.username}</p>
                                     <p className="text-gray-500 text-sm">{timeSince(post.created_at)}</p>
@@ -159,7 +162,7 @@ const PostList = ({ posts, onAddPost }) => {
                         </div>
                         {post.image && (
                             <div className="mb-4">
-                                <img src={baseUrl + post.image} alt="Post Image" className="w-full h-[300px] object-cover rounded-md" />
+                                <img src={post.image.startsWith('http') ? post.image : `${baseUrl}${post.image.startsWith('/') ? post.image.substring(1) : post.image}`} alt="Post Image" className="w-full h-[300px] object-cover rounded-md" />
                             </div>
                         )}
 
@@ -171,7 +174,7 @@ const PostList = ({ posts, onAddPost }) => {
                                     </svg>
                                     <span>{post.likes_count} Like</span>
                                 </button>
-                                <LikeButton contentType="post" objectId={post.id} onLikeStatusChange={updateLikeStatus} />
+                                {user && <LikeButton contentType="post" objectId={post.id} onLikeStatusChange={updateLikeStatus} />}
                             </div>
                             <button className="flex justify-center items-center gap-2 px-2 hover:bg-gray-50 rounded-full p-1">
                                 <svg width="22px" height="22px" viewBox="0 0 24 24" className="w-5 h-5 fill-current" xmlns="http://www.w3.org/2000/svg">
@@ -185,10 +188,12 @@ const PostList = ({ posts, onAddPost }) => {
                             </button>
                         </div>
                         <hr className="mt-2 mb-2" />
-                        <div className="flex flex-row items-center">
-                            <p className="text-gray-800 font-semibold px-1">Comment</p>
-                            <CommentModal postId={post.id} onAddComment={updateComments} />
-                        </div>
+                        {user && (
+                            <div className="flex flex-row items-center">
+                                <p className="text-gray-800 font-semibold px-1">Comment</p>
+                                <CommentModal postId={post.id} onAddComment={updateComments} />
+                            </div>
+                        )}
                         <Comment postId={post.id} lastUpdatedComment={lastUpdatedComment} onAddPost={onAddPost} user={user} />
                     </div>
                 ))}

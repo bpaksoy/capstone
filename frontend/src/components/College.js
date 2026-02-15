@@ -45,6 +45,14 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
     }, [collegeId]);
 
     const handleBookmarkToggle = async () => {
+        if (!loggedIn) {
+            navigate("/login", {
+                state: {
+                    previousUrl: location.pathname
+                }
+            });
+            return;
+        }
         try {
             const response = await axios.post(
                 `http://127.0.0.1:8000/api/colleges/${collegeId}/bookmark/`,
@@ -99,10 +107,10 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
     // }, []);
 
     return (
-        <div className="college-item">
+        <div className="college-item h-full">
             {notFound && <NotFound />}
 
-            <div className="relative flex max-w-[26rem] flex-col rounded-xl bg-white bg-clip-border text-gray-700 shadow-lg m-3">
+            <div className="relative flex max-w-[26rem] flex-col rounded-xl bg-white bg-clip-border text-gray-700 shadow-lg m-3 h-full">
                 <div
                     className="relative mx-4 mt-4 overflow-hidden text-white shadow-lg rounded-xl bg-blue-gray-500 bg-clip-border shadow-blue-gray-500/40 ">
                     <img
@@ -124,7 +132,7 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
                         </span>
                     </button>
                 </div>
-                <div className="p-6">
+                <div className="p-6 flex-1 flex flex-col justify-between">
                     <div className="flex items-center justify-between mb-3">
                         <h5 className="block font-sans text-xl antialiased font-medium leading-snug tracking-normal text-blue-gray-900">
                             {name}, {city}, {state}

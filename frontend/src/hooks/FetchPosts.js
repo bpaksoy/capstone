@@ -18,7 +18,7 @@ const usePosts = () => {
                 const response = await axios.get(`${baseUrl}api/posts/`, {
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('access')}`
+                        ...(localStorage.getItem('access') ? { 'Authorization': `Bearer ${localStorage.getItem('access')}` } : {})
                     }
                 });
 
@@ -26,7 +26,7 @@ const usePosts = () => {
                     const commentCountResponse = await axios.get(`${baseUrl}api/posts/${post.id}/comment_counts/`, {
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${localStorage.getItem('access')}`
+                            ...(localStorage.getItem('access') ? { 'Authorization': `Bearer ${localStorage.getItem('access')}` } : {})
                         }
                     });
                     return { ...post, comment_count: commentCountResponse.data.comment_count, reply_count: commentCountResponse.data.reply_count };

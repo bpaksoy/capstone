@@ -16,6 +16,10 @@ const InfiniteScrollScreen = ({ fetchColleges, renderItem }) => {
 
     const fetchData = async () => {
         setIsLoading(true);
+        // Add artificial delay for smoother UX on infinite scroll
+        if (page > 1) {
+            await new Promise(resolve => setTimeout(resolve, 1500));
+        }
         try {
             const result = await fetchColleges(page);
             if (!result || !result.colleges) {
@@ -42,8 +46,12 @@ const InfiniteScrollScreen = ({ fetchColleges, renderItem }) => {
             dataLength={items.length}
             next={fetchData}
             hasMore={hasMore}
-            loader={<div>Loading...</div>}
-            endMessage={<div>No more colleges to show</div>}
+            loader={
+                <div className="flex justify-center items-center py-6">
+                    <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-gray-900"></div>
+                </div>
+            }
+            endMessage={<div className="text-center py-4 text-gray-500">No more colleges to show</div>}
         >
             {items.map(renderItem)}
             {error && <div>Error: {error.message}</div>}

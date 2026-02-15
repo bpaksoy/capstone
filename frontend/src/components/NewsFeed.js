@@ -57,10 +57,10 @@ const NewsFeed = () => {
             setIsLoading(true);
             setError(null)
             try {
+                const token = localStorage.getItem('access');
+                const headers = token ? { Authorization: `Bearer ${token}` } : {};
                 const response = await axios.get(`${baseUrl}api/news/`, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('access')}`
-                    }
+                    headers: headers
                 });
                 if (response.status === 404) {
                     setNotFound(true);

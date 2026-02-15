@@ -28,8 +28,10 @@ const SmartCollegeDetail = () => {
                     throw new Error('College ID is missing');
                 }
 
+                const token = localStorage.getItem('access');
+                const headers = token ? { Authorization: `Bearer ${token}` } : {};
                 const response = await fetch(`${baseUrl}api/smart-colleges/${collegeId}/`, {
-                    headers: { Authorization: `Bearer ${localStorage.getItem('access')}` },
+                    headers: headers,
                 });
 
                 console.log("response", response);
@@ -51,10 +53,10 @@ const SmartCollegeDetail = () => {
         const fetchCollegePrograms = async () => {
 
             try {
+                const token = localStorage.getItem('access');
+                const headers = token ? { Authorization: `Bearer ${token}` } : {};
                 const response = await fetch(`${baseUrl}api/colleges/${collegeId}/programs/`, {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem("access")}`,
-                    },
+                    headers: headers,
                 }
                 );
                 if (!response.ok) {

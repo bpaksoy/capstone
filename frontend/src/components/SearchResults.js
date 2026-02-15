@@ -40,13 +40,14 @@ function SearchResults() {
                 collegeData = location.state.colleges;
                 setHasMore(location.state.hasMore);
                 if (location.state.searchQuery) {
+                    const token = localStorage.getItem('access');
+                    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
                     const detailedSearchOptions = {
                         method: "GET",
                         url: `${baseUrl}api/colleges/detailed/?page=${page}`,
                         params: location.state.searchQuery,
-                        headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('access')}`
-                        }
+                        headers: headers
                     };
                     const detailedResponse = await axios.request(detailedSearchOptions);
                     if (detailedResponse.status === 200) {
@@ -58,21 +59,18 @@ function SearchResults() {
                 }
             } else {
                 console.log("query goes in here", query);
+                const token = localStorage.getItem('access');
+                const headers = token ? { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
+
                 const collegeOptions = {
                     method: "GET",
                     url: `${baseUrl}api/search/${query}/`,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('access')}`
-                    }
+                    headers: headers
                 };
                 const programOptions = {
                     method: "GET",
                     url: `${baseUrl}api/colleges/programs/?search=${query}&page=${page}`,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('access')}`
-                    }
+                    headers: headers
                 };
 
 
