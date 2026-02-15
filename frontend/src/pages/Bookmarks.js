@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import College from '../components/College';
 import axios from 'axios';
 import { baseUrl } from '../shared';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { images } from '../constants';
+import { useCurrentUser } from '../UserProvider/UserProvider';
 import Slider from 'react-slick';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -27,33 +28,42 @@ const MIN_SIMILARITY_THRESHOLD = 0.3;
 
 
 const Bookmarks = () => {
+  const navigate = useNavigate();
+  const { loggedIn, loading: authLoading } = useCurrentUser();
   const [bookmarkedColleges, setBookmarkedColleges] = useState([]);
-  //console.log("Bookmarked Colleges", bookmarkedColleges);
   const [recommendedColleges, setRecommendedColleges] = useState([]);
-  // console.log("Recommended Colleges", recommendedColleges);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRecommending, setIsRecommending] = useState(false);
+  const [loadingStep, setLoadingStep] = useState("Initializing...");
+
+  // Immediate redirect if explicitly logged out
+  useEffect(() => {
+    if (!authLoading && !loggedIn && !localStorage.getItem('access')) {
+      navigate('/login');
+    }
+  }, [loggedIn, authLoading, navigate]);
 
 
   useEffect(() => {
     const fetchBookmarkedColleges = async () => {
+      setLoadingStep("Connecting to vault...");
+      const token = localStorage.getItem('access');
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
+
       setIsLoading(true);
       setError(null);
       try {
         const response = await axios.get(`${baseUrl}api/bookmarks/`, {
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('access')}`,
+            'Authorization': `Bearer ${token}`,
           },
         });
-        //console.log("response", response)
-        // if (!response.ok) {
-        //   throw new Error(`HTTP error! status: ${response.status}`);
-        // }
-        const data = await response.data;
-        //console.log("Bookmarked Colleges", data);
-        setBookmarkedColleges(data);
+        setBookmarkedColleges(response.data);
       } catch (error) {
         setError(error);
         console.error('Error fetching colleges:', error);
@@ -68,8 +78,12 @@ const Bookmarks = () => {
 
   useEffect(() => {
     const recommendColleges = async () => {
-      if (bookmarkedColleges.length === 0) return;
+      if (bookmarkedColleges.length === 0) {
+        setIsRecommending(false);
+        return;
+      }
       setIsRecommending(true);
+      setLoadingStep("Scanning regional data...");
       try {
         const bookmarkedStates = [...new Set(bookmarkedColleges.map(college => college.state))];
 
@@ -82,6 +96,7 @@ const Bookmarks = () => {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const filteredColleges = await response.json();
+        setLoadingStep(`Analyzing ${filteredColleges.length} potential matches...`);
         // console.log("Filtered Colleges", filteredColleges);
         let collegeScores = filteredColleges.map((otherCollege) => {
           let scoreSum = 0;
@@ -123,8 +138,11 @@ const Bookmarks = () => {
     recommendColleges();
   }, [bookmarkedColleges]);
 
-  if (isLoading || isRecommending) {
-    return <Loader text={isLoading ? "Fetching your bookmarks..." : "Gathering personalized recommendations..."} />;
+  if (authLoading || isLoading || isRecommending) {
+    let loaderText = loadingStep;
+    if (authLoading) loaderText = "Authenticating secure session...";
+
+    return <Loader text={loaderText} />;
   }
 
   if (error) return <p>Error: {error.message}</p>;
