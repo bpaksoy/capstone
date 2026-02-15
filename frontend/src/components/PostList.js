@@ -124,13 +124,16 @@ const PostList = ({ posts, onAddPost }) => {
     };
 
     const handleShare = async (post) => {
-        const shareData = {
-            title: `Check out ${post.author.username}'s post`,
-            text: post.title || post.content.substring(0, 100),
-            url: window.location.href,
-        };
-
         try {
+            const username = post.author?.username || "Someone";
+            const contentText = post.content ? post.content.substring(0, 100) : (post.title || "Check this out");
+
+            const shareData = {
+                title: `Check out ${username}'s post`,
+                text: contentText,
+                url: window.location.href,
+            };
+
             if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
                 await navigator.share(shareData);
             } else {
