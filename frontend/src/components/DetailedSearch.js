@@ -9,8 +9,8 @@ import { states } from '../constants/states';
 
 const DetailedSearch = () => {
     const [colleges, setColleges] = useState([]);
-    console.log("colleges", colleges);
-    const [isLoading, setIsLoading] = useState(true);
+    //console.log("colleges", colleges);
+    const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const [name, setName] = useState('');
     const [state, setState] = useState('');
@@ -54,7 +54,7 @@ const DetailedSearch = () => {
             navigate(`/search/detailed/`, { state: { colleges: data.colleges, hasMore: data.has_more, searchQuery: searchQuery } });
         }
         catch (error) {
-            setError(error);
+            setSearchError(error.message || "An unexpected error occurred. Please try again.");
             console.error("Error fetching colleges", error);
         }
         finally {
@@ -111,29 +111,153 @@ const DetailedSearch = () => {
     //     );
     // }
 
-    if (error) return <p>Error: {error.message}</p>;
-
     return (
-        <div className="bg-primary min-h-screen flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-            <div className="bg-white rounded-lg shadow-md p-8 w-1/2">
-                <h2 className="text-2xl font-bold mb-4 text-gray-800">Detailed Search</h2>
-                <form onSubmit={handleSearch} className="flex flex-col gap-4 mb-4">
-                    <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} className="p-2 rounded border border-gray-300 w-full max-w-[400px] focus:outline-none focus:ring-2 focus:ring-gray-400" />
-                    <input type="text" placeholder="City" value={city} onChange={(e) => setCity(e.target.value)} className="p-2 rounded border border-gray-300 max-w-[300px] focus:outline-none focus:ring-2 focus:ring-gray-400" />
-                    <select value={state} onChange={(e) => setState(e.target.value)}
-                        className="p-2 rounded border border-gray-300 w-full max-w-[400px] focus:outline-none focus:ring-2 focus:ring-gray-400">
-                        <option value="">Select State</option>
-                        {states.map((stateOption) => (
-                            <option key={stateOption} value={stateOption}>
-                                {stateOption}
-                            </option>
-                        ))}
-                    </select>
-                    <input type="text" placeholder="Program" value={program} onChange={(e) => setProgram(e.target.value)} className="p-2 rounded border border-gray-300 max-w-[500px] focus:outline-none focus:ring-2 focus:ring-gray-400" />
-                    <input type="number" placeholder="Min SAT Score" value={minSat} onChange={(e) => setMinSat(e.target.value)} className="p-2 rounded border border-gray-300 max-w-[200px] focus:outline-none focus:ring-2 focus:ring-gray-400" />
-                    <input type="number" placeholder="Max SAT Score" value={maxSat} onChange={(e) => setMaxSat(e.target.value)} className="p-2 rounded border border-gray-300 max-w-[200px] focus:outline-none focus:ring-2 focus:ring-gray-400" />
-                    <button type="submit" className="bg-gray-800 hover:bg-black text-white font-bold py-3 px-6 rounded-md max-w-[200px]" >Search</button>
-                    {searchError && <p className="text-red-500 mt-2">{searchError}</p>}
+        <div className="bg-primary min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-2xl w-full space-y-8 bg-white p-10 rounded-3xl shadow-xl border border-gray-100 relative overflow-visible">
+                {/* Decorative element (optional) */}
+                <div className="absolute top-0 right-0 -mt-20 -mr-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div className="text-center">
+                    <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight">
+                        Find Your Perfect College
+                    </h2>
+                    <p className="mt-2 text-sm text-gray-500">
+                        Use our detailed search to narrow down the best options for your future.
+                    </p>
+                </div>
+
+                <form className="mt-8 space-y-6" onSubmit={handleSearch}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="md:col-span-2">
+                            <label htmlFor="name" className="sr-only">College Name</label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+                                    </svg>
+                                </div>
+                                <input
+                                    id="name"
+                                    name="name"
+                                    type="text"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    className="appearance-none rounded-xl relative block w-full pl-10 px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm shadow-sm transition-all"
+                                    placeholder="College Name"
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label htmlFor="city" className="sr-only">City</label>
+                            <input
+                                id="city"
+                                name="city"
+                                type="text"
+                                value={city}
+                                onChange={(e) => setCity(e.target.value)}
+                                className="appearance-none rounded-xl relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm shadow-sm transition-all"
+                                placeholder="City"
+                            />
+                        </div>
+
+                        <div>
+                            <label htmlFor="state" className="sr-only">State</label>
+                            <div className="relative">
+                                <select
+                                    id="state"
+                                    name="state"
+                                    value={state}
+                                    onChange={(e) => setState(e.target.value)}
+                                    className="appearance-none rounded-xl relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm shadow-sm transition-all bg-white"
+                                >
+                                    <option value="">Select State</option>
+                                    {states.map((stateOption) => (
+                                        <option key={stateOption} value={stateOption}>{stateOption}</option>
+                                    ))}
+                                </select>
+                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="md:col-span-2">
+                            <label htmlFor="program" className="sr-only">Program</label>
+                            <input
+                                id="program"
+                                name="program"
+                                type="text"
+                                value={program}
+                                onChange={(e) => setProgram(e.target.value)}
+                                className="appearance-none rounded-xl relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm shadow-sm transition-all"
+                                placeholder="Program of Study (e.g., Computer Science)"
+                            />
+                        </div>
+
+                        <div>
+                            <label htmlFor="min-sat" className="sr-only">Min SAT</label>
+                            <input
+                                id="min-sat"
+                                name="min-sat"
+                                type="number"
+                                value={minSat}
+                                onChange={(e) => setMinSat(e.target.value)}
+                                className="appearance-none rounded-xl relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm shadow-sm transition-all"
+                                placeholder="Min SAT Score"
+                            />
+                        </div>
+
+                        <div>
+                            <label htmlFor="max-sat" className="sr-only">Max SAT</label>
+                            <input
+                                id="max-sat"
+                                name="max-sat"
+                                type="number"
+                                value={maxSat}
+                                onChange={(e) => setMaxSat(e.target.value)}
+                                className="appearance-none rounded-xl relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm shadow-sm transition-all"
+                                placeholder="Max SAT Score"
+                            />
+                        </div>
+                    </div>
+
+                    {searchError && (
+                        <div className="rounded-md bg-red-50 p-4">
+                            <div className="flex">
+                                <div className="flex-shrink-0">
+                                    <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div className="ml-3">
+                                    <h3 className="text-sm font-medium text-red-800">{searchError}</h3>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    <div>
+                        <button
+                            type="submit"
+                            disabled={isLoading}
+                            className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-xl text-white ${isLoading ? 'bg-primary/70 cursor-not-allowed' : 'bg-primary hover:bg-teal-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'} transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary`}
+                        >
+                            {isLoading ? (
+                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            ) : (
+                                <span className="absolute left-0 inset-y-0 flex items-center pl-3">
+                                    <svg className="h-5 w-5 text-teal-200 group-hover:text-teal-100 transition-colors" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+                                    </svg>
+                                </span>
+                            )}
+                            {isLoading ? 'Searching...' : 'Search Colleges'}
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
