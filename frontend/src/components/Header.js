@@ -23,6 +23,8 @@ function classNames(...classes) {
 
 const Header = (props) => {
     const navigate = useNavigate();
+    const { user, handleLogout, loading, loggedIn, forceFetchFriendRequests } = useCurrentUser();
+    const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
 
