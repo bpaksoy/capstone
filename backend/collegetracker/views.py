@@ -1499,8 +1499,12 @@ class NewsFeedView(APIView):
 
     def get(self, request):
         cache_key = 'trending_news_feed'
-        cached_data = cache.get(cache_key)
         
+        # Check if user wants to force refresh (optional, but let's clear it for now to show changes)
+        if request.query_params.get('refresh') == 'true':
+            cache.delete(cache_key)
+            
+        cached_data = cache.get(cache_key)
         if cached_data:
             return Response({'results': cached_data}, status=status.HTTP_200_OK)
 
@@ -1511,134 +1515,54 @@ class NewsFeedView(APIView):
 
             news_items = []
 
-            # 1. News API
+            # 1. News API - High-Relevance Education Focus
             news_api_url = 'https://newsapi.org/v2/everything'
-            today = datetime.now().date()
-            from_date = today - timedelta(days=7)
-
+            
+            # Target domains known for high-quality education/admissions news
+            edu_domains = 'insidehighered.com,chronicle.com,highereddive.com,ed.gov,collegeboard.org,usnews.com,nytimes.com,wsj.com,forbes.com'
+            
             news_api_params = {
-                'q': 'college OR university OR "higher education" AND (student OR faculty OR professor OR research OR "campus life" OR admissions OR tuition OR scholarships) NOT sports',
-                'from': from_date.strftime('%Y-%m-%d'),
+                'q': '("college admissions" OR "university application" OR "SAT scores" OR "ACT scores" OR FAFSA OR "financial aid" OR "Common App") -sabbatical -vacation -"adult gap year" -work -travel',
+                'domains': edu_domains,
                 'language': 'en',
                 'sortBy': 'relevancy',
                 'apiKey': api_key,
-                'pageSize': 3,
+                'pageSize': 8,
             }
-            news_api_response = requests.get(
-                news_api_url, params=news_api_params)
-            news_api_response.raise_for_status()
-            news_api_data = news_api_response.json()
+            try:
+                news_api_response = requests.get(news_api_url, params=news_api_params, timeout=5)
+                news_api_response.raise_for_status()
+                news_api_data = news_api_response.json()
+                for item in news_api_data.get('articles', []):
+                    news_items.append({
+                        'title': item.get('title'),
+                        'description': item.get('description')[:300] if item.get('description') else "",
+                        'link': item.get('url'),
+                        'image_url': item.get('urlToImage'),
+                        'article_id': item.get('url'),
+                        'source': item.get('source', {}).get('name', 'News API')
+                    })
+            except Exception as e:
+                print(f"News API error: {e}")
 
-            for item in news_api_data.get('articles', []):
-                description = item.get('description', '')
-                if description:
-                    description = "\n".join(description.split("\n")[:10])
-                image_url = item.get('urlToImage')
-                if image_url:
-                    try:
-                        image_response = requests.get(
-                            image_url, stream=True, timeout=3)
-                        image_response.raise_for_status()
-                        if not image_response.headers.get('Content-Type', '').startswith('image/'):
-                            image_url = None
-                    except requests.exceptions.RequestException:
-                        image_url = None
-                news_items.append({
-                    'title': item.get('title'),
-                    'description': description,
-                    'link': item.get('url'),
-                    'image_url': image_url,
-                    'article_id': item.get('url'),
-                    'source': 'News API'
-                })
+            # 2. Inside Higher Ed RSS - Quick Parse
+            try:
+                ihe_url = 'https://www.insidehighered.com/rss.xml'
+                ihe_feed = feedparser.parse(requests.get(ihe_url, timeout=5).text)
+                for entry in ihe_feed.entries[:4]:
+                    news_items.append({
+                        'title': entry.title,
+                        'description': BeautifulSoup(entry.summary, 'html.parser').get_text()[:300] if hasattr(entry, 'summary') else "",
+                        'link': entry.link,
+                        'image_url': None, # Don't scrape for speed
+                        'article_id': entry.id if hasattr(entry, 'id') else entry.link,
+                        'source': 'Inside Higher Ed'
+                    })
+            except Exception as e:
+                print(f"RSS error: {e}")
 
-            # 2. Inside Higher Ed RSS Feed
-            inside_higher_ed_url = 'https://www.insidehighered.com/rss.xml'
-            inside_higher_ed_feed = feedparser.parse(
-                requests.get(inside_higher_ed_url).text)
-            for entry in inside_higher_ed_feed.entries[:3]:
-                summary = BeautifulSoup(
-                    entry.summary, 'html.parser').get_text().strip()
-                if summary:
-                    summary = "\n".join(summary.split("\n")[:10])
-                image_url = None
-                try:
-                    response = requests.get(entry.link, timeout=3)
-                    response.raise_for_status()
-                    soup = BeautifulSoup(response.text, 'html.parser')
-                    og_image_tag = soup.find(
-                        'meta', attrs={'property': 'og:image'})
-                    if og_image_tag:
-                        image_url = og_image_tag.get('content')
-                        if image_url:
-                            image_response = requests.get(
-                                image_url, stream=True, timeout=3)
-                            image_response.raise_for_status()
-                            if not image_response.headers.get('Content-Type', '').startswith('image/'):
-                                image_url = None
-                except requests.exceptions.RequestException:
-                    image_url = None
-                news_items.append({
-                    'title': entry.title,
-                    'description': summary,
-                    'link': entry.link,
-                    'image_url': image_url,
-                    'article_id': entry.id,
-                    'source': 'Inside Higher Ed RSS'
-                })
-
-              # 3. College RSS Feeds
-            college_rss_feeds = [
-                {'name': 'MIT News', 'url': 'http://news.mit.edu/rss/feed.xml'},
-                {'name': 'Harvard Gazette', 'url': 'https://news.harvard.edu/feed/'},
-                {'name': 'Stanford News', 'url': 'https://news.stanford.edu/feed/'},
-                {'name': 'Yale News', 'url': 'https://news.yale.edu/rss'},
-                {'name': 'Caltech News',
-                    'url': 'https://www.caltech.edu/about/news/feed'},
-                {'name': 'Princeton News', 'url': 'https://www.princeton.edu/news/feed'},
-                {'name': 'UChicago News', 'url': 'https://news.uchicago.edu/rss'}
-
-            ]
-
-            for college in college_rss_feeds:
-                try:
-                    feed = feedparser.parse(requests.get(college['url']).text)
-                    for entry in feed.entries[:2]:
-                        summary = BeautifulSoup(
-                            entry.summary, 'html.parser').get_text().strip()
-                        if summary:
-                            summary = "\n".join(summary.split("\n")[:10])
-                        image_url = None
-                        try:
-                            response = requests.get(entry.link, timeout=3)
-                            response.raise_for_status()
-                            soup = BeautifulSoup(response.text, 'html.parser')
-                            og_image_tag = soup.find(
-                                'meta', attrs={'property': 'og:image'})
-                            if og_image_tag:
-                                image_url = og_image_tag.get('content')
-                                if image_url:
-                                    image_response = requests.get(
-                                        image_url, stream=True, timeout=3)
-                                    image_response.raise_for_status()
-                                    if not image_response.headers.get('Content-Type', '').startswith('image/'):
-                                        image_url = None
-                        except requests.exceptions.RequestException:
-                            image_url = None
-                        news_items.append({
-                            'title': entry.title,
-                            'description': summary,
-                            'link': entry.link,
-                            'image_url': image_url,
-                            'article_id': entry.id,
-                            'source': college['name']
-                        })
-                except Exception as e:
-                    print(
-                        f"Error fetching RSS feed for {college['name']}: {e}")
-
-            # Store in cache for 30 minutes (1800 seconds)
-            cache.set('trending_news_feed', news_items, 1800)
+            # Store in cache for 1 hour (3600 seconds)
+            cache.set('trending_news_feed', news_items, 3600)
             
             return Response({'results': news_items}, status=status.HTTP_200_OK)
 
