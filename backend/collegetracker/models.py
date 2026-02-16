@@ -77,6 +77,11 @@ class College(models.Model):
     men_only = models.BooleanField(default=False)
     women_only = models.BooleanField(default=False)
     relaffil = models.IntegerField(null=True, blank=True) # Code for affiliation
+    
+    # --- Performance & Financials ---
+    avg_net_price = models.IntegerField(null=True, blank=True)
+    grad_rate = models.FloatField(null=True, blank=True)
+    loan_rate = models.FloatField(null=True, blank=True)
 
     def __str__(self):
         return self.name + ' - ' + self.city + ', ' + self.state + ', ' + self.website + ', ' + str(self.admission_rate) + ', ' + str(self.sat_score) + ', ' + str(self.cost_of_attendance) + ', ' + str(self.tuition_in_state) + ', ' + str(self.tuition_out_state) + ', ' + str(self.latitude) + ', ' + str(self.longitude) + ', ' + str(self.ft_faculty_rate)
