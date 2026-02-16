@@ -7,9 +7,14 @@ from rest_framework.validators import UniqueTogetherValidator
 
 
 class CollegeSerializer(serializers.ModelSerializer):
+    programs_count = serializers.SerializerMethodField()
+
     class Meta:
         model = College
         fields = '__all__'
+
+    def get_programs_count(self, obj):
+        return obj.programs.count()
 
 
 class SmartCollegeSerializer(serializers.ModelSerializer):

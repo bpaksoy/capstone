@@ -7,7 +7,9 @@ import {
     AcademicCapIcon,
     BanknotesIcon,
     ChartBarIcon,
-    MapPinIcon
+    MapPinIcon,
+    BookOpenIcon,
+    LifebuoyIcon
 } from '@heroicons/react/24/outline';
 import axios from 'axios';
 
@@ -17,7 +19,7 @@ const formatter = new Intl.NumberFormat('en-US', {
     maximumFractionDigits: 0,
 })
 
-const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, cost_of_attendance, image, img, control, locale, hbcu, hsi }) => {
+const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, cost_of_attendance, image, img, control, locale, hbcu, hsi, programs_count, relaffil }) => {
     const { loggedIn } = useCurrentUser();
     const navigate = useNavigate();
     const location = useLocation();
@@ -136,6 +138,16 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
                                 HBCU
                             </span>
                         )}
+                        {hsi && (
+                            <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-orange-50 text-orange-700 border border-orange-100">
+                                HSI
+                            </span>
+                        )}
+                        {relaffil && relaffil > 0 && (
+                            <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                Rel. Affil.
+                            </span>
+                        )}
                     </div>
 
                     <h5 className="font-bold text-lg text-gray-900 leading-tight mb-3 group-hover:text-primary transition-colors line-clamp-2 min-h-[2.5rem]">
@@ -143,7 +155,18 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
                     </h5>
 
                     {/* Stats Container - Compact version */}
-                    <div className="flex-1 min-h-[130px] space-y-2.5">
+                    <div className="flex-1 min-h-[160px] space-y-2.5">
+                        {programs_count > 0 && (
+                            <div className="flex items-center gap-2.5 text-xs text-gray-500 group/item">
+                                <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600 group-hover/item:bg-blue-600 group-hover/item:text-white transition-colors">
+                                    <BookOpenIcon className="w-3.5 h-3.5" />
+                                </div>
+                                <div className="flex flex-col">
+                                    <p className="text-[9px] uppercase font-bold tracking-tight text-gray-400 leading-none mb-0.5">Majors Offered</p>
+                                    <p className="font-semibold text-gray-900 leading-none">{programs_count}</p>
+                                </div>
+                            </div>
+                        )}
                         {admission_rate > 0 ? (
                             <div className="flex items-center gap-2.5 text-xs text-gray-500 group/item">
                                 <div className="p-1.5 rounded-lg bg-teal-50 text-primary group-hover/item:bg-primary group-hover/item:text-white transition-colors">
