@@ -92,7 +92,11 @@ const AIAgent = () => {
                     message: userMessage,
                     context: {
                         path: location.pathname
-                    }
+                    },
+                    history: chatHistory.slice(-5).map(msg => ({
+                        role: msg.role === 'assistant' ? 'model' : 'user',
+                        parts: [msg.content]
+                    }))
                 })
             });
 

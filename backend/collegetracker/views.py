@@ -1964,16 +1964,26 @@ class AIChatView(APIView):
             if not api_key:
                  raise Exception("GEMINI_API_KEY not found in environment variables.")
 
-            # Re-configure to be sure (sometimes global config is tricky with reloading)
             genai.configure(api_key=api_key)
-            
-            # Using the stable 'latest' alias which typically has better free tier availability
             model = genai.GenerativeModel('gemini-flash-latest')
+
+            # Parse history for Gemini
+            raw_history = request.data.get('history', [])
+            gemini_history = []
+            for msg in raw_history:
+                role = msg.get('role')
+                content = msg.get('parts', [""])[0]
+                if role and content:
+                    gemini_history.append({"role": role, "parts": [content]})
+
+            # Start a chat session with history
+            chat = model.start_chat(history=gemini_history)
             
             # Create a generator for the streaming response
             def event_stream():
                 try:
-                    response = model.generate_content(system_prompt, stream=True)
+                    # Send message using chat session
+                    response = chat.send_message(system_prompt, stream=True)
                     for chunk in response:
                         if chunk.text:
                             yield chunk.text
