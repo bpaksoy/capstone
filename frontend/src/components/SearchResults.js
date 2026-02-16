@@ -181,16 +181,7 @@ function SearchResults() {
                         {searchResult.map((college) => {
                             return (
                                 <div key={college.id} className={searchResult.length === 1 ? "w-full max-w-md" : ""}>
-                                    <College
-                                        id={college.id}
-                                        name={college.name}
-                                        city={college.city}
-                                        state={college.state}
-                                        admission_rate={college.admission_rate}
-                                        sat_score={college.sat_score}
-                                        cost_of_attendance={college.cost_of_attendance}
-                                        image={college.image}
-                                    />
+                                    <College {...college} />
                                 </div>
                             );
                         })}

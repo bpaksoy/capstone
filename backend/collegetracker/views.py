@@ -376,6 +376,10 @@ class DetailedSearchListView(generics.ListAPIView):
         min_sat_param = self.request.query_params.get('min_sat', None)
         max_sat_param = self.request.query_params.get('max_sat', None)
         name_param = self.request.query_params.get('name', None)
+        control_param = self.request.query_params.get('control', None)
+        locale_category = self.request.query_params.get('locale_category', None)
+        hbcu_param = self.request.query_params.get('hbcu', None)
+        hsi_param = self.request.query_params.get('hsi', None)
         page = int(self.request.query_params.get('page', 1))
         page_size = int(self.request.query_params.get('page_size', 9))
 
@@ -386,6 +390,24 @@ class DetailedSearchListView(generics.ListAPIView):
             queryset = queryset.filter(city__iexact=city_param)
         if name_param:
             queryset = queryset.filter(name__icontains=name_param)
+
+        if control_param:
+            queryset = queryset.filter(control=control_param)
+
+        if locale_category:
+            if locale_category == 'city':
+                queryset = queryset.filter(locale__gte=11, locale__lte=13)
+            elif locale_category == 'suburb':
+                queryset = queryset.filter(locale__gte=21, locale__lte=23)
+            elif locale_category == 'town':
+                queryset = queryset.filter(locale__gte=31, locale__lte=33)
+            elif locale_category == 'rural':
+                queryset = queryset.filter(locale__gte=41, locale__lte=43)
+
+        if hbcu_param == 'true':
+            queryset = queryset.filter(hbcu=True)
+        if hsi_param == 'true':
+            queryset = queryset.filter(hsi=True)
 
         if program_param:
             queryset = queryset.filter(

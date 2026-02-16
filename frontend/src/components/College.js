@@ -17,7 +17,7 @@ const formatter = new Intl.NumberFormat('en-US', {
     maximumFractionDigits: 0,
 })
 
-const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, cost_of_attendance, image }) => {
+const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, cost_of_attendance, image, img, control, locale, hbcu, hsi }) => {
     const { loggedIn } = useCurrentUser();
     const navigate = useNavigate();
     const location = useLocation();
@@ -80,7 +80,7 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
                 {/* Image Section */}
                 <div className="relative aspect-video overflow-hidden shrink-0">
                     <img
-                        src={image ? (image.startsWith('http') ? image : baseUrl + image.replace(/^\//, '')) : images.collegeImages[(parseInt(collegeId) || 0) % images.collegeImages.length]}
+                        src={(image || img) ? ((image || img).startsWith('http') ? (image || img) : baseUrl + (image || img).replace(/^\//, '')) : images.collegeImages[(parseInt(collegeId) || 0) % images.collegeImages.length]}
                         onError={(e) => { e.target.onerror = null; e.target.src = images.collegeImg; }}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                         alt={name}
@@ -113,6 +113,31 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
 
                 {/* Content Section */}
                 <div className="p-4 flex-1 flex flex-col">
+                    {/* Vibe Badges */}
+                    <div className="flex flex-wrap gap-1.5 mb-2">
+                        {control && (
+                            <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider ${control === 1 ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-purple-50 text-purple-700 border border-purple-100'}`}>
+                                {control === 1 ? 'Public' : 'Private'}
+                            </span>
+                        )}
+                        {locale && (
+                            <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-gray-50 text-gray-600 border border-gray-100">
+                                {(() => {
+                                    if (locale >= 11 && locale <= 13) return 'City';
+                                    if (locale >= 21 && locale <= 23) return 'Suburb';
+                                    if (locale >= 31 && locale <= 33) return 'Town';
+                                    if (locale >= 41 && locale <= 43) return 'Rural';
+                                    return 'Campus';
+                                })()}
+                            </span>
+                        )}
+                        {hbcu && (
+                            <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-100">
+                                HBCU
+                            </span>
+                        )}
+                    </div>
+
                     <h5 className="font-bold text-lg text-gray-900 leading-tight mb-3 group-hover:text-primary transition-colors line-clamp-2 min-h-[2.5rem]">
                         {name}
                     </h5>

@@ -16,6 +16,10 @@ const DetailedSearch = () => {
     const [program, setProgram] = useState('');
     const [minSat, setMinSat] = useState('');
     const [maxSat, setMaxSat] = useState('');
+    const [control, setControl] = useState('');
+    const [localeCategory, setLocaleCategory] = useState('');
+    const [isHbcu, setIsHbcu] = useState(false);
+    const [isHsi, setIsHsi] = useState(false);
     const [searchError, setSearchError] = useState('');
     const navigate = useNavigate();
     const location = useLocation();
@@ -27,7 +31,11 @@ const DetailedSearch = () => {
         setSearchError('');
         try {
             const response = await axios.get(`${baseUrl}api/colleges/detailed/`, {
-                params: { state, city, program, min_sat: minSat, max_sat: maxSat, name },
+                params: {
+                    state, city, program, min_sat: minSat, max_sat: maxSat, name,
+                    control, locale_category: localeCategory,
+                    hbcu: isHbcu ? 'true' : '', hsi: isHsi ? 'true' : ''
+                },
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('access')}`
                 }
@@ -44,7 +52,10 @@ const DetailedSearch = () => {
             }
             const data = response.data;
             setColleges(data.colleges);
-            const searchQuery = { state, city, program, min_sat: minSat, max_sat: maxSat, name };
+            const searchQuery = {
+                state, city, program, min_sat: minSat, max_sat: maxSat, name,
+                control, locale_category: localeCategory, hbcu: isHbcu, hsi: isHsi
+            };
             navigate(`/search/detailed/`, { state: { colleges: data.colleges, hasMore: data.has_more, searchQuery: searchQuery } });
         }
         catch (error) {
@@ -58,7 +69,7 @@ const DetailedSearch = () => {
 
     const handleSearch = (e) => {
         e.preventDefault();
-        if (!state && !city && !program && !minSat && !maxSat && !name) {
+        if (!state && !city && !program && !minSat && !maxSat && !name && !control && !localeCategory && !isHbcu && !isHsi) {
             setSearchError('Please fill in at least one field.');
             return;
         }
@@ -84,6 +95,7 @@ const DetailedSearch = () => {
             </>
         );
     }
+
 
     return (
         <div className="bg-primary min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -153,6 +165,49 @@ const DetailedSearch = () => {
                         </div>
 
                         <div>
+                            <label htmlFor="control" className="sr-only">Institution Type</label>
+                            <div className="relative">
+                                <select
+                                    id="control"
+                                    name="control"
+                                    value={control}
+                                    onChange={(e) => setControl(e.target.value)}
+                                    className="appearance-none rounded-xl relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm shadow-sm transition-all bg-white"
+                                >
+                                    <option value="">Institution Type</option>
+                                    <option value="1">Public</option>
+                                    <option value="2">Private Non-profit</option>
+                                    <option value="3">Private For-profit</option>
+                                </select>
+                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label htmlFor="locale" className="sr-only">Campus Setting</label>
+                            <div className="relative">
+                                <select
+                                    id="locale"
+                                    name="locale"
+                                    value={localeCategory}
+                                    onChange={(e) => setLocaleCategory(e.target.value)}
+                                    className="appearance-none rounded-xl relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm shadow-sm transition-all bg-white"
+                                >
+                                    <option value="">Campus Setting</option>
+                                    <option value="city">City</option>
+                                    <option value="suburb">Suburb</option>
+                                    <option value="town">Town</option>
+                                    <option value="rural">Rural</option>
+                                </select>
+                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
                             <label htmlFor="min-sat" className="sr-only">Min SAT</label>
                             <input
                                 id="min-sat"
@@ -176,6 +231,28 @@ const DetailedSearch = () => {
                                 className="appearance-none rounded-xl relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm shadow-sm transition-all"
                                 placeholder="Max SAT Score"
                             />
+                        </div>
+
+                        <div className="md:col-span-2 flex items-center space-x-8 px-2">
+                            <label className="inline-flex items-center cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={isHbcu}
+                                    onChange={(e) => setIsHbcu(e.target.checked)}
+                                    className="rounded border-gray-300 text-primary focus:ring-primary h-5 w-5 transition-all"
+                                />
+                                <span className="ml-3 text-sm font-medium text-gray-700">HBCU</span>
+                            </label>
+
+                            <label className="inline-flex items-center cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={isHsi}
+                                    onChange={(e) => setIsHsi(e.target.checked)}
+                                    className="rounded border-gray-300 text-primary focus:ring-primary h-5 w-5 transition-all"
+                                />
+                                <span className="ml-3 text-sm font-medium text-gray-700">HSI</span>
+                            </label>
                         </div>
                     </div>
 

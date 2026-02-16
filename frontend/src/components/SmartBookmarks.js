@@ -210,23 +210,10 @@ function SmartBookmarks() {
             {bookmarkedColleges.length > 0 ? (
                 <div className="flex flex-wrap justify-center">
                     {bookmarkedColleges.map((college) => {
-                        const name = college.name;
-                        const city = college.city;
-                        const state = college.state;
-                        const cost_of_attendance = college.cost_of_attendance
-                        const admission_rate = college.admission_rate
-                        const sat_score = college.sat_score
                         return (
                             <College
                                 key={college.id}
-                                id={college.id}
-                                name={name}
-                                city={city}
-                                state={state}
-                                admission_rate={admission_rate}
-                                sat_score={sat_score}
-                                cost_of_attendance={cost_of_attendance}
-                                img={college.img}
+                                {...college}
                             />
                         );
                     })}
