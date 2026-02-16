@@ -117,6 +117,38 @@ const CollegeDetail = () => {
                             <div>
                                 <h1 className="text-3xl font-bold mb-2">{college.name}</h1>
                                 <p className="text-gray-600 text-lg mb-4">{college.city}, {college.state}</p>
+
+                                {/* New Metadata Badges */}
+                                <div className="flex flex-wrap gap-2 mb-6">
+                                    {/* Control (Public/Private) */}
+                                    {college.control && (
+                                        <span className={`px-3 py-1 rounded-full text-sm font-semibold ${college.control === 1 ? 'bg-green-100 text-green-800' : 'bg-purple-100 text-purple-800'}`}>
+                                            {college.control === 1 ? 'Public' : college.control === 2 ? 'Private Non-profit' : 'Private For-profit'}
+                                        </span>
+                                    )}
+
+                                    {/* Locale */}
+                                    {college.locale && (
+                                        <span className="px-3 py-1 rounded-full text-sm font-semibold bg-gray-100 text-gray-800">
+                                            {(() => {
+                                                const l = college.locale;
+                                                if (l >= 11 && l <= 13) return 'City';
+                                                if (l >= 21 && l <= 23) return 'Suburb';
+                                                if (l >= 31 && l <= 33) return 'Town';
+                                                if (l >= 41 && l <= 43) return 'Rural';
+                                                return 'Campus Setting';
+                                            })()}
+                                        </span>
+                                    )}
+
+                                    {/* Special Missions */}
+                                    {college.hbcu && <span className="px-3 py-1 rounded-full text-sm font-semibold bg-yellow-100 text-yellow-800">HBCU</span>}
+                                    {college.hsi && <span className="px-3 py-1 rounded-full text-sm font-semibold bg-orange-100 text-orange-800">HSI</span>}
+                                    {college.women_only && <span className="px-3 py-1 rounded-full text-sm font-semibold bg-pink-100 text-pink-800">Women's College</span>}
+                                    {college.men_only && <span className="px-3 py-1 rounded-full text-sm font-semibold bg-blue-200 text-blue-800">Men's College</span>}
+                                    {college.relaffil && college.relaffil > 0 && <span className="px-3 py-1 rounded-full text-sm font-semibold bg-indigo-100 text-indigo-800">Religious Affiliation</span>}
+                                </div>
+
                                 <div className="flex flex-wrap gap-4 mb-4">
                                     <div className="bg-blue-100 p-3 rounded-lg flex items-center gap-2">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">

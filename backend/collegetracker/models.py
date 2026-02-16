@@ -68,6 +68,15 @@ class College(models.Model):
     application_deadline = models.CharField(max_length=100, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     image = models.ImageField(upload_to='college_images/', blank=True, null=True)
+    
+    # --- New Metadata from Scorecard ---
+    locale = models.IntegerField(null=True, blank=True) # 11-13 City, 21-23 Suburb, etc.
+    control = models.IntegerField(null=True, blank=True) # 1=Public, 2=Priv NP, 3=Priv FP
+    hbcu = models.BooleanField(default=False)
+    hsi = models.BooleanField(default=False)
+    men_only = models.BooleanField(default=False)
+    women_only = models.BooleanField(default=False)
+    relaffil = models.IntegerField(null=True, blank=True) # Code for affiliation
 
     def __str__(self):
         return self.name + ' - ' + self.city + ', ' + self.state + ', ' + self.website + ', ' + str(self.admission_rate) + ', ' + str(self.sat_score) + ', ' + str(self.cost_of_attendance) + ', ' + str(self.tuition_in_state) + ', ' + str(self.tuition_out_state) + ', ' + str(self.latitude) + ', ' + str(self.longitude) + ', ' + str(self.ft_faculty_rate)
