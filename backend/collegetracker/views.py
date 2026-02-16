@@ -301,6 +301,52 @@ class FilteredSmartCollegeListView(generics.ListAPIView):
         return Response({'colleges': serializer.data})
 
 
+class CollegeRecommendationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        bookmarks = user.following_colleges.all()
+        
+        if not bookmarks.exists():
+            return Response({'colleges': [], 'message': 'No bookmarks yet'}, status=status.HTTP_200_OK)
+
+        # 1. Build Profile
+        states = list(bookmarks.values_list('state', flat=True).distinct())
+        avg_sat = bookmarks.aggregate(models.Avg('sat_score'))['sat_score__avg'] or 1100
+        avg_adm = bookmarks.aggregate(models.Avg('admission_rate'))['admission_rate__avg'] or 0.6
+        avg_cost = bookmarks.aggregate(models.Avg('cost_of_attendance'))['cost_of_attendance__avg'] or 30000
+
+        # 2. Query Candidates (Limit to relevant states)
+        # Exclude already bookmarked
+        queryset = College.objects.filter(state__in=states).exclude(id__in=bookmarks.values_list('id', flat=True))
+        
+        # 3. Simple scoring in Python (for speed/simplicity since it's filtered by states)
+        # For even more speed, we could do this in SQL but Python is fine for <1000 records
+        candidates = list(queryset[:500]) # Safety limit
+        
+        scored_candidates = []
+        for c in candidates:
+            # Normalized differences
+            sat_score = c.sat_score or 1100
+            adm_rate = c.admission_rate or 0.6
+            cost = c.cost_of_attendance or 30000
+            
+            sat_diff = abs(sat_score - avg_sat) / 1600
+            adm_diff = abs(adm_rate - avg_adm)
+            cost_diff = abs(cost - avg_cost) / 60000
+            
+            score = (sat_diff * 0.4) + (adm_diff * 0.4) + (cost_diff * 0.2)
+            scored_candidates.append((c, score))
+
+        scored_candidates.sort(key=lambda x: x[1]) # Lower is better
+        
+        top_10 = [c[0] for c in scored_candidates[:10]]
+        serializer = CollegeSerializer(top_10, many=True)
+        
+        return Response({'colleges': serializer.data}, status=status.HTTP_200_OK)
+
+
 class CollegeProgramListView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 

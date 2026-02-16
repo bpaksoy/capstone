@@ -8,26 +8,6 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { AcademicCapIcon } from '@heroicons/react/24/solid';
 import { ChevronRightIcon, ChevronLeftIcon } from '@heroicons/react/24/outline';
-import { cosineSimilarity } from '../helpers/cosineSimilartiy';
-
-function calculateSimilarityScore(college1, college2) {
-    const satScoreDiff = Math.abs(college1.sat_score - college2.sat_score);
-    const admissionRateDiff = Math.abs(college1.admission_rate - college2.admission_rate);
-    const costOfAttendanceDiff = Math.abs(college1.cost_of_attendance - college2.cost_of_attendance);
-
-    const satScoreSimilarity = 1 - (satScoreDiff / 2400);
-    const admissionRateSimilarity = 1 - admissionRateDiff;
-    const costOfAttendanceSimilarity = 1 - (costOfAttendanceDiff / 40000);
-    let stateMatch = 0;
-
-    if (college1.state === college2.state) {
-        stateMatch = 0.2;
-    }
-    return (satScoreSimilarity * 0.3 + admissionRateSimilarity * 0.3 + costOfAttendanceSimilarity * 0.2) + stateMatch;
-}
-
-const MIN_SIMILARITY_THRESHOLD = 0.3;
-
 function SmartBookmarks() {
     const [bookmarkedColleges, setBookmarkedColleges] = useState([]);
     console.log(bookmarkedColleges);
@@ -64,75 +44,26 @@ function SmartBookmarks() {
     }, []);
 
     useEffect(() => {
-        const recommendColleges = async () => {
+        const fetchRecommendations = async () => {
             if (bookmarkedColleges.length === 0) return;
             try {
-                const bookmarkedStates = [...new Set(bookmarkedColleges.map(college => college.state))];
-                console.log("bookmarked states", bookmarkedStates);
-                const response = await fetch(`${baseUrl}api/smart-colleges/filtered/?states=${bookmarkedStates.join(',')}`, {
+                const response = await fetch(`${baseUrl}api/colleges/recommendations/`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("access")}`,
                     },
                 });
-                console.log("RESPONSE!!!!!", response);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
-                const allColleges = data.colleges;
-                const collegeScores = allColleges.map((otherCollege) => {
-                    let scoreSum = 0;
-                    let numScores = 0;
-                    bookmarkedColleges.forEach((bookmarkedCollege) => {
-                        const college1Vector = [
-                            bookmarkedCollege.sat_score ? (bookmarkedCollege.sat_score / 2400) : 0,
-                            bookmarkedCollege.admission_rate ? bookmarkedCollege.admission_rate : 0,
-                            bookmarkedCollege.cost_of_attendance ? (bookmarkedCollege.cost_of_attendance / 40000) : 0,
-                            bookmarkedCollege.CCBASIC ? parseInt(bookmarkedCollege.CCBASIC) : 0,
-                            bookmarkedCollege.enrollment_all ? (bookmarkedCollege.enrollment_all / 40000) : 0,
-                            bookmarkedCollege.HLOFFER ? parseInt(bookmarkedCollege.HLOFFER) : 0,
-                        ];
-                        const college2Vector = [
-                            otherCollege.sat_score ? (otherCollege.sat_score / 2400) : 0,
-                            otherCollege.admission_rate ? otherCollege.admission_rate : 0,
-                            otherCollege.cost_of_attendance ? (otherCollege.cost_of_attendance / 40000) : 0,
-                            otherCollege.CCBASIC ? parseInt(otherCollege.CCBASIC) : 0,
-                            otherCollege.enrollment_all ? (otherCollege.enrollment_all / 40000) : 0,
-                            otherCollege.HLOFFER ? parseInt(otherCollege.HLOFFER) : 0,
-                        ];
-                        const similarityScore = cosineSimilarity(college1Vector, college2Vector);
-                        let stateMatchScore = 0;
-                        if (bookmarkedCollege.state === otherCollege.state) {
-                            stateMatchScore = 0.2;
-                        }
-                        scoreSum += similarityScore + stateMatchScore;
-                        numScores += 1;
-                    });
-                    if (numScores > 0) {
-                        const score = scoreSum / numScores;
-                        if (score > MIN_SIMILARITY_THRESHOLD) {
-                            return {
-                                college: otherCollege,
-                                score: score,
-                            };
-                        }
-                        else {
-                            return null;
-                        }
-                    }
-                    else {
-                        return null;
-                    }
-                }).filter(college => college !== null);
-                collegeScores.sort((a, b) => b.score - a.score);
-                setRecommendedColleges(collegeScores.slice(0, 5).map(score => score.college));
+                setRecommendedColleges(data.colleges);
             }
             catch (error) {
                 setError(error);
-                console.error("Error fetching filtered colleges", error);
+                console.error("Error fetching recommendations", error);
             }
         };
-        recommendColleges();
+        fetchRecommendations();
     }, [bookmarkedColleges]);
 
 

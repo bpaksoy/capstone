@@ -13,22 +13,6 @@ import Loader from '../components/Loader';
 import { ChevronRightIcon, ChevronLeftIcon } from '@heroicons/react/24/outline';
 
 
-function calculateSimilarityScore(college1, college2) {
-  const satScoreDiff = Math.abs(college1.sat_score - college2.sat_score);
-  const admissionRateDiff = Math.abs(college1.admission_rate - college2.admission_rate);
-  const costOfAttendanceDiff = Math.abs(college1.cost_of_attendance - college2.cost_of_attendance);
-
-  const satScoreSimilarity = 1 - (satScoreDiff / 2400);
-  const admissionRateSimilarity = 1 - admissionRateDiff;
-  const costOfAttendanceSimilarity = 1 - (costOfAttendanceDiff / 40000);
-
-  return (satScoreSimilarity * 0.4 + admissionRateSimilarity * 0.4 + costOfAttendanceSimilarity * 0.2);
-}
-
-
-const MIN_SIMILARITY_THRESHOLD = 0.3;
-
-
 const Bookmarks = () => {
   const navigate = useNavigate();
   const { loggedIn, appLoading: authLoading } = useCurrentUser();
@@ -79,17 +63,15 @@ const Bookmarks = () => {
 
 
   useEffect(() => {
-    const recommendColleges = async () => {
+    const fetchRecommendations = async () => {
       if (bookmarkedColleges.length === 0) {
         setIsRecommending(false);
         return;
       }
       setIsRecommending(true);
-      setLoadingStep("Scanning regional data...");
+      setLoadingStep("Curating your matches...");
       try {
-        const bookmarkedStates = [...new Set(bookmarkedColleges.map(college => college.state))];
-
-        const response = await fetch(`${baseUrl}api/colleges/filtered/?states=${bookmarkedStates.join(',')}`, {
+        const response = await fetch(`${baseUrl}api/colleges/recommendations/`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("access")}`,
           },
@@ -97,52 +79,22 @@ const Bookmarks = () => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        const filteredColleges = await response.json();
-        setLoadingStep(`Analyzing ${filteredColleges.length} potential matches...`);
-        // console.log("Filtered Colleges", filteredColleges);
-        let collegeScores = filteredColleges.map((otherCollege) => {
-          let scoreSum = 0;
-          let numScores = 0;
-          bookmarkedColleges.forEach((bookmarkedCollege) => {
-            let similarityScore = calculateSimilarityScore(bookmarkedCollege, otherCollege);
-            if (bookmarkedCollege.state === otherCollege.state) {
-              similarityScore += 0.2;
-            }
-            scoreSum += similarityScore;
-            numScores += 1;
-          });
-          if (numScores > 0) {
-            const score = scoreSum / numScores;
-            if (score > MIN_SIMILARITY_THRESHOLD) {
-              return {
-                college: otherCollege,
-                score: score,
-              };
-            }
-            else {
-              return null;
-            }
-          }
-          else {
-            return null;
-          }
-        }).filter(college => college !== null)
-        collegeScores.sort((a, b) => b.score - a.score);
-        setRecommendedColleges(collegeScores.slice(0, 10).map(score => score.college));
+        const data = await response.json();
+        setRecommendedColleges(data.colleges);
       }
       catch (error) {
         setError(error);
-        console.error("Error fetching filtered colleges", error);
+        console.error("Error fetching recommendations", error);
       } finally {
         setIsRecommending(false);
       }
     };
-    recommendColleges();
+    fetchRecommendations();
   }, [bookmarkedColleges]);
 
-  if (authLoading || isLoading || isRecommending) {
+  if (authLoading || isLoading) {
     let loaderText = loadingStep;
-    if (authLoading) loaderText = "Checking whether the user is authenticated...";
+    if (authLoading) loaderText = "Verifying access...";
 
     return <Loader text={loaderText} />;
   }
@@ -213,20 +165,36 @@ const Bookmarks = () => {
 
   return (
     <div className="bg-primary min-h-screen flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      {recommendedColleges.length > 0 && (
-        <div className="mt-8 w-full max-w-6xl">
-          <h2 className="text-xl font-semibold mb-4 text-white">Recommended Colleges</h2>
-          <Slider {...settings}>
-            {recommendedColleges.map((recommendedCollege) => (
-              <div key={recommendedCollege.id} className="px-2 pb-4">
-                <div className="flex justify-center h-full">
-                  <College {...recommendedCollege} />
-                </div>
-              </div>
-            ))}
-          </Slider>
-        </div>
-      )}
+      {/* Recommendation Section - Non-Blocking */}
+      <div className="mt-8 w-full max-w-6xl">
+        {isRecommending ? (
+          <div className="bg-white/5 border border-white/10 rounded-3xl p-12 text-center animate-pulse mb-8">
+            <div className="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-6 h-6 border-2 border-purple-400 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+            <h3 className="text-white font-semibold">{loadingStep}</h3>
+            <p className="text-gray-400 text-sm mt-2">Personalizing your recommendations...</p>
+          </div>
+        ) : (
+          recommendedColleges.length > 0 && (
+            <>
+              <h2 className="text-xl font-bold mb-6 text-white flex items-center gap-3">
+                <span className="w-2 h-8 bg-purple-500 rounded-full"></span>
+                Perfect Matches For You
+              </h2>
+              <Slider {...settings}>
+                {recommendedColleges.map((recommendedCollege) => (
+                  <div key={recommendedCollege.id} className="px-2 pb-8">
+                    <div className="flex justify-center h-full">
+                      <College {...recommendedCollege} />
+                    </div>
+                  </div>
+                ))}
+              </Slider>
+            </>
+          )
+        )}
+      </div>
 
       {bookmarkedColleges.length === 0 ? (
         <div className="flex flex-col items-center justify-center text-center mt-20 max-w-2xl mx-auto space-y-6">
