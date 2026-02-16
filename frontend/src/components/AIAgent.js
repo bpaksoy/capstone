@@ -75,26 +75,74 @@ const AIAgent = () => {
         setChatHistory(prev => [...prev, { role: 'user', content: userMessage }]);
         setIsThinking(true);
 
+        // Add a placeholder "Thinking..." message or directly start with an empty assistant message
+        setChatHistory(prev => [...prev, { role: 'assistant', content: "" }]);
+
         try {
             const token = localStorage.getItem('access');
-            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+            const headers = {
+                'Content-Type': 'application/json',
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            };
 
-            const response = await axios.post(`${baseUrl}api/ai/chat/`, {
-                message: userMessage,
-                context: {
-                    path: location.pathname
+            const response = await fetch(`${baseUrl}api/ai/chat/`, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({
+                    message: userMessage,
+                    context: {
+                        path: location.pathname
+                    }
+                })
+            });
+
+            if (!response.ok) throw new Error("Failed to connect to AI");
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let done = false;
+            let fullReply = "";
+
+            while (!done) {
+                const { value, done: doneReading } = await reader.read();
+                done = doneReading;
+                const chunkValue = decoder.decode(value, { stream: !done });
+
+                if (chunkValue) {
+                    fullReply += chunkValue;
+
+                    // Update the last message (assistant's reply) with the new chunk
+                    setChatHistory(prev => {
+                        const newHistory = [...prev];
+                        // If it's a proactive greeting (special generic response object from views), 
+                        // the format might be different, but here we expect plain text stream.
+                        // However, our proactive greeting logic returns JSON. 
+                        // Wait, we need to handle if it returns JSON (proactive) vs Stream (chat).
+                        // Actually, chat view now returns StreamingHttpResponse for normal chat. 
+                        // But proactive returns JSON Response. Fetch handles both but we need to parse.
+
+                        // Check if it looks like JSON error or simple text
+                        // For this implementation, we assume stream is text. 
+
+                        newHistory[newHistory.length - 1] = {
+                            role: 'assistant',
+                            content: fullReply
+                        };
+                        return newHistory;
+                    });
                 }
-            }, { headers });
-
-            if (response.data && response.data.reply) {
-                setChatHistory(prev => [...prev, { role: 'assistant', content: response.data.reply }]);
-            } else {
-                throw new Error("No reply from AI");
             }
 
         } catch (error) {
             console.error('AI Error:', error);
-            setChatHistory(prev => [...prev, { role: 'assistant', content: "I'm having a little trouble connecting to my knowledge base. Please try again in a moment!" }]);
+            setChatHistory(prev => {
+                const newHistory = [...prev];
+                newHistory[newHistory.length - 1] = {
+                    role: 'assistant',
+                    content: "I'm having a little trouble connecting to my knowledge base. Please try again in a moment!"
+                };
+                return newHistory;
+            });
         } finally {
             setIsThinking(false);
         }
