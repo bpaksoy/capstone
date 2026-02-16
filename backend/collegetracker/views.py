@@ -1881,7 +1881,9 @@ class CollegeAutoCompleteView(APIView):
 
 import google.generativeai as genai
 from django.http import StreamingHttpResponse
-
+from langchain_community.vectorstores import FAISS
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
+import os
 # Configure Gemini
 try:
     genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
@@ -1910,11 +1912,31 @@ class AIChatView(APIView):
             return Response({'reply': response}, status=status.HTTP_200_OK)
 
 
-        # --- 1. GATHER CONTEXT FOR LLM ---
-        # Instead of simple keyword matching, we'll give the LLM some "knowledge"
-        # We can still do a quick DB lookup to find relevant colleges to feed into the prompt
-        
+        # --- 1. GATHER CONTEXT FOR LLM (Hybrid Retrieval) ---
         found_colleges_info = ""
+        index_path = "college_faiss_index"
+        vector_results = []
+        
+        # A. Try Vector Search First (Semantic Search)
+        if os.path.exists(index_path) and len(user_message) > 5:
+            try:
+                api_key = os.environ.get("GEMINI_API_KEY")
+                embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001", google_api_key=api_key)
+                vector_store = FAISS.load_local(index_path, embeddings, allow_dangerous_deserialization=True)
+                
+                # Search for 3 most relevant colleges
+                docs = vector_store.similarity_search(user_message, k=3)
+                if docs:
+                    found_colleges_info += "Relevant Colleges based on description:\n"
+                    for doc in docs:
+                        vector_results.append(doc.metadata.get("name"))
+                        found_colleges_info += f"- {doc.page_content}\n"
+                    found_colleges_info += "\n"
+            except Exception as e:
+                print(f"Vector search warning: {e}")
+
+        # B. Fallback/Supplement: Exact Keyword Matching (if vector didn't find specific names mentioned)
+        # This is useful if user says specific name but vector search missed it for some reason
         keywords = [w for w in re.findall(r'\w+', user_message.lower()) if len(w) > 3]
         if keywords:
             query = Q()
@@ -1925,15 +1947,21 @@ class AIChatView(APIView):
             matches = College.objects.filter(query).distinct()[:3]
             
             if matches.exists():
-                found_colleges_info = "Relevant College Data found in database:\n"
+                db_info = ""
                 for c in matches:
-                    found_colleges_info += f"- Name: {c.name}\n"
-                    found_colleges_info += f"  - Location: {c.city}, {c.state}\n"
-                    if c.admission_rate: found_colleges_info += f"  - Admission Rate: {c.admission_rate*100:.1f}%\n"
-                    if c.sat_score: found_colleges_info += f"  - Avg SAT: {c.sat_score}\n"
-                    if c.cost_of_attendance: found_colleges_info += f"  - Cost: ${c.cost_of_attendance:,}\n"
-                    if c.application_deadline: found_colleges_info += f"  - Deadline: {c.application_deadline}\n"
-                    found_colleges_info += "\n"
+                    # Avoid duplicating if vector search already found it
+                    if c.name in vector_results:
+                        continue
+                        
+                    db_info += f"- Name: {c.name}\n"
+                    db_info += f"  - Location: {c.city}, {c.state}\n"
+                    if c.admission_rate: db_info += f"  - Admission Rate: {c.admission_rate*100:.1f}%\n"
+                    if c.sat_score: db_info += f"  - Avg SAT: {c.sat_score}\n"
+                    if c.cost_of_attendance: db_info += f"  - Cost: ${c.cost_of_attendance:,}\n"
+                    db_info += "\n"
+                
+                if db_info:
+                    found_colleges_info += "Additional Database Matches:\n" + db_info
 
         # --- 2. CONSTRUCT SYSTEM PROMPT ---
         system_prompt = f"""You are Wormie, a helpful, enthusiastic, and knowledgeable AI college counselor agent.
