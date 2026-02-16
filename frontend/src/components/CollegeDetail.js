@@ -189,66 +189,82 @@ const CollegeDetail = () => {
                                 </div>
 
                                 {/* New Financial & Outcome Sections */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10 mb-10">
                                     {/* Financial Aid & Value */}
-                                    <div className="bg-green-50/50 p-6 rounded-2xl border border-green-100">
-                                        <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-green-800">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                            </svg>
-                                            Financial Value
-                                        </h3>
-                                        <div className="space-y-4">
-                                            <div>
-                                                <p className="text-sm text-green-700 font-semibold uppercase tracking-wider">Average Net Price</p>
-                                                <p className="text-2xl font-bold text-green-900">
-                                                    {college.avg_net_price ? formatter.format(college.avg_net_price).replace(/(\.|,)00$/g, '') : 'N/A'}
-                                                </p>
-                                                <p className="text-xs text-green-600/80 mt-1 italic">Average cost after aid for students receiving Title IV aid.</p>
-                                            </div>
-                                            <div className="pt-2">
-                                                <p className="text-sm text-green-700 font-semibold uppercase tracking-wider">Federal Loan Rate</p>
-                                                <p className="text-2xl font-bold text-green-900">
-                                                    {college.loan_rate ? (college.loan_rate * 100).toFixed(1) + '%' : 'N/A'}
-                                                </p>
-                                                <p className="text-xs text-green-600/80 mt-1">Percent of students who take out federal loans.</p>
+                                    {(college.avg_net_price || college.loan_rate) && (
+                                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                                            <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-900">
+                                                <div className="p-2 rounded-lg bg-teal-50 text-primary">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                                    </svg>
+                                                </div>
+                                                Financial Value
+                                            </h3>
+                                            <div className="space-y-6">
+                                                {college.avg_net_price && (
+                                                    <div>
+                                                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Average Net Price</p>
+                                                        <p className="text-3xl font-black text-gray-900 leading-none">
+                                                            {formatter.format(college.avg_net_price).replace(/(\.|,)00$/g, '')}
+                                                        </p>
+                                                        <p className="text-[11px] text-gray-500 mt-2 leading-relaxed">Average cost after aid for students receiving Title IV aid.</p>
+                                                    </div>
+                                                )}
+                                                {college.loan_rate && (
+                                                    <div className="pt-4 border-t border-gray-50">
+                                                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Federal Loan Rate</p>
+                                                        <p className="text-2xl font-bold text-gray-900">
+                                                            {(college.loan_rate * 100).toFixed(1)}%
+                                                        </p>
+                                                        <p className="text-[11px] text-gray-500 mt-1">Percent of students who take out federal loans.</p>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
-                                    </div>
+                                    )}
 
                                     {/* Student Outcomes */}
-                                    <div className="bg-blue-50/50 p-6 rounded-2xl border border-blue-100">
-                                        <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-blue-800">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5" />
-                                            </svg>
-                                            Student Outcomes
-                                        </h3>
-                                        <div className="space-y-4">
-                                            <div>
-                                                <p className="text-sm text-blue-700 font-semibold uppercase tracking-wider">Graduation Rate</p>
-                                                <div className="flex items-end gap-2">
-                                                    <p className="text-4xl font-black text-blue-900">
-                                                        {college.grad_rate ? (college.grad_rate * 100).toFixed(0) + '%' : 'N/A'}
+                                    {college.grad_rate && (
+                                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                                            <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-900">
+                                                <div className="p-2 rounded-lg bg-blue-50 text-blue-600">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5" />
+                                                    </svg>
+                                                </div>
+                                                Student Outcomes
+                                            </h3>
+                                            <div className="space-y-6">
+                                                <div>
+                                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Graduation Rate</p>
+                                                    <div className="flex items-baseline gap-2">
+                                                        <p className="text-4xl font-black text-gray-900 leading-none">
+                                                            {(college.grad_rate * 100).toFixed(0)}%
+                                                        </p>
+                                                        <span className="text-gray-400 text-xs font-semibold">(150% time)</span>
+                                                    </div>
+                                                    <div className="w-full bg-gray-100 rounded-full h-2 mt-4 overflow-hidden">
+                                                        <div
+                                                            className="bg-primary h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(23,113,125,0.3)]"
+                                                            style={{ width: (college.grad_rate * 100) + '%' }}
+                                                        ></div>
+                                                    </div>
+                                                    <p className="text-[11px] text-gray-500 mt-3 leading-relaxed">
+                                                        Percentage of full-time, first-time students who complete their degree within 150% of the normal time.
                                                     </p>
-                                                    <span className="text-blue-600 font-medium mb-1">(150% time)</span>
                                                 </div>
-                                                <div className="w-full bg-blue-200 rounded-full h-2.5 mt-3">
-                                                    <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: college.grad_rate ? (college.grad_rate * 100) + '%' : '0%' }}></div>
-                                                </div>
-                                            </div>
-                                            <div className="pt-2">
-                                                <p className="text-sm text-blue-700 font-semibold uppercase tracking-wider">Salary After Grad</p>
-                                                <p className="text-lg text-blue-800 italic">Median earnings are generally higher for graduates of this institution compared to the national average.</p>
                                             </div>
                                         </div>
-                                    </div>
+                                    )}
                                 </div>
 
 
-                                <div className="mt-8 flex flex-col gap-2">
-                                    <h3 className="text-xl font-bold text-gray-800">College Description</h3>
-                                    <p className="text-gray-700 leading-relaxed">{college.description || "No detailed description available for this institution."}</p>
+                                <div className="mt-8 pt-8 border-t border-gray-100 flex flex-col gap-4">
+                                    <h3 className="text-xl font-bold text-gray-900">About {college.name}</h3>
+                                    <p className="text-gray-600 leading-relaxed text-sm lg:text-base">
+                                        {college.description || `Explore detailed information about ${college.name}, located in ${college.city}, ${college.state}. This institution offers a variety of programs and is recognized for its commitment to academic excellence and student success.`}
+                                    </p>
                                 </div>
                                 {programs && programs.length > 0 && (
                                     <div className="mt-8">
