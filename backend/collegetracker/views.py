@@ -21,7 +21,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import AccessToken
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
-from django.db.models import Count, Sum
+from django.db.models import Count, Sum, Avg
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
@@ -306,20 +306,22 @@ class CollegeRecommendationView(APIView):
 
     def get(self, request):
         user = request.user
-        bookmarks = user.following_colleges.all()
+        # Get colleges from the Bookmark model
+        bookmarked_college_ids = Bookmark.objects.filter(user=user).values_list('college_id', flat=True)
+        bookmarks = College.objects.filter(id__in=bookmarked_college_ids)
         
         if not bookmarks.exists():
             return Response({'colleges': [], 'message': 'No bookmarks yet'}, status=status.HTTP_200_OK)
 
         # 1. Build Profile
         states = list(bookmarks.values_list('state', flat=True).distinct())
-        avg_sat = bookmarks.aggregate(models.Avg('sat_score'))['sat_score__avg'] or 1100
-        avg_adm = bookmarks.aggregate(models.Avg('admission_rate'))['admission_rate__avg'] or 0.6
-        avg_cost = bookmarks.aggregate(models.Avg('cost_of_attendance'))['cost_of_attendance__avg'] or 30000
+        avg_sat = bookmarks.aggregate(Avg('sat_score'))['sat_score__avg'] or 1100
+        avg_adm = bookmarks.aggregate(Avg('admission_rate'))['admission_rate__avg'] or 0.6
+        avg_cost = bookmarks.aggregate(Avg('cost_of_attendance'))['cost_of_attendance__avg'] or 30000
 
         # 2. Query Candidates (Limit to relevant states)
         # Exclude already bookmarked
-        queryset = College.objects.filter(state__in=states).exclude(id__in=bookmarks.values_list('id', flat=True))
+        queryset = College.objects.filter(state__in=states).exclude(id__in=bookmarked_college_ids)
         
         # 3. Simple scoring in Python (for speed/simplicity since it's filtered by states)
         # For even more speed, we could do this in SQL but Python is fine for <1000 records

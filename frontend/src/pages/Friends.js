@@ -55,7 +55,7 @@ const Friends = () => {
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-12">
-                    <h1 className="text-5xl font-black text-white mb-3 tracking-tight">My Connections</h1>
+                    <h1 className="text-3xl font-bold text-white mb-3 tracking-tight">My Connections</h1>
                     <p className="text-teal-100 text-lg font-medium">
                         {friends.length} {friends.length === 1 ? 'Friend' : 'Friends'}
                     </p>
