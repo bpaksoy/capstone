@@ -62,7 +62,7 @@ const PublicProfile = () => {
     const isRestricted = otherUserData?.is_private && !isFriend && !isOwnProfile;
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-primary via-teal-700 to-teal-900 pb-20">
+        <div className="min-h-screen bg-primary pb-20">
             {/* Cover Image Section */}
             <section className="relative block h-72">
                 <div

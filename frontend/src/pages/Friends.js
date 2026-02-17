@@ -51,7 +51,7 @@ const Friends = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-primary via-teal-700 to-teal-900 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-primary py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-12">
