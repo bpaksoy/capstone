@@ -62,7 +62,7 @@ const PublicProfile = () => {
     const isRestricted = otherUserData?.is_private && !isFriend && !isOwnProfile;
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-20">
+        <div className="min-h-screen bg-gradient-to-br from-primary via-teal-700 to-teal-900 pb-20">
             {/* Cover Image Section */}
             <section className="relative block h-72">
                 <div
@@ -71,14 +71,14 @@ const PublicProfile = () => {
                         backgroundImage: `url('https://images.unsplash.com/photo-1499336315816-097655dcfbda?ixlib=rb-1.2.1&auto=format&fit=crop&w=2710&q=80')`
                     }}
                 >
-                    <span className="w-full h-full absolute opacity-50 bg-teal-900"></span>
+                    <span className="w-full h-full absolute opacity-40 bg-gray-900"></span>
                 </div>
             </section>
 
             {/* Profile Content Section */}
             <section className="relative -mt-24 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-5xl mx-auto">
-                    <div className="bg-white shadow-2xl rounded-3xl overflow-hidden border border-gray-100">
+                    <div className="bg-white/95 backdrop-blur-md shadow-2xl rounded-3xl overflow-hidden border border-white/20">
                         <div className="px-8 pb-10">
                             <div className="flex flex-wrap justify-between items-end -mt-12 sm:-mt-16 mb-8 gap-6">
                                 {/* Profile Information (Left/Center) */}
@@ -117,15 +117,15 @@ const PublicProfile = () => {
                                     {!isOwnProfile && (
                                         <button
                                             className={`w-full sm:w-auto px-8 py-3 rounded-2xl font-bold transition-all shadow-lg hover:shadow-xl active:scale-95 ${isFriend
-                                                    ? 'bg-red-50 text-red-600 border border-red-100 hover:bg-red-100'
-                                                    : isPending
-                                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                                        : 'bg-primary text-white hover:bg-teal-700'
+                                                ? 'bg-gray-800 text-white hover:bg-gray-700 border border-gray-700'
+                                                : isPending
+                                                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                    : 'bg-primary text-white hover:bg-teal-700'
                                                 }`}
                                             onClick={() => handleFriendRequest(otherUserData.id)}
                                             disabled={isPending}
                                         >
-                                            {isFriend ? "Disconnect" : isPending ? "Request Sent" : "Add Connection"}
+                                            {isFriend ? "Unfriend" : isPending ? "Request Sent" : "Add Connection"}
                                         </button>
                                     )}
                                 </div>
