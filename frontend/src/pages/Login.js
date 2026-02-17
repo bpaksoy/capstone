@@ -5,9 +5,10 @@ import graduation from "../assets/images/graduation.jpg";
 import { Navigate } from 'react-router-dom';
 import { useCurrentUser } from '../UserProvider/UserProvider';
 import axios from "axios";
+import Loader from '../components/Loader';
 
 export default function Login() {
-    const { loggedIn, updateLoggedInStatus } = useCurrentUser();
+    const { loggedIn, updateLoggedInStatus, appLoading } = useCurrentUser();
     console.log("loggedIn!!!!", loggedIn)
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
@@ -35,9 +36,13 @@ export default function Login() {
         }
     };
 
+    if (appLoading) {
+        return <Loader text="Loading..." />;
+    }
+
     return (
         <>
-            {/* {loggedIn && <Navigate to="/" />} - Removed to allow re-login if needed */}
+            {loggedIn && <Navigate to="/" />}
             <div className="py-16">
                 <div className="flex bg-white rounded-lg shadow-lg overflow-hidden mx-auto max-w-sm lg:max-w-4xl">
                     <img className="hidden lg:block lg:w-1/2 bg-cover"

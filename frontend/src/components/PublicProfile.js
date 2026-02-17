@@ -174,7 +174,10 @@ const PublicProfile = () => {
                                                         <div className="h-40 bg-gray-100 rounded-2xl"></div>
                                                     </div>
                                                 ) : postsData?.length > 0 ? (
-                                                    <PostList posts={postsData} />
+                                                    <PostList
+                                                        posts={postsData}
+                                                        onAddPost={() => fetchPostsData(`${baseUrl}api/users/${userId}/posts/`, 'get')}
+                                                    />
                                                 ) : (
                                                     <p className="text-gray-400 italic">No posts yet.</p>
                                                 )}
