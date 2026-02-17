@@ -178,7 +178,12 @@ const Header = (props) => {
                                             notifications.map((notif) => (
                                                 <MenuItem key={notif.id}>
                                                     <div
-                                                        onClick={() => markAsRead(notif.id)}
+                                                        onClick={() => {
+                                                            markAsRead(notif.id);
+                                                            if (notif.notification_type === 'friend_request') {
+                                                                navigate('/profile');
+                                                            }
+                                                        }}
                                                         className={`flex items-start gap-3 px-4 py-3 rounded-xl transition-all hover:bg-gray-50 cursor-pointer ${!notif.is_read ? 'bg-teal-50/30 border-l-2 border-primary' : ''}`}
                                                     >
                                                         <div className="flex-shrink-0 mt-1">
