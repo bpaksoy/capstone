@@ -20,6 +20,7 @@ import DetailedSearch from "./components/DetailedSearch";
 import Settings from "./pages/Settings";
 import Footer from "./components/Footer";
 import AIAgent from "./components/AIAgent";
+import Friends from "./pages/Friends";
 
 
 import ScrollToTopOnNavigate from "./utils/ScrollToTopOnNavigate";
@@ -46,6 +47,7 @@ const App = () => {
             <Route path="/smart-bookmarks" element={<SmartBookmarks />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/profile/:userId" element={<PublicProfile />} />
+            <Route path="/friends" element={<Friends />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/detailed-search" element={<DetailedSearch />} />
             <Route path="/404" element={<NotFound />} />

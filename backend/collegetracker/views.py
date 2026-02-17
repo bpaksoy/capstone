@@ -1378,6 +1378,32 @@ class FriendsView(APIView):
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+
+
+class MyFriendsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        try:
+            user = request.user
+            
+            # Get all accepted friendships where user is either user1 or user2
+            friendships = Friendship.objects.filter(
+                Q(user1=user, status='accepted') | Q(user2=user, status='accepted')
+            )
+
+            # Extract the friend (the other user in the relationship)
+            friends = []
+            for friendship in friendships:
+                friend = friendship.user2 if friendship.user1 == user else friendship.user1
+                friends.append(friend)
+
+            serializer = UserSerializer(friends, many=True)
+            return Response({'friends': serializer.data}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 class UnfriendView(APIView):
     permission_classes = [IsAuthenticated]
 

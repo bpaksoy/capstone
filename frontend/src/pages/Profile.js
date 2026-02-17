@@ -6,10 +6,11 @@ import { useCurrentUser } from '../UserProvider/UserProvider';
 import { icons, images } from '../constants';
 import { baseUrl } from '../shared';
 import useFetch from '../hooks/FetchData';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const Profile = () => {
 
+    const navigate = useNavigate();
     const { user, fetchUser, loading } = useCurrentUser();
     // console.log("user", user);
     // console.log("loading", loading);
@@ -170,7 +171,7 @@ const Profile = () => {
                                 {/* Stats Section (Left) */}
                                 <div className="w-full lg:w-4/12 px-4 lg:order-1">
                                     <div className="flex justify-center py-4 lg:pt-4 pt-8 text-gray-600">
-                                        <div className="mr-8 p-3 text-center cursor-pointer hover:text-primary transition-colors">
+                                        <div onClick={() => navigate('/friends')} className="mr-8 p-3 text-center cursor-pointer hover:text-primary transition-colors">
                                             <span className="text-xl font-bold block uppercase tracking-wide text-gray-800">
                                                 {friendsLoading ? "..." : friendsData?.friends?.length || 0}
                                             </span>
