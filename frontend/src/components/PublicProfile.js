@@ -78,7 +78,7 @@ const PublicProfile = () => {
             {/* Profile Content Section */}
             <section className="relative -mt-24 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-5xl mx-auto">
-                    <div className="bg-white/95 backdrop-blur-md shadow-2xl rounded-3xl overflow-hidden border border-white/20">
+                    <div className="bg-white/95 backdrop-blur-md shadow-2xl rounded-3xl border border-white/20">
                         <div className="px-8 pb-10">
                             <div className="flex flex-wrap justify-between items-end -mt-12 sm:-mt-16 mb-8 gap-6">
                                 {/* Profile Information (Left/Center) */}
@@ -87,7 +87,7 @@ const PublicProfile = () => {
                                         <img
                                             alt="Profile"
                                             src={otherUserData?.image ? baseUrl + otherUserData.image : images.avatar}
-                                            className="w-32 h-32 sm:w-40 sm:h-40 rounded-3xl object-cover ring-8 ring-white bg-white shadow-lg"
+                                            className="w-32 h-32 sm:w-40 sm:h-40 rounded-full object-cover ring-4 ring-white bg-white shadow-lg"
                                         />
                                         {otherUserData?.is_private && (
                                             <div className="absolute -top-2 -right-2 bg-primary p-2 rounded-xl shadow-lg border-2 border-white">
