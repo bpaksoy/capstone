@@ -83,6 +83,48 @@ class College(models.Model):
     grad_rate = models.FloatField(null=True, blank=True)
     loan_rate = models.FloatField(null=True, blank=True)
 
+    # --- New Metadata from IPEDS ---
+    carnegie_classification = models.IntegerField(null=True, blank=True)
+    is_open_admission = models.BooleanField(default=False)
+    is_distance_education = models.BooleanField(default=False)
+
+    def get_carnegie_classification_display(self):
+        labels = {
+            -2: "Not classified",
+            1: "Mixed Associate Large",
+            2: "Mixed Associate Medium",
+            3: "Mixed Associate Small",
+            4: "Mixed Associate/Baccalaureate",
+            5: "Mixed Baccalaureate",
+            6: "Mixed Undergraduate/Graduate-Doctorate Large",
+            7: "Mixed Undergraduate/Graduate-Doctorate Medium",
+            8: "Mixed Undergraduate/Graduate-Doctorate Small",
+            9: "Mixed Undergraduate/Graduate-Master's Large/Medium",
+            10: "Mixed Undergraduate/Graduate-Master's Small",
+            11: "Professions-focused Associate Large/Medium",
+            12: "Professions-focused Associate Small",
+            13: "Professions-focused Associate/Baccalaureate",
+            14: "Professions-focused Baccalaureate Medium",
+            15: "Professions-focused Baccalaureate Small",
+            16: "Professions-focused Undergraduate/Graduate-Doctorate Large",
+            17: "Professions-focused Undergraduate/Graduate-Doctorate Medium",
+            18: "Professions-focused Undergraduate/Graduate-Doctorate Small",
+            19: "Professions-focused Undergraduate/Graduate-Master's Large/Medium",
+            20: "Professions-focused Undergraduate/Graduate-Master's Small",
+            21: "Special Focus: Applied and Career Studies",
+            22: "Special Focus: Arts and Sciences",
+            23: "Special Focus: Arts, Music, and Design",
+            24: "Special Focus: Business",
+            25: "Special Focus: Graduate Studies",
+            26: "Special Focus: Law",
+            27: "Special Focus: Medical Schools and Centers",
+            28: "Special Focus: Nursing",
+            29: "Special Focus: Other Health Professions",
+            30: "Special Focus: Technology, Engineering, and Sciences",
+            31: "Special Focus: Theological Studies",
+        }
+        return labels.get(self.carnegie_classification, "Unknown")
+
     def __str__(self):
         return self.name + ' - ' + self.city + ', ' + self.state + ', ' + self.website + ', ' + str(self.admission_rate) + ', ' + str(self.sat_score) + ', ' + str(self.cost_of_attendance) + ', ' + str(self.tuition_in_state) + ', ' + str(self.tuition_out_state) + ', ' + str(self.latitude) + ', ' + str(self.longitude) + ', ' + str(self.ft_faculty_rate)
 

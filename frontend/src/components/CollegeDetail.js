@@ -147,6 +147,17 @@ const CollegeDetail = () => {
                                     {college.women_only && <span className="px-3 py-1 rounded-full text-sm font-semibold bg-pink-100 text-pink-800">Women's College</span>}
                                     {college.men_only && <span className="px-3 py-1 rounded-full text-sm font-semibold bg-blue-200 text-blue-800">Men's College</span>}
                                     {college.relaffil && college.relaffil > 0 && <span className="px-3 py-1 rounded-full text-sm font-semibold bg-indigo-100 text-indigo-800">Religious Affiliation</span>}
+
+                                    {/* NEW: Open Admissions & Distance Ed */}
+                                    {college.is_open_admission && <span className="px-3 py-1 rounded-full text-sm font-semibold bg-green-50 text-green-700 border border-green-200">Open Admissions</span>}
+                                    {college.is_distance_education && <span className="px-3 py-1 rounded-full text-sm font-semibold bg-cyan-50 text-cyan-700 border border-cyan-200">Online Only</span>}
+
+                                    {/* NEW: Carnegie Classification */}
+                                    {college.carnegie_classification_display && college.carnegie_classification_display !== "Not classified" && (
+                                        <span className="px-3 py-1 rounded-full text-sm font-semibold bg-purple-50 text-purple-700 border border-purple-200">
+                                            {college.carnegie_classification_display}
+                                        </span>
+                                    )}
                                 </div>
 
                                 <div className="flex flex-wrap gap-4 mb-4">

@@ -8,6 +8,7 @@ from rest_framework.validators import UniqueTogetherValidator
 
 class CollegeSerializer(serializers.ModelSerializer):
     programs_count = serializers.SerializerMethodField()
+    carnegie_classification_display = serializers.CharField(source='get_carnegie_classification_display', read_only=True)
 
     class Meta:
         model = College
