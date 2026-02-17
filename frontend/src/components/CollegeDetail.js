@@ -191,7 +191,7 @@ const CollegeDetail = () => {
                                 {/* New Financial & Outcome Sections */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10 mb-10">
                                     {/* Financial Aid & Value */}
-                                    {(college.avg_net_price || college.loan_rate) && (
+                                    {!!(college.avg_net_price || college.loan_rate) && (
                                         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                                             <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-900">
                                                 <div className="p-2 rounded-lg bg-teal-50 text-primary">
@@ -225,7 +225,7 @@ const CollegeDetail = () => {
                                     )}
 
                                     {/* Student Outcomes */}
-                                    {college.grad_rate && (
+                                    {!!college.grad_rate && (
                                         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                                             <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-900">
                                                 <div className="p-2 rounded-lg bg-blue-50 text-blue-600">
