@@ -1978,6 +1978,18 @@ class AIChatView(APIView):
                     if c.admission_rate: db_info += f"  - Admission Rate: {c.admission_rate*100:.1f}%\n"
                     if c.sat_score: db_info += f"  - Avg SAT: {c.sat_score}\n"
                     if c.cost_of_attendance: db_info += f"  - Cost: ${c.cost_of_attendance:,}\n"
+                    
+                    # New Metadata
+                    cc_disp = c.get_carnegie_classification_display()
+                    if cc_disp and cc_disp != "Not classified":
+                        db_info += f"  - Classification: {cc_disp}\n"
+                    
+                    if c.is_open_admission:
+                        db_info += f"  - Admissions: Open Admission Policy\n"
+                    
+                    if c.is_distance_education:
+                        db_info += f"  - Learning Mode: 100% Online/Distance Education\n"
+                        
                     db_info += "\n"
                 
                 if db_info:
