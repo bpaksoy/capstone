@@ -14,7 +14,7 @@ function Reply({ commentId, lastUpdatedReply, onAddPost, user }) {
 
     const updateReplies = (time) => {
         setLastUpdated(time);
-        onAddPost(); //update the number of comments
+        onAddPost(false); //update the number of comments
     };
 
     useEffect(() => {

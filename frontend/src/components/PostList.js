@@ -129,6 +129,10 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
     const [expandedPosts, setExpandedPosts] = useState({});
 
     const handleShare = (post) => {
+        if (!user) {
+            navigate('/login');
+            return;
+        }
         setPostToShare(post);
         setShareModalOpen(true);
     };
@@ -180,7 +184,13 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
                                         <span className="text-sm font-medium hidden sm:inline">Share</span>
                                     </button>
                                     <button
-                                        onClick={() => onOpenPostModal && onOpenPostModal(`${item.title}\n${item.link}\n\nCheck this out!`)}
+                                        onClick={() => {
+                                            if (!user) {
+                                                navigate('/login');
+                                            } else {
+                                                onOpenPostModal && onOpenPostModal(`${item.title}\n${item.link}\n\nCheck this out!`);
+                                            }
+                                        }}
                                         className="text-gray-500 hover:bg-gray-100 p-2 rounded-full transition-colors flex items-center gap-2"
                                         title="Discuss this Article"
                                     >

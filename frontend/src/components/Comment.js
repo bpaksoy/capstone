@@ -23,7 +23,7 @@ function Comment({ postId, lastUpdatedComment, onAddPost, user }) {
 
     const updateLikeStatus = (commentId, isLiked) => {
         setCommentLikes((prevCommentLikes) => ({ ...prevCommentLikes, [commentId]: isLiked }));
-        onAddPost(); // Update the post list when a like status changes
+        onAddPost(false); // Update the post list when a like status changes
     };
 
 
@@ -63,7 +63,7 @@ function Comment({ postId, lastUpdatedComment, onAddPost, user }) {
 
     const updateReplies = (time) => {
         setLastUpdatedReply(time);
-        onAddPost();
+        onAddPost(false);
     };
 
     const handleOpenModal = (commentId) => {
