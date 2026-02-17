@@ -12,7 +12,7 @@ import EditPostModal from '../utils/EditPostModal';
 import ShareModal from '../utils/ShareModal';
 import { useNavigate } from 'react-router-dom';
 
-const PostList = ({ posts, onAddPost }) => {
+const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
     const { user, fetchUser } = useCurrentUser();
     const navigate = useNavigate();
     const [otherUser, setOtherUser] = useState(null);
@@ -49,7 +49,7 @@ const PostList = ({ posts, onAddPost }) => {
 
     const updateLikeStatus = (postId, isLiked) => {
         setPostLikes((prevPostLikes) => ({ ...prevPostLikes, [postId]: isLiked }));
-        onAddPost(); // Update the post list when a like status changes
+        onAddPost(false); // Update the post list when a like status changes
     };
 
     const [modalIsOpen, setModalIsOpen] = useState(null);
@@ -97,7 +97,7 @@ const PostList = ({ posts, onAddPost }) => {
                     Authorization: `Bearer ${localStorage.getItem('access')}`,
                 },
             });
-            onAddPost(); // Update the post list when a post is deleted
+            onAddPost(false); // Update the post list when a post is deleted
             // alert("Post deleted successfully!");
         } catch (error) {
             console.error('Error deleting post:', error);
@@ -110,7 +110,7 @@ const PostList = ({ posts, onAddPost }) => {
 
     const updateComments = (time) => {
         setLastUpdatedComment(time);
-        onAddPost(); // Update the post list when a comment is added
+        onAddPost(false); // Update the post list when a comment is added
     };
 
 
@@ -171,11 +171,21 @@ const PostList = ({ posts, onAddPost }) => {
                                     </div>
                                 </a>
                                 <div className="px-6 py-3 border-t border-gray-100 flex justify-between items-center bg-white">
-                                    <button className="text-gray-500 hover:bg-gray-100 p-2 rounded-full">
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
-                                    </button>
-                                    <button className="text-gray-500 hover:bg-gray-100 p-2 rounded-full">
+                                    <button
+                                        onClick={() => handleShare(item)}
+                                        className="text-gray-500 hover:bg-gray-100 p-2 rounded-full transition-colors flex items-center gap-2"
+                                        title="Share Article"
+                                    >
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
+                                        <span className="text-sm font-medium hidden sm:inline">Share</span>
+                                    </button>
+                                    <button
+                                        onClick={() => onOpenPostModal && onOpenPostModal(`${item.title}\n${item.link}\n\nCheck this out!`)}
+                                        className="text-gray-500 hover:bg-gray-100 p-2 rounded-full transition-colors flex items-center gap-2"
+                                        title="Discuss this Article"
+                                    >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                                        <span className="text-sm font-medium hidden sm:inline">Discuss</span>
                                     </button>
                                 </div>
                             </div>
@@ -363,7 +373,7 @@ const PostList = ({ posts, onAddPost }) => {
             <ShareModal
                 isOpen={shareModalOpen}
                 onClose={() => setShareModalOpen(false)}
-                postUrl={postToShare ? `${window.location.origin}/posts/${postToShare.id}` : window.location.href} // Assuming robust URL structure or just current href if detail page
+                postUrl={postToShare ? (postToShare.isNews ? postToShare.link : `${window.location.origin}/posts/${postToShare.id}`) : window.location.href} // Handle news links
             />
 
         </div>

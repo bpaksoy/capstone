@@ -13,6 +13,8 @@ import ScrollToTop from '../components/ScrollToTop';
 function Trending() {
     const { posts, updatePosts, loading: postsLoading } = usePosts();
     const { loggedIn } = useCurrentUser();
+    const [isPostModalOpen, setIsPostModalOpen] = useState(false);
+    const [postModalInitialContent, setPostModalInitialContent] = useState('');
     const [news, setNews] = useState([]);
     const [newsLoading, setNewsLoading] = useState(true);
     const [displayLimit, setDisplayLimit] = useState(10); // Initial load
@@ -34,12 +36,18 @@ function Trending() {
             }
         };
         fetchNews();
-        window.scrollTo(0, 0); // Direct user to top on mount
     }, []);
 
-    const handleAddPost = () => {
+    const handleAddPost = (scrollToTop = true) => {
         updatePosts();
-        window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top after posting
+        if (scrollToTop) {
+            window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top after posting
+        }
+    };
+
+    const handleOpenPostModal = (content = '') => {
+        setPostModalInitialContent(content);
+        setIsPostModalOpen(true);
     };
 
     const getMixedFeed = () => {
@@ -89,7 +97,15 @@ function Trending() {
                 </div>
                 <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-700 via-gray-900 to-black tracking-tight drop-shadow-sm">Trending</h1>
             </div>
-            {loggedIn && <PostModal onAddPost={handleAddPost} />}
+            {loggedIn && (
+                <PostModal
+                    onAddPost={() => handleAddPost(true)}
+                    isOpen={isPostModalOpen}
+                    onClose={() => setIsPostModalOpen(false)}
+                    initialContent={postModalInitialContent}
+                    triggerOpen={() => setIsPostModalOpen(true)}
+                />
+            )}
 
             <InfiniteScroll
                 dataLength={displayFeed.length}
@@ -115,10 +131,15 @@ function Trending() {
                 scrollThreshold={0.9}
                 style={{ overflow: 'visible' }} // Important for sticky header/body scrolling
             >
-                <PostList posts={displayFeed} onAddPost={handleAddPost} />
+                <PostList
+                    posts={displayFeed}
+                    onAddPost={handleAddPost}
+                    onOpenPostModal={handleOpenPostModal}
+                />
             </InfiniteScroll>
         </div>
     )
 }
+
 
 export default Trending;

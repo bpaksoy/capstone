@@ -6,23 +6,45 @@ import { baseUrl } from '../shared';
 import { useCurrentUser } from '../UserProvider/UserProvider';
 import { images } from "../constants";
 
-function AddPostModal({ onAddPost }) {
+function AddPostModal({ onAddPost, isOpen: externalIsOpen, onClose: externalOnClose, initialContent, triggerOpen }) {
     const { user } = useCurrentUser();
-    const [isOpen, setIsOpen] = useState(false);
+    const [internalIsOpen, setInternalIsOpen] = useState(false);
     const [title, setTitle] = useState('');
-    const [content, setContent] = useState('');
+    const [content, setContent] = useState(initialContent || '');
     const [error, setError] = useState(null);
     const [imageFile, setImageFile] = useState(null);
 
+    // Determine if controlled or uncontrolled
+    const isControlled = externalIsOpen !== undefined;
+    const isOpen = isControlled ? externalIsOpen : internalIsOpen;
+
+    React.useEffect(() => {
+        if (initialContent) {
+            setContent(initialContent);
+        }
+    }, [initialContent]);
+
     const handleOpenModal = () => {
-        setIsOpen(true);
-        setError(null)
+        if (triggerOpen) {
+            triggerOpen();
+        } else {
+            setInternalIsOpen(true);
+        }
+        setError(null);
     };
 
     const handleCloseModal = () => {
-        setIsOpen(false);
-        setTitle('');
-        setContent('');
+        if (externalOnClose) {
+            externalOnClose();
+        } else {
+            setInternalIsOpen(false);
+        }
+        // Only clear if completely closed, maybe keep content if accidentally closed? 
+        // For now, follow existing behavior: clear on close.
+        if (!initialContent) { // Don't clear if it was pre-filled? Actually usually we do want to clear.
+            setTitle('');
+            setContent('');
+        }
     };
 
     const handleImageChange = (e) => {
