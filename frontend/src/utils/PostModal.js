@@ -13,6 +13,9 @@ function AddPostModal({ onAddPost, isOpen: externalIsOpen, onClose: externalOnCl
     const [content, setContent] = useState(initialContent || '');
     const [error, setError] = useState(null);
     const [imageFile, setImageFile] = useState(null);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
+    const popularEmojis = ["😀", "😂", "🥰", "😍", "🤩", "😊", "🤔", "🙌", "✨", "🔥", "💯", "🎓", "🚀", "📚", "🏫", "🎉", "💙", "🌟", "✅", "📝", "🌍", "📍"];
 
     // Determine if controlled or uncontrolled
     const isControlled = externalIsOpen !== undefined;
@@ -41,10 +44,11 @@ function AddPostModal({ onAddPost, isOpen: externalIsOpen, onClose: externalOnCl
         }
         // Only clear if completely closed, maybe keep content if accidentally closed? 
         // For now, follow existing behavior: clear on close.
-        if (!initialContent) { // Don't clear if it was pre-filled? Actually usually we do want to clear.
+        if (!initialContent) {
             setTitle('');
             setContent('');
         }
+        setShowEmojiPicker(false);
     };
 
     const handleImageChange = (e) => {
@@ -117,7 +121,14 @@ function AddPostModal({ onAddPost, isOpen: externalIsOpen, onClose: externalOnCl
                         </svg>
                         <span>Photo/Video</span>
                     </div>
-                    <div className="flex items-center gap-2 text-gray-500 text-sm font-medium hover:bg-gray-50 px-2 py-1 rounded-lg transition-colors">
+                    <div
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenModal();
+                            setShowEmojiPicker(true);
+                        }}
+                        className="flex items-center gap-2 text-gray-500 text-sm font-medium hover:bg-gray-50 px-2 py-1 rounded-lg transition-colors cursor-pointer"
+                    >
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-yellow-500">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M15.182 15.182a4.5 4.5 0 0 1-6.364 0M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Z" />
                         </svg>
@@ -195,35 +206,80 @@ function AddPostModal({ onAddPost, isOpen: externalIsOpen, onClose: externalOnCl
                                         </div>
                                     </div>
 
-                                    {/* Image Upload Area */}
+                                    {/* Image Upload & Emoji Area */}
                                     <div className="mt-2">
-                                        <div className="flex items-center justify-between border border-gray-300 rounded-lg p-3 shadow-sm hover:bg-gray-50 cursor-pointer relative group transition-all hover:border-primary">
+                                        <div className="flex items-center justify-between border border-gray-300 rounded-lg p-3 shadow-sm hover:border-primary transition-all relative">
                                             <span className="text-sm font-medium text-gray-700">Add to your post</span>
-                                            <div className="flex items-center gap-2">
-                                                <div className="p-1.5 rounded-full hover:bg-gray-200 text-green-500">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-                                                        <path fillRule="evenodd" d="M1.5 6a2.25 2.25 0 012.25-2.25h16.5A2.25 2.25 0 0122.5 6v12a2.25 2.25 0 01-2.25 2.25H3.75A2.25 2.25 0 011.5 18V6zM3 16.06V18c0 .414.336.75.75.75h16.5A.75.75 0 0021 18v-1.94l-2.69-2.689a1.5 1.5 0 00-2.12 0l-.88.879.97.97a.75.75 0 11-1.06 1.06l-5.16-5.159a1.5 1.5 0 00-2.12 0L3 16.061zm10.125-7.81a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0z" clipRule="evenodd" />
-                                                    </svg>
+                                            <div className="flex items-center gap-1 relative">
+                                                {/* Image Button */}
+                                                <div className="relative group/img">
+                                                    <div className="p-2 rounded-full hover:bg-gray-100 text-green-500 cursor-pointer transition-colors">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+                                                            <path fillRule="evenodd" d="M1.5 6a2.25 2.25 0 012.25-2.25h16.5A2.25 2.25 0 0122.5 6v12a2.25 2.25 0 01-2.25 2.25H3.75A2.25 2.25 0 011.5 18V6zM3 16.06V18c0 .414.336.75.75.75h16.5A.75.75 0 0021 18v-1.94l-2.69-2.689a1.5 1.5 0 00-2.12 0l-.88.879.97.97a.75.75 0 11-1.06 1.06l-5.16-5.159a1.5 1.5 0 00-2.12 0L3 16.061zm10.125-7.81a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0z" clipRule="evenodd" />
+                                                        </svg>
+                                                        <input
+                                                            type="file"
+                                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                            accept="image/*"
+                                                            onChange={handleImageChange}
+                                                        />
+                                                    </div>
+                                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-[10px] rounded opacity-0 group-hover/img:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                                                        Add Photo
+                                                    </div>
                                                 </div>
-                                                <div className="p-1.5 rounded-full hover:bg-gray-200 text-yellow-500">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-                                                        <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-2.625 6c-.54 0-.828.419-.936.634a1.96 1.96 0 00-.189.866c0 .298.059.605.189.866.108.215.395.634.936.634.54 0 .828-.419.936-.634.13-.26.189-.568.189-.866 0-.298-.059-.605-.189-.866-.108-.215-.395-.634-.936-.634zm4.314.634c.108-.215.395-.634.936-.634.54 0 .828.419.936.634.13.26.189.568.189.866 0 .298-.059.605-.189.866-.108-.215-.395-.634-.936-.634-.54 0-.828.419-.936.634-.13.26-.189.568-.189.866 0-.298.059-.605.189-.866zm2.023 6.828a.75.75 0 10-1.06-1.06 3.75 3.75 0 01-5.304 0 .75.75 0 00-1.06 1.06 5.25 5.25 0 007.424 0z" clipRule="evenodd" />
-                                                    </svg>
+
+                                                {/* Emoji Button */}
+                                                <div className="relative group/emoji">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                                                        className={`p-2 rounded-full hover:bg-gray-100 transition-colors ${showEmojiPicker ? 'bg-gray-100 text-yellow-600' : 'text-yellow-500'}`}
+                                                    >
+                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+                                                            <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-2.625 6c-.54 0-.828.419-.936.634a1.96 1.96 0 00-.189.866c0 .298.059.605.189.866.108.215.395.634.936.634.54 0 .828-.419.936-.634.13-.26.189-.568.189-.866 0-.298-.059-.605-.189-.866-.108-.215-.395-.634-.936-.634zm4.314.634c.108-.215.395-.634.936-.634.54 0 .828.419.936.634.13.26.189.568.189.866 0 .298-.059.605-.189.866-.108-.215-.395-.634-.936-.634-.54 0-.828.419-.936.634-.13.26-.189.568-.189.866 0-.298.059-.605.189-.866zm2.023 6.828a.75.75 0 10-1.06-1.06 3.75 3.75 0 01-5.304 0 .75.75 0 00-1.06 1.06 5.25 5.25 0 007.424 0z" clipRule="evenodd" />
+                                                        </svg>
+                                                    </button>
+                                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-[10px] rounded opacity-0 group-hover/emoji:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                                                        Add Emoji
+                                                    </div>
+
+                                                    {/* Custom Simple Emoji Picker */}
+                                                    {showEmojiPicker && (
+                                                        <div className="absolute bottom-full right-0 mb-3 bg-white border border-gray-200 shadow-xl rounded-2xl p-3 z-[60] w-[240px] grid grid-cols-6 gap-1 animate-fadeIn">
+                                                            {popularEmojis.map((emoji, idx) => (
+                                                                <button
+                                                                    key={idx}
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setContent(prev => prev + emoji);
+                                                                        // Keep picker open for multiple selections
+                                                                    }}
+                                                                    className="text-xl hover:bg-gray-100 p-1.5 rounded-lg transition-colors active:scale-90"
+                                                                >
+                                                                    {emoji}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
-                                            <input
-                                                type="file"
-                                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                                accept="image/*"
-                                                onChange={handleImageChange}
-                                            />
                                         </div>
                                         {imageFile && (
-                                            <div className="mt-2 text-sm text-gray-500 flex items-center gap-2">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                                            <div className="mt-2 text-sm text-gray-500 flex items-center gap-2 bg-green-50 w-fit px-3 py-1.5 rounded-full border border-green-100">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-green-600">
                                                     <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
                                                 </svg>
-                                                {imageFile.name}
+                                                <span className="font-medium text-green-700">{imageFile.name}</span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setImageFile(null)}
+                                                    className="ml-1 p-0.5 hover:bg-green-100 rounded-full transition-colors"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-green-700">
+                                                        <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                                                    </svg>
+                                                </button>
                                             </div>
                                         )}
                                     </div>
