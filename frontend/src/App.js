@@ -22,6 +22,7 @@ import Settings from "./pages/Settings";
 import Footer from "./components/Footer";
 import AIAgent from "./components/AIAgent";
 import Friends from "./pages/Friends";
+import ForgotPassword from "./pages/ForgotPassword";
 
 
 import ScrollToTopOnNavigate from "./utils/ScrollToTopOnNavigate";
@@ -38,6 +39,7 @@ const App = () => {
           <Route path="/trending" element={<Trending />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/sso-callback" element={<AuthenticateWithRedirectCallback />} />
 
           <Route path="/colleges/:id" element={<College />} />
