@@ -19,7 +19,7 @@ const formatter = new Intl.NumberFormat('en-US', {
     maximumFractionDigits: 0,
 })
 
-const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, cost_of_attendance, image, img, control, locale, hbcu, hsi, programs_count, relaffil }) => {
+const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, cost_of_attendance, image, img, control, locale, hbcu, hsi, programs_count, relaffil, top_major, grad_rate, retention_rate, avg_net_price }) => {
     const { loggedIn } = useCurrentUser();
     const navigate = useNavigate();
     const location = useLocation();
@@ -155,7 +155,7 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
                     </h5>
 
                     {/* Stats Container - Compact version */}
-                    <div className="flex-1 min-h-[160px] space-y-2.5">
+                    <div className="flex-1 min-h-[220px] space-y-2.5">
                         {programs_count > 0 && (
                             <div className="flex items-center gap-2.5 text-xs text-gray-500 group/item">
                                 <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600 group-hover/item:bg-blue-600 group-hover/item:text-white transition-colors">
@@ -195,14 +195,44 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
                             <div className="h-[36px] invisible" aria-hidden="true" />
                         )}
 
-                        {cost_of_attendance > 0 ? (
+                        {top_major && (
+                            <div className="flex items-center gap-2.5 text-xs text-gray-500 group/item">
+                                <div className="p-1.5 rounded-lg bg-indigo-50 text-indigo-600 group-hover/item:bg-indigo-600 group-hover/item:text-white transition-colors">
+                                    <BookOpenIcon className="w-3.5 h-3.5" />
+                                </div>
+                                <div className="flex flex-col overflow-hidden">
+                                    <p className="text-[9px] uppercase font-bold tracking-tight text-gray-400 leading-none mb-0.5">Top Major</p>
+                                    <p className="font-semibold text-gray-900 leading-tight truncate">{top_major}</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {grad_rate > 0 && (
+                            <div className="flex items-center gap-2.5 text-xs text-gray-500 group/item">
+                                <div className="p-1.5 rounded-lg bg-green-50 text-green-600 group-hover/item:bg-green-600 group-hover/item:text-white transition-colors">
+                                    <ChartBarIcon className="w-3.5 h-3.5" />
+                                </div>
+                                <div className="flex flex-col">
+                                    <p className="text-[9px] uppercase font-bold tracking-tight text-gray-400 leading-none mb-0.5">Graduation Rate</p>
+                                    <p className="font-semibold text-gray-900 leading-none">
+                                        {grad_rate > 1 ? grad_rate.toFixed(0) : (grad_rate * 100).toFixed(0)}%
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
+                        {(avg_net_price > 0 || cost_of_attendance > 0) ? (
                             <div className="flex items-center gap-2.5 text-xs text-gray-500 group/item">
                                 <div className="p-1.5 rounded-lg bg-amber-50 text-amber-600 group-hover/item:bg-amber-600 group-hover/item:text-white transition-colors">
                                     <BanknotesIcon className="w-3.5 h-3.5" />
                                 </div>
                                 <div className="flex flex-col">
-                                    <p className="text-[9px] uppercase font-bold tracking-tight text-gray-400 leading-none mb-0.5">Annual Cost</p>
-                                    <p className="font-semibold text-gray-900 leading-none">{formatter.format(cost_of_attendance)}</p>
+                                    <p className="text-[9px] uppercase font-bold tracking-tight text-gray-400 leading-none mb-0.5">
+                                        {avg_net_price > 0 ? 'Avg. Net Price' : 'Annual Cost'}
+                                    </p>
+                                    <p className="font-semibold text-gray-900 leading-none">
+                                        {formatter.format(avg_net_price > 0 ? avg_net_price : cost_of_attendance)}
+                                    </p>
                                 </div>
                             </div>
                         ) : (

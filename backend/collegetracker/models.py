@@ -59,6 +59,7 @@ class College(models.Model):
     cost_of_attendance = models.IntegerField(null=True)
     tuition_in_state = models.IntegerField(null=True)
     tuition_out_state = models.IntegerField(null=True)
+    top_major = models.CharField(max_length=255, null=True, blank=True)
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
     ft_faculty_rate = models.FloatField(null=True, blank=True)
@@ -81,6 +82,8 @@ class College(models.Model):
     # --- Performance & Financials ---
     avg_net_price = models.IntegerField(null=True, blank=True)
     grad_rate = models.FloatField(null=True, blank=True)
+    retention_rate = models.FloatField(null=True, blank=True)
+    student_faculty_ratio = models.IntegerField(null=True, blank=True)
     loan_rate = models.FloatField(null=True, blank=True)
 
     # --- New Metadata from IPEDS ---
@@ -139,10 +142,15 @@ class SmartCollege(models.Model):
     cost_of_attendance = models.IntegerField(null=True, blank=True)
     tuition_in_state = models.IntegerField(null=True, blank=True)
     tuition_out_state = models.IntegerField(null=True, blank=True)
+    top_major = models.CharField(max_length=255, null=True, blank=True)
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
     ft_faculty_rate = models.FloatField(null=True, blank=True)
     enrollment_all = models.IntegerField(null=True, blank=True)
+    grad_rate = models.FloatField(null=True, blank=True)
+    retention_rate = models.FloatField(null=True, blank=True)
+    student_faculty_ratio = models.IntegerField(null=True, blank=True)
+    avg_net_price = models.IntegerField(null=True, blank=True)
     CCBASIC = models.CharField(max_length=255, null=True, blank=True)
     HLOFFER = models.CharField(max_length=255, null=True, blank=True)
 

@@ -192,11 +192,19 @@ const CollegeDetail = () => {
                                         <p className="font-medium">Tuition out of state: {formatter.format(college.tuition_out_state).replace(/(\.|,)00$/g, '')}</p>
                                     </div>
                                     <div className="bg-blue-100 p-3 rounded-lg flex items-center gap-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-2.533-4.656 9.359 9.359 0 0 0-4.215-.397m-7.5 2.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-2.533-4.656 9.359 9.359 0 0 0-4.215-.397m7.5-12.13a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-2.533-4.656 9.359 9.359 0 0 0-4.215-.397m-7.5 2.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-2.533-4.656 9.359 9.359 0 0 0-4.215-.397" />
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6 text-blue-600">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a5.97 5.97 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
                                         </svg>
-                                        <p className="font-medium">Total Enrollment: {college.enrollment_all?.toLocaleString()}</p>
+                                        <p className="font-medium">Student-to-Faculty: {college.student_faculty_ratio ? `${college.student_faculty_ratio}:1` : 'N/A'}</p>
                                     </div>
+                                    {college.top_major && (
+                                        <div className="bg-indigo-100 p-3 rounded-lg flex items-center gap-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6 text-indigo-600">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75Z" />
+                                            </svg>
+                                            <p className="font-medium font-semibold italic">Top Major: {college.top_major}</p>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* New Financial & Outcome Sections */}
@@ -236,7 +244,7 @@ const CollegeDetail = () => {
                                     )}
 
                                     {/* Student Outcomes */}
-                                    {!!college.grad_rate && (
+                                    {!!(college.grad_rate || college.retention_rate) && (
                                         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                                             <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-900">
                                                 <div className="p-2 rounded-lg bg-blue-50 text-blue-600">
@@ -247,24 +255,34 @@ const CollegeDetail = () => {
                                                 Student Outcomes
                                             </h3>
                                             <div className="space-y-6">
-                                                <div>
-                                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Graduation Rate</p>
-                                                    <div className="flex items-baseline gap-2">
-                                                        <p className="text-4xl font-black text-gray-900 leading-none">
-                                                            {(college.grad_rate * 100).toFixed(0)}%
-                                                        </p>
-                                                        <span className="text-gray-400 text-xs font-semibold">(150% time)</span>
+                                                {college.grad_rate && (
+                                                    <div>
+                                                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Graduation Rate</p>
+                                                        <div className="flex items-baseline gap-2">
+                                                            <p className="text-4xl font-black text-gray-900 leading-none">
+                                                                {(college.grad_rate * 100).toFixed(0)}%
+                                                            </p>
+                                                            <span className="text-gray-400 text-xs font-semibold">(150% time)</span>
+                                                        </div>
+                                                        <div className="w-full bg-gray-100 rounded-full h-2 mt-4 overflow-hidden">
+                                                            <div
+                                                                className="bg-primary h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(23,113,125,0.3)]"
+                                                                style={{ width: (college.grad_rate * 100) + '%' }}
+                                                            ></div>
+                                                        </div>
                                                     </div>
-                                                    <div className="w-full bg-gray-100 rounded-full h-2 mt-4 overflow-hidden">
-                                                        <div
-                                                            className="bg-primary h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(23,113,125,0.3)]"
-                                                            style={{ width: (college.grad_rate * 100) + '%' }}
-                                                        ></div>
+                                                )}
+                                                {college.retention_rate && (
+                                                    <div className="pt-6 border-t border-gray-50">
+                                                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Retention Rate</p>
+                                                        <div className="flex items-baseline gap-2">
+                                                            <p className="text-3xl font-bold text-gray-900 leading-none">
+                                                                {(college.retention_rate * 100).toFixed(0)}%
+                                                            </p>
+                                                        </div>
+                                                        <p className="text-[11px] text-gray-500 mt-2">Percent of first-year students who return for their second year.</p>
                                                     </div>
-                                                    <p className="text-[11px] text-gray-500 mt-3 leading-relaxed">
-                                                        Percentage of full-time, first-time students who complete their degree within 150% of the normal time.
-                                                    </p>
-                                                </div>
+                                                )}
                                             </div>
                                         </div>
                                     )}
