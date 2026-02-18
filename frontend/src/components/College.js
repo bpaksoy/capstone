@@ -114,130 +114,146 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
                 </div>
 
                 {/* Content Section */}
-                <div className="p-4 flex-1 flex flex-col">
-                    {/* Vibe Badges */}
-                    <div className="flex flex-wrap gap-1.5 mb-2">
-                        {control && (
-                            <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider ${control === 1 ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-purple-50 text-purple-700 border border-purple-100'}`}>
-                                {control === 1 ? 'Public' : 'Private'}
-                            </span>
-                        )}
-                        {locale && (
-                            <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-gray-50 text-gray-600 border border-gray-100">
-                                {(() => {
-                                    if (locale >= 11 && locale <= 13) return 'City';
-                                    if (locale >= 21 && locale <= 23) return 'Suburb';
-                                    if (locale >= 31 && locale <= 33) return 'Town';
-                                    if (locale >= 41 && locale <= 43) return 'Rural';
-                                    return 'Campus';
-                                })()}
-                            </span>
-                        )}
-                        {hbcu && (
-                            <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-100">
-                                HBCU
-                            </span>
-                        )}
-                        {hsi && (
-                            <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-orange-50 text-orange-700 border border-orange-100">
-                                HSI
-                            </span>
-                        )}
-                        {relaffil && relaffil > 0 && (
-                            <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-100">
-                                Rel. Affil.
-                            </span>
-                        )}
-                    </div>
+                <div className="p-4 flex-1 flex flex-col justify-between">
+                    <div>
+                        {/* Vibe Badges */}
+                        <div className="flex flex-wrap gap-1.5 mb-2">
+                            {control && (
+                                <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider ${control === 1 ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-purple-50 text-purple-700 border border-purple-100'}`}>
+                                    {control === 1 ? 'Public' : 'Private'}
+                                </span>
+                            )}
+                            {locale && (
+                                <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-gray-50 text-gray-600 border border-gray-100">
+                                    {(() => {
+                                        if (locale >= 11 && locale <= 13) return 'City';
+                                        if (locale >= 21 && locale <= 23) return 'Suburb';
+                                        if (locale >= 31 && locale <= 33) return 'Town';
+                                        if (locale >= 41 && locale <= 43) return 'Rural';
+                                        return 'Campus';
+                                    })()}
+                                </span>
+                            )}
+                            {hbcu && (
+                                <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-100">
+                                    HBCU
+                                </span>
+                            )}
+                            {hsi && (
+                                <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-orange-50 text-orange-700 border border-orange-100">
+                                    HSI
+                                </span>
+                            )}
+                            {relaffil && relaffil > 0 && (
+                                <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                    Rel. Affil.
+                                </span>
+                            )}
+                        </div>
 
-                    <h5 className="font-bold text-lg text-gray-900 leading-tight mb-3 group-hover:text-primary transition-colors line-clamp-2 min-h-[3rem]">
-                        {name}
-                    </h5>
+                        <h5 className="font-bold text-lg text-gray-900 leading-tight mb-3 group-hover:text-primary transition-colors line-clamp-2 min-h-[3rem]">
+                            {name}
+                        </h5>
 
-                    {/* Stats Container - Compact version */}
-                    <div className="flex-1 min-h-[220px] space-y-2.5">
-                        {programs_count > 0 && (
-                            <div className="flex items-center gap-2.5 text-xs text-gray-500 group/item">
-                                <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600 group-hover/item:bg-blue-600 group-hover/item:text-white transition-colors">
-                                    <BookOpenIcon className="w-3.5 h-3.5" />
-                                </div>
-                                <div className="flex flex-col">
-                                    <p className="text-[9px] uppercase font-bold tracking-tight text-gray-400 leading-none mb-0.5">Majors Offered</p>
-                                    <p className="font-semibold text-gray-900 leading-none">{programs_count}</p>
-                                </div>
-                            </div>
-                        )}
-                        {admission_rate > 0 ? (
-                            <div className="flex items-center gap-2.5 text-xs text-gray-500 group/item">
-                                <div className="p-1.5 rounded-lg bg-teal-50 text-primary group-hover/item:bg-primary group-hover/item:text-white transition-colors">
-                                    <ChartBarIcon className="w-3.5 h-3.5" />
-                                </div>
-                                <div className="flex flex-col">
-                                    <p className="text-[9px] uppercase font-bold tracking-tight text-gray-400 leading-none mb-0.5">Acceptance</p>
-                                    <p className="font-semibold text-gray-900 leading-none">{(admission_rate * 100).toFixed(1)}%</p>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="h-[36px] invisible" aria-hidden="true" />
-                        )}
+                        {/* Stats Container - Compact version */}
+                        <div className="space-y-2.5 min-h-[200px]">
+                            {(() => {
+                                const hasStats = programs_count > 0 || admission_rate > 0 || sat_score > 0 || top_major || grad_rate > 0 || avg_net_price > 0 || cost_of_attendance > 0;
 
-                        {sat_score > 0 ? (
-                            <div className="flex items-center gap-2.5 text-xs text-gray-500 group/item">
-                                <div className="p-1.5 rounded-lg bg-purple-50 text-purple-600 group-hover/item:bg-purple-600 group-hover/item:text-white transition-colors">
-                                    <AcademicCapIcon className="w-3.5 h-3.5" />
-                                </div>
-                                <div className="flex flex-col">
-                                    <p className="text-[9px] uppercase font-bold tracking-tight text-gray-400 leading-none mb-0.5">Avg. SAT</p>
-                                    <p className="font-semibold text-gray-900 leading-none">{sat_score}</p>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="h-[36px] invisible" aria-hidden="true" />
-                        )}
+                                if (!hasStats) {
+                                    return (
+                                        <div className="flex items-center justify-center h-[200px] border-2 border-dashed border-gray-100 rounded-2xl bg-gray-50/50">
+                                            <p className="text-[11px] font-medium text-gray-400 italic text-center px-4">
+                                                We don't have this information yet. Please check back later.
+                                            </p>
+                                        </div>
+                                    );
+                                }
 
-                        {top_major && (
-                            <div className="flex items-center gap-2.5 text-xs text-gray-500 group/item">
-                                <div className="p-1.5 rounded-lg bg-indigo-50 text-indigo-600 group-hover/item:bg-indigo-600 group-hover/item:text-white transition-colors">
-                                    <BookOpenIcon className="w-3.5 h-3.5" />
-                                </div>
-                                <div className="flex flex-col overflow-hidden">
-                                    <p className="text-[9px] uppercase font-bold tracking-tight text-gray-400 leading-none mb-0.5">Top Major</p>
-                                    <p className="font-semibold text-gray-900 leading-tight truncate">{top_major}</p>
-                                </div>
-                            </div>
-                        )}
+                                return (
+                                    <>
+                                        {programs_count > 0 && (
+                                            <div className="flex items-start gap-2.5 text-xs text-gray-500 group/item">
+                                                <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600 group-hover/item:bg-blue-600 group-hover/item:text-white transition-colors shrink-0">
+                                                    <BookOpenIcon className="w-3.5 h-3.5" />
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <p className="text-[9px] uppercase font-bold tracking-tight text-gray-400 leading-none mb-0.5">Majors Offered</p>
+                                                    <p className="font-semibold text-gray-900 leading-none">{programs_count}</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                        {admission_rate > 0 && (
+                                            <div className="flex items-start gap-2.5 text-xs text-gray-500 group/item">
+                                                <div className="p-1.5 rounded-lg bg-teal-50 text-primary group-hover/item:bg-primary group-hover/item:text-white transition-colors shrink-0">
+                                                    <ChartBarIcon className="w-3.5 h-3.5" />
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <p className="text-[9px] uppercase font-bold tracking-tight text-gray-400 leading-none mb-0.5">Acceptance</p>
+                                                    <p className="font-semibold text-gray-900 leading-none">{(admission_rate * 100).toFixed(1)}%</p>
+                                                </div>
+                                            </div>
+                                        )}
 
-                        {grad_rate > 0 && (
-                            <div className="flex items-center gap-2.5 text-xs text-gray-500 group/item">
-                                <div className="p-1.5 rounded-lg bg-green-50 text-green-600 group-hover/item:bg-green-600 group-hover/item:text-white transition-colors">
-                                    <ChartBarIcon className="w-3.5 h-3.5" />
-                                </div>
-                                <div className="flex flex-col">
-                                    <p className="text-[9px] uppercase font-bold tracking-tight text-gray-400 leading-none mb-0.5">Graduation Rate</p>
-                                    <p className="font-semibold text-gray-900 leading-none">
-                                        {grad_rate > 1 ? grad_rate.toFixed(0) : (grad_rate * 100).toFixed(0)}%
-                                    </p>
-                                </div>
-                            </div>
-                        )}
+                                        {sat_score > 0 && (
+                                            <div className="flex items-start gap-2.5 text-xs text-gray-500 group/item">
+                                                <div className="p-1.5 rounded-lg bg-purple-50 text-purple-600 group-hover/item:bg-purple-600 group-hover/item:text-white transition-colors shrink-0">
+                                                    <AcademicCapIcon className="w-3.5 h-3.5" />
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <p className="text-[9px] uppercase font-bold tracking-tight text-gray-400 leading-none mb-0.5">Avg. SAT</p>
+                                                    <p className="font-semibold text-gray-900 leading-none">{sat_score}</p>
+                                                </div>
+                                            </div>
+                                        )}
 
-                        {(avg_net_price > 0 || cost_of_attendance > 0) ? (
-                            <div className="flex items-center gap-2.5 text-xs text-gray-500 group/item">
-                                <div className="p-1.5 rounded-lg bg-amber-50 text-amber-600 group-hover/item:bg-amber-600 group-hover/item:text-white transition-colors">
-                                    <BanknotesIcon className="w-3.5 h-3.5" />
-                                </div>
-                                <div className="flex flex-col">
-                                    <p className="text-[9px] uppercase font-bold tracking-tight text-gray-400 leading-none mb-0.5">
-                                        {avg_net_price > 0 ? 'Avg. Net Price' : 'Annual Cost'}
-                                    </p>
-                                    <p className="font-semibold text-gray-900 leading-none">
-                                        {formatter.format(avg_net_price > 0 ? avg_net_price : cost_of_attendance)}
-                                    </p>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="h-[36px] invisible" aria-hidden="true" />
-                        )}
+                                        {top_major && (
+                                            <div className="flex items-start gap-2.5 text-xs text-gray-500 group/item">
+                                                <div className="p-1.5 rounded-lg bg-indigo-50 text-indigo-600 group-hover/item:bg-indigo-600 group-hover/item:text-white transition-colors flex-shrink-0">
+                                                    <BookOpenIcon className="w-3.5 h-3.5" />
+                                                </div>
+                                                <div className="flex flex-col min-w-0">
+                                                    <p className="text-[9px] uppercase font-bold tracking-tight text-gray-400 leading-none mb-0.5">Top Major</p>
+                                                    <p className="font-semibold text-gray-900 leading-tight break-words">
+                                                        {top_major}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {grad_rate > 0 && (
+                                            <div className="flex items-start gap-2.5 text-xs text-gray-500 group/item">
+                                                <div className="p-1.5 rounded-lg bg-green-50 text-green-600 group-hover/item:bg-green-600 group-hover/item:text-white transition-colors shrink-0">
+                                                    <ChartBarIcon className="w-3.5 h-3.5" />
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <p className="text-[9px] uppercase font-bold tracking-tight text-gray-400 leading-none mb-0.5">Graduation Rate</p>
+                                                    <p className="font-semibold text-gray-900 leading-none">
+                                                        {grad_rate > 1 ? grad_rate.toFixed(0) : (grad_rate * 100).toFixed(0)}%
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {(avg_net_price > 0 || cost_of_attendance > 0) && (
+                                            <div className="flex items-start gap-2.5 text-xs text-gray-500 group/item">
+                                                <div className="p-1.5 rounded-lg bg-amber-50 text-amber-600 group-hover/item:bg-amber-600 group-hover/item:text-white transition-colors shrink-0">
+                                                    <BanknotesIcon className="w-3.5 h-3.5" />
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <p className="text-[9px] uppercase font-bold tracking-tight text-gray-400 leading-none mb-0.5">
+                                                        {avg_net_price > 0 ? 'Avg. Net Price' : 'Annual Cost'}
+                                                    </p>
+                                                    <p className="font-semibold text-gray-900 leading-none">
+                                                        {formatter.format(avg_net_price > 0 ? avg_net_price : cost_of_attendance)}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </>
+                                );
+                            })()}
+                        </div>
                     </div>
 
                     <div className="mt-5">

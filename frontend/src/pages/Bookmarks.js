@@ -22,6 +22,7 @@ const Bookmarks = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isRecommending, setIsRecommending] = useState(false);
   const [loadingStep, setLoadingStep] = useState("Initializing...");
+  const [sliderRef, setSliderRef] = useState(null);
 
   // Immediate redirect if explicitly logged out
   useEffect(() => {
@@ -102,28 +103,28 @@ const Bookmarks = () => {
   if (error) return <p>Error: {error.message}</p>;
 
   function CustomNextArrow(props) {
-    const { style, onClick } = props;
+    const { onClick, disabled } = props;
     return (
-      <div
-        className="absolute top-1/2 -translate-y-1/2 flex items-center justify-center bg-gray-900/40 hover:bg-gray-900/60 backdrop-blur-sm rounded-full shadow-xl transition-all border border-white/10 z-10 cursor-pointer group"
-        style={{ ...style, display: "flex", right: "-50px", width: "48px", height: "48px" }}
+      <button
         onClick={onClick}
+        disabled={disabled}
+        className={`p-2 rounded-xl transition-all ${disabled ? 'text-white/20 bg-white/5 cursor-not-allowed' : 'text-white bg-white/10 hover:bg-white/20'}`}
       >
-        <ChevronRightIcon className="w-7 h-7 text-white transition-transform group-hover:scale-110" />
-      </div>
+        <ChevronRightIcon className="w-5 h-5" />
+      </button>
     );
   }
 
   function CustomPrevArrow(props) {
-    const { style, onClick } = props;
+    const { onClick, disabled } = props;
     return (
-      <div
-        className="absolute top-1/2 -translate-y-1/2 flex items-center justify-center bg-gray-900/40 hover:bg-gray-900/60 backdrop-blur-sm rounded-full shadow-xl transition-all border border-white/10 z-10 cursor-pointer group"
-        style={{ ...style, display: "flex", left: "-50px", width: "48px", height: "48px" }}
+      <button
         onClick={onClick}
+        disabled={disabled}
+        className={`p-2 rounded-xl transition-all ${disabled ? 'text-white/20 bg-white/5 cursor-not-allowed' : 'text-white bg-white/10 hover:bg-white/20'}`}
       >
-        <ChevronLeftIcon className="w-7 h-7 text-white transition-transform group-hover:scale-110" />
-      </div>
+        <ChevronLeftIcon className="w-5 h-5" />
+      </button>
     );
   }
 
@@ -133,31 +134,29 @@ const Bookmarks = () => {
     speed: 500,
     slidesToShow: 3,
     slidesToScroll: 1,
-    nextArrow: <CustomNextArrow />,
-    prevArrow: <CustomPrevArrow />,
+    arrows: false,
+    className: "h-full items-stretch",
     responsive: [
+      {
+        breakpoint: 1280,
+        settings: {
+          slidesToShow: 3,
+          slidesToScroll: 1,
+        }
+      },
       {
         breakpoint: 1024,
         settings: {
           slidesToShow: 2,
           slidesToScroll: 1,
-          infinite: true,
-          dots: true
         }
       },
       {
-        breakpoint: 600,
+        breakpoint: 768,
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
-          initialSlide: 1
-        }
-      },
-      {
-        breakpoint: 480,
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1
+          arrows: false // Better for small screens
         }
       }
     ]
@@ -178,14 +177,20 @@ const Bookmarks = () => {
         ) : (
           recommendedColleges.length > 0 && (
             <>
-              <h2 className="text-xl font-bold mb-6 text-white flex items-center gap-3">
-                <span className="w-2 h-8 bg-purple-500 rounded-full"></span>
-                Perfect Matches For You
-              </h2>
-              <Slider {...settings}>
+              <div className="flex items-center gap-6 mb-8">
+                <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+                  <span className="w-2 h-8 bg-purple-500 rounded-full"></span>
+                  Perfect Matches For You
+                </h2>
+                <div className="hidden sm:flex items-center gap-2">
+                  <CustomPrevArrow onClick={() => sliderRef?.slickPrev()} />
+                  <CustomNextArrow onClick={() => sliderRef?.slickNext()} />
+                </div>
+              </div>
+              <Slider {...settings} className="recommendations-slider h-full" ref={setSliderRef}>
                 {recommendedColleges.map((recommendedCollege) => (
-                  <div key={recommendedCollege.id} className="px-2 pb-8">
-                    <div className="flex justify-center h-full">
+                  <div key={recommendedCollege.id} className="px-5 pb-12 h-full">
+                    <div className="h-full flex flex-col">
                       <College {...recommendedCollege} />
                     </div>
                   </div>

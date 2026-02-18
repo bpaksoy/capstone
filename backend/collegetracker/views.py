@@ -76,14 +76,17 @@ class LoginView(APIView):
             'refresh': str(refresh),
             'access': str(refresh.access_token)
         }
+        return Response(tokens, status=status.HTTP_200_OK)
 
-        return Response(tokens, status=status.HTTP_201_CREATED)
-
+# Simple module-level cache for Clerk to avoid repeated network calls
+_JWKS_CACHE = None
+_USER_INFO_CACHE = {}
 
 class ClerkLoginView(APIView):
     permission_classes = []  # Allow anyone to call this endpoint
 
     def post(self, request):
+        global _JWKS_CACHE, _USER_INFO_CACHE
         token = request.data.get('token')
         if not token:
             return Response({'error': 'Token is required'}, status=status.HTTP_400_BAD_REQUEST)
@@ -92,10 +95,12 @@ class ClerkLoginView(APIView):
             # 1. Decode the token header to find the Key ID (kid)
             header = jwt.get_unverified_header(token)
             
-            # 2. Fetch Clerk's JWKS (Public Keys)
-            # You might want to cache this or put the URL in settings
-            jwks_url = "https://close-calf-1.clerk.accounts.dev/.well-known/jwks.json"
-            jwks = requests.get(jwks_url).json()
+            # 2. Fetch or Use Cached Clerk's JWKS
+            if _JWKS_CACHE is None:
+                jwks_url = "https://close-calf-1.clerk.accounts.dev/.well-known/jwks.json"
+                _JWKS_CACHE = requests.get(jwks_url).json()
+            
+            jwks = _JWKS_CACHE
             
             # 3. Find the matching key
             public_key = None
@@ -109,25 +114,22 @@ class ClerkLoginView(APIView):
 
             # 4. Verify the token signature
             payload = jwt.decode(token, public_key, algorithms=['RS256'], options={"verify_aud": False})
-            
-            # 5. Extract User Info
-            # Clerk "sub" is the User ID. Email is usually in "email" or via API.
-            # However, the standard JWT from Clerk might not have the email unless customized.
-            # It's safer to use the Clerk Backend API to get the user details using the user_id (sub).
-            
             user_id = payload['sub']
             
-            # Fetch full user details from Clerk API to get the email safely
-            clerk_secret_key = os.getenv('CLERK_SECRET_KEY')
-            user_info_resp = requests.get(
-                f"https://api.clerk.com/v1/users/{user_id}",
-                headers={"Authorization": f"Bearer {clerk_secret_key}"}
-            )
+            # 5. Extract User Info (Cache Clerk API responses)
+            if user_id not in _USER_INFO_CACHE:
+                clerk_secret_key = os.getenv('CLERK_SECRET_KEY')
+                user_info_resp = requests.get(
+                    f"https://api.clerk.com/v1/users/{user_id}",
+                    headers={"Authorization": f"Bearer {clerk_secret_key}"}
+                )
+                
+                if not user_info_resp.ok:
+                    return Response({'error': 'Failed to fetch user info from Clerk'}, status=status.HTTP_401_UNAUTHORIZED)
+                
+                _USER_INFO_CACHE[user_id] = user_info_resp.json()
             
-            if not user_info_resp.ok:
-                 return Response({'error': 'Failed to fetch user info from Clerk'}, status=status.HTTP_401_UNAUTHORIZED)
-            
-            user_info = user_info_resp.json()
+            user_info = _USER_INFO_CACHE[user_id]
             email = user_info['email_addresses'][0]['email_address']
             first_name = user_info.get('first_name', '')
             last_name = user_info.get('last_name', '')
