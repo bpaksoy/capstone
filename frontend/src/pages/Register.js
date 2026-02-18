@@ -50,9 +50,7 @@ export default function Register() {
             await signUp.create({
                 emailAddress,
                 password,
-                unsafeMetadata: {
-                    username: username
-                }
+                username,
             });
 
             // Start email verification
