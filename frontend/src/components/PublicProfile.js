@@ -77,7 +77,7 @@ const PublicProfile = () => {
 
             {/* Profile Content Section */}
             <section className="relative -mt-24 px-4 sm:px-6 lg:px-8">
-                <div className="max-w-5xl mx-auto">
+                <div className="max-w-4xl mx-auto">
                     <div className="bg-white/95 backdrop-blur-md shadow-2xl rounded-3xl border border-white/20">
                         <div className="px-8 pb-10">
                             <div className="flex flex-wrap justify-between items-end -mt-12 sm:-mt-16 mb-8 gap-6">

@@ -164,7 +164,7 @@ const Profile = () => {
             {/* Profile Content Section */}
             <section className="relative py-16 bg-transparent">
                 <div className="container mx-auto px-4">
-                    <div className="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-xl rounded-2xl -mt-64">
+                    <div className="relative flex flex-col min-w-0 break-words bg-white w-full max-w-4xl mx-auto mb-6 shadow-xl rounded-2xl -mt-64">
                         <div className="px-6">
                             <div className="flex flex-wrap justify-center">
 
