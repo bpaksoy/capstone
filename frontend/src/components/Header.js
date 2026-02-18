@@ -348,9 +348,10 @@ const Header = (props) => {
                                 <div className="flex flex-col sm:flex-row-reverse gap-3">
                                     <button
                                         type="button"
-                                        onClick={() => {
-                                            handleLogout();
+                                        onClick={async () => {
+                                            await handleLogout();
                                             setIsLogoutModalOpen(false);
+                                            // The handleLogout clears state, but a hard redirect ensures a clean slate
                                             window.location.href = '/login';
                                         }}
                                         className="w-full sm:flex-1 py-3 px-4 text-sm font-bold text-white transition-all rounded-xl bg-primary hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary shadow-lg shadow-teal-100"

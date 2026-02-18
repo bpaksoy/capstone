@@ -131,7 +131,7 @@ class ClerkLoginView(APIView):
             email = user_info['email_addresses'][0]['email_address']
             first_name = user_info.get('first_name', '')
             last_name = user_info.get('last_name', '')
-            username = user_info.get('username') or email.split('@')[0]
+            username = user_info.get('username') or user_info.get('unsafe_metadata', {}).get('username') or email.split('@')[0]
 
             # 6. Content Sync: Get or Create Django User
             user, created = User.objects.get_or_create(

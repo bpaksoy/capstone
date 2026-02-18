@@ -36,7 +36,7 @@ export default function Register() {
             });
         } catch (err) {
             console.error("Google sign up error:", err);
-            setError("Failed to start Google sign up");
+            setError("Failed to initiate Google sign up. Please try again.");
         }
     };
 
@@ -50,7 +50,9 @@ export default function Register() {
             await signUp.create({
                 emailAddress,
                 password,
-                username,
+                unsafeMetadata: {
+                    username: username
+                }
             });
 
             // Start email verification
@@ -58,7 +60,12 @@ export default function Register() {
             setVerifying(true);
         } catch (err) {
             console.error("Sign up error:", err);
-            setError(err.errors?.[0]?.message || "Registration failed. Please try again.");
+            // Handle specific Clerk errors
+            if (err.errors?.[0]?.code === "form_captcha_invalid") {
+                setError("Please complete the human verification below.");
+            } else {
+                setError(err.errors?.[0]?.message || "Registration failed. Please try again.");
+            }
         } finally {
             setIsSigningUp(false);
         }
@@ -79,8 +86,7 @@ export default function Register() {
                 await setActive({ session: completeSignUp.createdSessionId });
                 navigate('/');
             } else {
-                console.log(JSON.stringify(completeSignUp, null, 2));
-                setError("Verification incomplete.");
+                setError("Verification incomplete. Please follow the instructions.");
             }
         } catch (err) {
             console.error("Verification error:", err);
@@ -92,25 +98,26 @@ export default function Register() {
 
     return (
         <div className="py-16">
-            <div className="flex bg-white rounded-lg shadow-lg overflow-hidden mx-auto max-w-sm lg:max-w-4xl">
-                <img className="hidden lg:block lg:w-1/2 bg-cover"
-                    src={graduation} alt="graduation" />
+            <div className="flex bg-white rounded-lg shadow-lg mx-auto max-w-sm lg:max-w-4xl min-h-[600px]">
+                <div
+                    className="hidden lg:block lg:w-1/2 bg-cover bg-center rounded-l-lg"
+                    style={{ backgroundImage: `url(${graduation})` }}
+                />
 
                 <div className="w-full p-8 lg:w-1/2">
-                    <h2 className="text-2xl font-semibold text-gray-700 text-center">Worm</h2>
+                    <h2 className="text-2xl font-bold text-gray-800 text-center">Worm</h2>
                     <p className="text-xl text-gray-600 text-center">
                         {verifying ? "Verify your email" : "Join Our Community"}
                     </p>
 
                     {error && (
-                        <div className="p-4 mt-4 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
+                        <div className="p-4 mt-4 text-sm text-red-800 rounded-lg bg-red-50 border border-red-200" role="alert">
                             {error}
                         </div>
                     )}
 
                     {!verifying ? (
                         <>
-                            {/* Custom Google Button */}
                             <button
                                 onClick={handleGoogleSignUp}
                                 className="flex items-center justify-center mt-4 w-full bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 transition-colors cursor-pointer"
@@ -138,7 +145,7 @@ export default function Register() {
                                     <label htmlFor="email" className="block text-gray-700 text-sm font-bold mb-2">Email Address</label>
                                     <input
                                         id="email"
-                                        className="bg-gray-200 text-gray-700 focus:outline-none focus:shadow-outline border border-gray-300 rounded py-2 px-4 block w-full appearance-none"
+                                        className="bg-gray-200 text-gray-700 focus:outline-none focus:shadow-outline border border-gray-300 rounded py-2 px-4 block w-full appearance-none transition-all"
                                         type="email"
                                         name="email"
                                         autoComplete="email"
@@ -151,7 +158,7 @@ export default function Register() {
                                     <label htmlFor="username" className="block text-gray-700 text-sm font-bold mb-2">Username</label>
                                     <input
                                         id="username"
-                                        className="bg-gray-200 text-gray-700 focus:outline-none focus:shadow-outline border border-gray-300 rounded py-2 px-4 block w-full appearance-none"
+                                        className="bg-gray-200 text-gray-700 focus:outline-none focus:shadow-outline border border-gray-300 rounded py-2 px-4 block w-full appearance-none transition-all"
                                         type="text"
                                         name="username"
                                         autoComplete="username"
@@ -164,7 +171,7 @@ export default function Register() {
                                     <label htmlFor="password" className="block text-gray-700 text-sm font-bold mb-2">Password</label>
                                     <input
                                         id="password"
-                                        className="bg-gray-200 text-gray-700 focus:outline-none focus:shadow-outline border border-gray-300 rounded py-2 px-4 block w-full appearance-none"
+                                        className="bg-gray-200 text-gray-700 focus:outline-none focus:shadow-outline border border-gray-300 rounded py-2 px-4 block w-full appearance-none transition-all"
                                         type="password"
                                         name="password"
                                         value={password}
@@ -174,15 +181,19 @@ export default function Register() {
                                     />
                                 </div>
                                 <div className="mt-8">
-                                    <button className="bg-[#17717d] text-white font-bold py-2 px-4 w-full rounded hover:bg-[#135f69] transition duration-150" disabled={isSigningUp}>
-                                        {isSigningUp ? "Creating account..." : "Sign Up"}
+                                    <button
+                                        type="submit"
+                                        className="bg-[#17717d] text-white font-bold py-2 px-4 w-full rounded hover:bg-[#135f69] transition duration-150 shadow-md"
+                                        disabled={isSigningUp}
+                                    >
+                                        {isSigningUp ? "Processing..." : "Sign Up"}
                                     </button>
                                 </div>
-                                <div id="clerk-captcha"></div>
+                                <div id="clerk-captcha" className="mt-4 flex justify-center min-h-[65px]"></div>
                             </form>
                             <div className="mt-4 flex items-center justify-between">
                                 <span className="border-b w-1/5 md:w-1/4"></span>
-                                <Link to="/login" className="text-xs text-gray-500 uppercase">or login</Link>
+                                <Link to="/login" className="text-xs text-[#17717d] hover:text-[#135f69] font-semibold uppercase">or login</Link>
                                 <span className="border-b w-1/5 md:w-1/4"></span>
                             </div>
                         </>
@@ -194,7 +205,7 @@ export default function Register() {
                             <div className="mt-4">
                                 <label className="block text-gray-700 text-sm font-bold mb-2">Verification Code</label>
                                 <input
-                                    className="bg-gray-200 text-gray-700 focus:outline-none focus:shadow-outline border border-gray-300 rounded py-2 px-4 block w-full appearance-none text-center tracking-widest text-lg"
+                                    className="bg-gray-200 text-gray-700 focus:outline-none focus:shadow-outline border border-gray-300 rounded py-2 px-4 block w-full appearance-none text-center tracking-widest text-lg font-mono"
                                     type="text"
                                     value={code}
                                     placeholder="######"
@@ -203,14 +214,18 @@ export default function Register() {
                                 />
                             </div>
                             <div className="mt-8">
-                                <button className="bg-[#17717d] text-white font-bold py-2 px-4 w-full rounded hover:bg-[#135f69] transition duration-150" disabled={isSigningUp}>
+                                <button
+                                    type="submit"
+                                    className="bg-[#17717d] text-white font-bold py-2 px-4 w-full rounded hover:bg-[#135f69] transition duration-150"
+                                    disabled={isSigningUp}
+                                >
                                     {isSigningUp ? "Verifying..." : "Verify & Login"}
                                 </button>
                             </div>
                             <button
                                 type="button"
                                 onClick={() => setVerifying(false)}
-                                className="mt-4 w-full text-sm text-gray-500 hover:text-gray-700 text-center"
+                                className="mt-4 w-full text-sm text-[#17717d] hover:text-[#135f69] text-center font-medium"
                             >
                                 Back to sign up
                             </button>
