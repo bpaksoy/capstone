@@ -82,7 +82,7 @@ const Colleges = () => {
                                         <p className="text-blue-100 mt-2 text-lg">Discover top-rated institutions</p>
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-8 w-full max-w-7xl mx-auto">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-6 w-full max-w-7xl mx-auto">
                                         {featuredColleges.length > 0 ? (
                                             featuredColleges.map((college) => (
                                                 <College key={college.id} {...college} />
@@ -125,7 +125,7 @@ const Colleges = () => {
                                     </div>
                                     <div className="w-full">
                                         <InfiniteScrollScreen
-                                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-8 w-full max-w-7xl mx-auto"
+                                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-6 w-full max-w-7xl mx-auto"
                                             renderItem={renderCollege}
                                             fetchColleges={fetchColleges}
                                             keyExtractor={college => college.id} />

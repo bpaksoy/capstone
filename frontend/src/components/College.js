@@ -150,7 +150,7 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
                         )}
                     </div>
 
-                    <h5 className="font-bold text-lg text-gray-900 leading-tight mb-3 group-hover:text-primary transition-colors line-clamp-2 min-h-[2.5rem]">
+                    <h5 className="font-bold text-lg text-gray-900 leading-tight mb-3 group-hover:text-primary transition-colors line-clamp-2 min-h-[3rem]">
                         {name}
                     </h5>
 
