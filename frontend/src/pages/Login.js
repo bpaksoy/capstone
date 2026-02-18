@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useSignIn } from "@clerk/clerk-react";
 import { useNavigate, Link, Navigate } from 'react-router-dom';
 import graduation from "../assets/images/graduation.jpg";
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { useCurrentUser } from '../UserProvider/UserProvider';
 import Loader from '../components/Loader';
 
@@ -12,6 +13,7 @@ export default function Login() {
 
     const [identifier, setIdentifier] = useState("");
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState(null);
     const [isLoggingIn, setIsLoggingIn] = useState(false);
 
@@ -121,15 +123,28 @@ export default function Login() {
                             <div className="flex justify-between">
                                 <label className="block text-gray-700 text-sm font-bold mb-2">Password</label>
                             </div>
-                            <input
-                                id="password"
-                                value={password}
-                                className="bg-gray-200 text-gray-700 focus:outline-none focus:shadow-outline border border-gray-300 rounded py-2 px-4 block w-full appearance-none transition-all"
-                                type="password"
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                                autoComplete="current-password"
-                            />
+                            <div className="relative">
+                                <input
+                                    id="password"
+                                    value={password}
+                                    className="bg-gray-200 text-gray-700 focus:outline-none focus:shadow-outline border border-gray-300 rounded py-2 px-4 block w-full appearance-none transition-all pr-12"
+                                    type={showPassword ? "text" : "password"}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                    autoComplete="current-password"
+                                />
+                                <button
+                                    type="button"
+                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-600 hover:text-gray-800 transition-colors cursor-pointer"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                >
+                                    {showPassword ? (
+                                        <EyeSlashIcon className="h-5 w-5" />
+                                    ) : (
+                                        <EyeIcon className="h-5 w-5" />
+                                    )}
+                                </button>
+                            </div>
                         </div>
                         <div className="mt-8" >
                             <button
