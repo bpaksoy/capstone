@@ -1,10 +1,14 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { baseUrl } from '../shared';
+import { useUser, useAuth } from '@clerk/clerk-react';
 
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
+    const { user: clerkUser, isLoaded: isClerkLoaded } = useUser();
+    const { getToken, signOut } = useAuth();
+
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(false);
     const [loggedIn, setLoggedIn] = useState(false);
@@ -12,101 +16,79 @@ export const UserProvider = ({ children }) => {
     const [friendRequests, setFriendRequests] = useState([]);
     const [forceFetchFriendRequests, setForceFetchFriendRequests] = useState(false);
 
-    const fetchUser = useCallback(async () => {
-        const token = localStorage.getItem('access');
-        if (!token) {
-            setUser(null);
-            setLoggedIn(false);
-            setAppLoading(false);
-            return;
-        }
+    // Sync Clerk Session with Backend
+    useEffect(() => {
+        const syncUser = async () => {
+            if (!isClerkLoaded) return;
 
-        setLoading(true);
-        try {
-            const response = await axios.get(`${baseUrl}api/user/`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            setUser(response.data);
-            setLoggedIn(true);
-        } catch (error) {
-            console.error("Error fetching user, attempting refresh:", error);
-            // If fetching user fails, try refreshing the token
-            const refreshed = await refreshTokens();
-            if (!refreshed) {
+            if (clerkUser) {
+                setLoading(true);
+                try {
+                    // 1. Get Clerk Token
+                    const token = await getToken();
+
+                    // 2. Exchange for Django Token (or verify session)
+                    const response = await axios.post(`${baseUrl}api/login/clerk/`, { token });
+
+                    if (response.data.access) {
+                        localStorage.setItem('access', response.data.access);
+                        localStorage.setItem('refresh', response.data.refresh);
+                        setLoggedIn(true);
+
+                        // 3. Fetch Full Django User Profile
+                        const userResponse = await axios.get(`${baseUrl}api/user/`, {
+                            headers: { Authorization: `Bearer ${response.data.access}` },
+                        });
+                        setUser(userResponse.data);
+                    }
+                } catch (error) {
+                    console.error("Error syncing with backend:", error);
+                    handleLogout();
+                } finally {
+                    setLoading(false);
+                    setAppLoading(false);
+                }
+            } else {
+                // User is signed out in Clerk
                 setUser(null);
                 setLoggedIn(false);
+                setAppLoading(false);
+                localStorage.removeItem('access');
+                localStorage.removeItem('refresh');
             }
-        } finally {
-            setLoading(false);
-            setAppLoading(false);
-        }
-    }, []);
+        };
 
-    const refreshTokens = async () => {
-        const refresh = localStorage.getItem('refresh');
-        if (!refresh) return false;
+        syncUser();
+    }, [clerkUser, isClerkLoaded, getToken]);
 
-        try {
-            const response = await fetch(`${baseUrl}api/token/refresh/`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ refresh }),
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                localStorage.setItem('access', data.access);
-                if (data.refresh) localStorage.setItem('refresh', data.refresh);
-
-                // Fetch user with new token
-                const userResponse = await axios.get(`${baseUrl}api/user/`, {
-                    headers: { Authorization: `Bearer ${data.access}` },
-                });
-                setUser(userResponse.data);
-                setLoggedIn(true);
-                return true;
-            } else {
-                handleLogout();
-                return false;
-            }
-        } catch (error) {
-            console.error("Error refreshing tokens:", error);
-            handleLogout();
-            return false;
-        }
-    };
-
-    const handleLogout = useCallback(() => {
+    const handleLogout = useCallback(async () => {
+        await signOut();
         localStorage.clear();
         setUser(null);
         setLoggedIn(false);
         setAppLoading(false);
-        setFriendRequests([]); // Clear friend requests
-    }, []);
+        setFriendRequests([]);
+    }, [signOut]);
 
+    // Legacy function support (can be deprecated later)
     const updateLoggedInStatus = async (isLoggedIn) => {
-        setLoggedIn(isLoggedIn);
-        if (isLoggedIn) {
-            await fetchUser();
-        } else {
+        // This is now handled by Clerk's state
+        if (!isLoggedIn) {
             handleLogout();
         }
     };
 
-    // Initial check on mount
-    useEffect(() => {
-        fetchUser();
-    }, [fetchUser]);
-
-    // Token rotation interval
-    useEffect(() => {
-        const intervalId = setInterval(() => {
-            if (localStorage.getItem('refresh')) {
-                refreshTokens();
-            }
-        }, 1000 * 60 * 10); // Refresh every 10 minutes
-
-        return () => clearInterval(intervalId);
+    // No need for explicit fetchUser exposed anymore, it's automatic.
+    // But we keep the function signature if other components call it manually.
+    const fetchUser = useCallback(async () => {
+        // No-op or re-trigger sync if needed
+        const token = localStorage.getItem('access');
+        if (token) {
+            const response = await axios.get(`${baseUrl}api/user/`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setUser(response.data);
+        }
     }, []);
 
     const fetchFriendRequests = useCallback(async () => {
@@ -122,6 +104,13 @@ export const UserProvider = ({ children }) => {
             console.error("Error fetching friend requests:", error);
         }
     }, [loggedIn]);
+
+    useEffect(() => {
+        if (loggedIn && (forceFetchFriendRequests || friendRequests.length === 0)) {
+            fetchFriendRequests();
+            setForceFetchFriendRequests(false);
+        }
+    }, [loggedIn, forceFetchFriendRequests, fetchFriendRequests, friendRequests.length]);
 
     useEffect(() => {
         if (loggedIn && (forceFetchFriendRequests || friendRequests.length === 0)) {

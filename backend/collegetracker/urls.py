@@ -77,6 +77,7 @@ urlpatterns = [
     path('api/bookmarks/', BookmarkedCollegesView.as_view(), name='user-bookmarks'),
     path('api/register/', RegisterView.as_view(), name='register'),
     path('api/login/', LoginView.as_view(), name='login'),
+    path('api/login/clerk/', views.ClerkLoginView.as_view(), name='clerk-login'),
     path('api/search/<str:name>/', views.search, name='search'),
     path('api/colleges/detailed/', views.DetailedSearchListView.as_view(),
          name="detailed-college-search"),

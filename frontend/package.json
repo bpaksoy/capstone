@@ -4,6 +4,8 @@
   "private": true,
   "dependencies": {
     "@apollo/client": "^3.11.8",
+    "@clerk/clerk-react": "^5.60.2",
+    "@clerk/themes": "^2.4.53",
     "@headlessui/react": "^2.1.5",
     "@heroicons/react": "^2.1.5",
     "@testing-library/jest-dom": "^5.17.0",

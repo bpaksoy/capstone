@@ -1,4 +1,6 @@
 import re
+import json
+import jwt
 from goose3 import Goose
 from .models import User, College, Comment, Post, Bookmark, Reply, Like, Friendship, SmartCollege, CollegeProgram, Article, Notification
 from django.http import JsonResponse, Http404
@@ -76,6 +78,91 @@ class LoginView(APIView):
         }
 
         return Response(tokens, status=status.HTTP_201_CREATED)
+
+
+class ClerkLoginView(APIView):
+    permission_classes = []  # Allow anyone to call this endpoint
+
+    def post(self, request):
+        token = request.data.get('token')
+        if not token:
+            return Response({'error': 'Token is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # 1. Decode the token header to find the Key ID (kid)
+            header = jwt.get_unverified_header(token)
+            
+            # 2. Fetch Clerk's JWKS (Public Keys)
+            # You might want to cache this or put the URL in settings
+            jwks_url = "https://close-calf-1.clerk.accounts.dev/.well-known/jwks.json"
+            jwks = requests.get(jwks_url).json()
+            
+            # 3. Find the matching key
+            public_key = None
+            for key in jwks['keys']:
+                if key['kid'] == header['kid']:
+                    public_key = jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(key))
+                    break
+            
+            if not public_key:
+                return Response({'error': 'Invalid token key'}, status=status.HTTP_401_UNAUTHORIZED)
+
+            # 4. Verify the token signature
+            payload = jwt.decode(token, public_key, algorithms=['RS256'], options={"verify_aud": False})
+            
+            # 5. Extract User Info
+            # Clerk "sub" is the User ID. Email is usually in "email" or via API.
+            # However, the standard JWT from Clerk might not have the email unless customized.
+            # It's safer to use the Clerk Backend API to get the user details using the user_id (sub).
+            
+            user_id = payload['sub']
+            
+            # Fetch full user details from Clerk API to get the email safely
+            clerk_secret_key = os.getenv('CLERK_SECRET_KEY')
+            user_info_resp = requests.get(
+                f"https://api.clerk.com/v1/users/{user_id}",
+                headers={"Authorization": f"Bearer {clerk_secret_key}"}
+            )
+            
+            if not user_info_resp.ok:
+                 return Response({'error': 'Failed to fetch user info from Clerk'}, status=status.HTTP_401_UNAUTHORIZED)
+            
+            user_info = user_info_resp.json()
+            email = user_info['email_addresses'][0]['email_address']
+            first_name = user_info.get('first_name', '')
+            last_name = user_info.get('last_name', '')
+            username = user_info.get('username') or email.split('@')[0]
+
+            # 6. Content Sync: Get or Create Django User
+            user, created = User.objects.get_or_create(
+                email=email,
+                defaults={
+                    'username': username,
+                    'first_name': first_name,
+                    'last_name': last_name,
+                }
+            )
+            
+            if created:
+                user.set_unusable_password()
+                user.save()
+
+            # 7. Issue SimpleJWT Tokens
+            refresh = RefreshToken.for_user(user)
+            tokens = {
+                'refresh': str(refresh),
+                'access': str(refresh.access_token)
+            }
+            
+            return Response(tokens, status=status.HTTP_200_OK)
+
+        except jwt.ExpiredSignatureError:
+            return Response({'error': 'Token has expired'}, status=status.HTTP_401_UNAUTHORIZED)
+        except jwt.DecodeError:
+            return Response({'error': 'Token decode error'}, status=status.HTTP_401_UNAUTHORIZED)
+        except Exception as e:
+            print(f"Clerk Auth Error: {e}")
+            return Response({'error': 'Authentication failed'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class CurrentUserView(APIView):
