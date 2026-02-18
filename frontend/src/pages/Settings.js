@@ -10,9 +10,16 @@ const Settings = () => {
     const { user: djangoUser, fetchUser } = useCurrentUser();
     const { user: clerkUser, isLoaded: isClerkLoaded } = useUser();
     const [isUpdating, setIsUpdating] = useState(false);
-    const [username, setUsername] = useState(clerkUser?.username || "");
+    const [username, setUsername] = useState("");
     const [updateMessage, setUpdateMessage] = useState({ text: "", type: "" });
     const navigate = useNavigate();
+
+    // Sync local state when Clerk loads
+    React.useEffect(() => {
+        if (isClerkLoaded && clerkUser?.username) {
+            setUsername(clerkUser.username);
+        }
+    }, [isClerkLoaded, clerkUser]);
 
     const handleUpdateUsername = async (e) => {
         e.preventDefault();
@@ -106,7 +113,9 @@ const Settings = () => {
                                         </button>
                                     </div>
                                     <p className="mt-2 text-xs text-gray-500 italic">
-                                        {!clerkUser?.username ? "⚠️ You haven't set an official username yet. Set one here to enable username-based login." : "Your official username is set and can be used to log in."}
+                                        {clerkUser?.username
+                                            ? `✅ Your official login username is currently: ${clerkUser.username}`
+                                            : "⚠️ You haven't set an official username yet. Set one here to enable username-based login."}
                                     </p>
                                     {updateMessage.text && (
                                         <div className={`mt-4 p-3 rounded-lg text-sm font-medium ${updateMessage.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
