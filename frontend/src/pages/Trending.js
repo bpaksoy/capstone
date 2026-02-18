@@ -89,23 +89,19 @@ function Trending() {
         <div className="bg-primary min-h-screen flex flex-col items-center justify-start py-12 px-4 sm:px-6 lg:px-8">
             <ScrollToTop />
 
-            <div className="flex items-center justify-center gap-6 mb-12 mt-4 group">
+            <div className="flex items-center justify-center mb-8 mt-4 group">
                 <div className="relative">
                     {/* Glowing background effect */}
                     <div className="absolute inset-0 bg-purple/20 rounded-full blur-3xl animate-pulse group-hover:bg-purple/40 transition-colors"></div>
                     <div className="absolute -inset-2 bg-gradient-to-tr from-purple via-indigo-500 to-blue-600 rounded-full opacity-0 group-hover:opacity-20 animate-ping"></div>
 
                     {/* Main Icon Container - Purple electric theme */}
-                    <div className="relative p-4 bg-gradient-to-br from-purple via-indigo-600 to-blue-700 rounded-2xl shadow-2xl shadow-purple/40 transform group-hover:scale-110 group-hover:-rotate-12 transition-all duration-500 border border-white/20 animate-float">
-                        <svg className="w-8 h-8 text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]" fill="currentColor" viewBox="0 0 20 20">
+                    <div className="relative p-3 bg-gradient-to-br from-purple via-indigo-600 to-blue-700 rounded-xl shadow-2xl shadow-purple/40 transform group-hover:scale-110 group-hover:-rotate-12 transition-all duration-500 border border-white/20 animate-float">
+                        <svg className="w-5 h-5 text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0111 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
                         </svg>
                     </div>
                 </div>
-
-                <h1 className="text-4xl md:text-5xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-purple via-indigo-300 to-white tracking-normal drop-shadow-xl pr-4 pb-1 leading-normal">
-                    Trending
-                </h1>
             </div>
 
             {loggedIn && (
