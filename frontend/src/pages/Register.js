@@ -135,33 +135,42 @@ export default function Register() {
 
                             <form className="mt-4" onSubmit={handleSubmit}>
                                 <div className="mt-4">
-                                    <label className="block text-gray-700 text-sm font-bold mb-2">Email Address</label>
+                                    <label htmlFor="email" className="block text-gray-700 text-sm font-bold mb-2">Email Address</label>
                                     <input
+                                        id="email"
                                         className="bg-gray-200 text-gray-700 focus:outline-none focus:shadow-outline border border-gray-300 rounded py-2 px-4 block w-full appearance-none"
                                         type="email"
+                                        name="email"
+                                        autoComplete="email"
                                         value={emailAddress}
                                         onChange={(e) => setEmailAddress(e.target.value)}
                                         required
                                     />
                                 </div>
                                 <div className="mt-4">
-                                    <label className="block text-gray-700 text-sm font-bold mb-2">Username</label>
+                                    <label htmlFor="username" className="block text-gray-700 text-sm font-bold mb-2">Username</label>
                                     <input
+                                        id="username"
                                         className="bg-gray-200 text-gray-700 focus:outline-none focus:shadow-outline border border-gray-300 rounded py-2 px-4 block w-full appearance-none"
                                         type="text"
+                                        name="username"
+                                        autoComplete="username"
                                         value={username}
                                         onChange={(e) => setUsername(e.target.value)}
                                         required
                                     />
                                 </div>
                                 <div className="mt-4">
-                                    <label className="block text-gray-700 text-sm font-bold mb-2">Password</label>
+                                    <label htmlFor="password" className="block text-gray-700 text-sm font-bold mb-2">Password</label>
                                     <input
+                                        id="password"
                                         className="bg-gray-200 text-gray-700 focus:outline-none focus:shadow-outline border border-gray-300 rounded py-2 px-4 block w-full appearance-none"
                                         type="password"
+                                        name="password"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         required
+                                        autoComplete="new-password"
                                     />
                                 </div>
                                 <div className="mt-8">
@@ -169,6 +178,7 @@ export default function Register() {
                                         {isSigningUp ? "Creating account..." : "Sign Up"}
                                     </button>
                                 </div>
+                                <div id="clerk-captcha"></div>
                             </form>
                             <div className="mt-4 flex items-center justify-between">
                                 <span className="border-b w-1/5 md:w-1/4"></span>

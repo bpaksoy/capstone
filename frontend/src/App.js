@@ -12,6 +12,7 @@ import CollegeDetail from "./components/CollegeDetail";
 import SearchResults from "./components/SearchResults";
 import { UserProvider } from "./UserProvider/UserProvider";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthenticateWithRedirectCallback } from "@clerk/clerk-react";
 import PrivateRoute from "./pages/PrivateRoute";
 import PublicProfile from "./components/PublicProfile";
 import SmartBookmarks from "./components/SmartBookmarks";
@@ -28,8 +29,8 @@ import ScrollToTopOnNavigate from "./utils/ScrollToTopOnNavigate";
 const App = () => {
 
   return (
-    <UserProvider>
-      <BrowserRouter>
+    <BrowserRouter>
+      <UserProvider>
         <ScrollToTopOnNavigate />
         <Header />
         <Routes>
@@ -37,6 +38,7 @@ const App = () => {
           <Route path="/trending" element={<Trending />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/sso-callback" element={<AuthenticateWithRedirectCallback />} />
 
           <Route path="/colleges/:id" element={<College />} />
           <Route path="/colleges/:id/details" element={<CollegeDetail />} />
@@ -56,8 +58,8 @@ const App = () => {
         </Routes>
         <AIAgent />
         <Footer />
-      </BrowserRouter>
-    </UserProvider>
+      </UserProvider>
+    </BrowserRouter>
   );
 };
 
