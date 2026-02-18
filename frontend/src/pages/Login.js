@@ -48,7 +48,7 @@ export default function Login() {
 
         try {
             const result = await signIn.create({
-                identifier,
+                identifier: identifier.trim(),
                 password,
             });
 

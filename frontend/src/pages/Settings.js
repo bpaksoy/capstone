@@ -28,7 +28,7 @@ const Settings = () => {
         setIsUpdating(true);
         setUpdateMessage({ text: "", type: "" });
         try {
-            await clerkUser.update({ username: username });
+            await clerkUser.update({ username: username.trim() });
             setUpdateMessage({ text: "Username updated successfully! You can now log in with it.", type: "success" });
             fetchUser();
         } catch (error) {

@@ -50,9 +50,9 @@ export default function Register() {
 
         try {
             await signUp.create({
-                emailAddress,
+                emailAddress: emailAddress.trim(),
                 password,
-                username,
+                username: username.trim(),
             });
 
             // Start email verification
