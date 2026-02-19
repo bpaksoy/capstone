@@ -2197,18 +2197,31 @@ class AIChatView(APIView):
                 if db_info:
                     found_colleges_info += "Database Match from IPEDS data:\n" + db_info
 
-        # --- 2. CONSTRUCT SYSTEM PROMPT ---
+        # --- 2. GATHER USER MEMORY (GPA, SAT, BOOKMARKS) ---
+        user_memory = ""
+        if request.user.is_authenticated:
+            u = request.user
+            bookmarks = Bookmark.objects.filter(user=u).select_related('college').only('college__name')
+            bookmark_names = [b.college.name for b in bookmarks]
+            
+            user_memory = f"""
+            - User Name: {u.first_name or u.username}
+            - Goal/Major: {u.major or 'Undecided'}
+            - Location: {u.city or ''}, {u.state or ''}
+            - GPA: {u.gpa or 'Not provided'}
+            - SAT Score: {u.sat_score or 'Not provided'}
+            - Bookmarked Colleges: {', '.join(bookmark_names) if bookmark_names else 'None yet'}
+            """
+
+        # --- 3. CONSTRUCT SYSTEM PROMPT ---
         system_prompt = f"""You are Wormie, a helpful, enthusiastic, and knowledgeable AI college counselor agent.
         Your goal is to help students find their perfect college match.
         
-        CONTEXT FROM DATABASE:
+        CONTEXT FROM DATABASE (Real IPEDS data):
         {found_colleges_info}
         
-        USER PROFILE:
-        User is {'logged in' if request.user.is_authenticated else 'a guest'}.
-        {f'Name: {request.user.first_name}' if request.user.is_authenticated else ''}
-        {f'Interested in: {request.user.major}' if request.user.is_authenticated and request.user.major else ''}
-        {f'Location: {request.user.state}' if request.user.is_authenticated and request.user.state else ''}
+        USER PROFILE & MEMORY:
+        {user_memory if user_memory else 'User is a guest. Encourage them to sign up to save bookmarks and profile info.'}
 
         INSTRUCTIONS:
         1. Answer the user's question conversationally.

@@ -304,6 +304,18 @@ const Profile = () => {
                                     </svg>
                                     {user?.education || "University not set"}
                                 </div>
+
+                                <div className="mb-2 text-gray-600 flex justify-center items-center gap-6 mt-4">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px] uppercase font-bold text-gray-400">GPA</span>
+                                        <span className="font-semibold text-gray-800">{user?.gpa || '—'}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px] uppercase font-bold text-gray-400">SAT</span>
+                                        <span className="font-semibold text-gray-800">{user?.sat_score || '—'}</span>
+                                    </div>
+                                </div>
+
                                 <div className="mt-4">
                                     <AddInfoModal initialValues={user} fetchUser={fetchUser} />
                                 </div>

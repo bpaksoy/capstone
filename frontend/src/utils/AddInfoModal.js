@@ -9,6 +9,8 @@ const AddInfoModal = ({ initialValues = {}, fetchUser }) => {
     const [country, setCountry] = useState(initialValues.country || '');
     const [major, setMajor] = useState(initialValues.major || '');
     const [education, setEducation] = useState(initialValues.education || '');
+    const [gpa, setGpa] = useState(initialValues.gpa || '');
+    const [satScore, setSatScore] = useState(initialValues.sat_score || '');
     const [isOpen, setIsOpen] = useState(false);
     const [error, setError] = useState(null);
 
@@ -19,6 +21,8 @@ const AddInfoModal = ({ initialValues = {}, fetchUser }) => {
         setCountry(initialValues.country || '');
         setMajor(initialValues.major || '');
         setEducation(initialValues.education || '');
+        setGpa(initialValues.gpa || '');
+        setSatScore(initialValues.sat_score || '');
         setIsOpen(true);
         setError(null)
     };
@@ -37,6 +41,8 @@ const AddInfoModal = ({ initialValues = {}, fetchUser }) => {
             country: country,
             major: major,
             education: education,
+            gpa: gpa || null,
+            sat_score: satScore || null,
         };
 
         console.log("formData", data);
@@ -157,6 +163,31 @@ const AddInfoModal = ({ initialValues = {}, fetchUser }) => {
                                                         className="w-full px-3 py-3 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder-gray-400"
                                                         placeholder="Education"
                                                     />
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label htmlFor="gpa" className="sr-only">GPA</label>
+                                                        <input
+                                                            type="number"
+                                                            step="0.01"
+                                                            id="gpa"
+                                                            value={gpa}
+                                                            onChange={(e) => setGpa(e.target.value)}
+                                                            className="w-full px-3 py-3 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder-gray-400"
+                                                            placeholder="GPA (e.g. 3.8)"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label htmlFor="satScore" className="sr-only">SAT Score</label>
+                                                        <input
+                                                            type="number"
+                                                            id="satScore"
+                                                            value={satScore}
+                                                            onChange={(e) => setSatScore(e.target.value)}
+                                                            className="w-full px-3 py-3 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder-gray-400"
+                                                            placeholder="SAT Score"
+                                                        />
+                                                    </div>
                                                 </div>
                                             </div>
 
