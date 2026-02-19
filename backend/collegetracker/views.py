@@ -1997,6 +1997,8 @@ import os
 # Configure Gemini once at module level and cache the model
 # Re-initializing on every request adds ~1-2s overhead
 _GEMINI_MODEL = None
+_VECTOR_STORE = None
+_EMBEDDINGS = None
 
 def _get_gemini_model():
     global _GEMINI_MODEL
@@ -2004,13 +2006,28 @@ def _get_gemini_model():
         api_key = os.environ.get("GEMINI_API_KEY")
         if api_key:
             genai.configure(api_key=api_key)
-            _GEMINI_MODEL = genai.GenerativeModel('gemini-flash-latest')
+            _GEMINI_MODEL = genai.GenerativeModel('gemini-flash-lite-latest')
     return _GEMINI_MODEL
+
+def _get_vector_store():
+    global _VECTOR_STORE, _EMBEDDINGS
+    index_path = "college_faiss_index"
+    if _VECTOR_STORE is None and os.path.exists(index_path):
+        try:
+            api_key = os.environ.get("GEMINI_API_KEY")
+            if api_key:
+                if _EMBEDDINGS is None:
+                    _EMBEDDINGS = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001", google_api_key=api_key)
+                _VECTOR_STORE = FAISS.load_local(index_path, _EMBEDDINGS, allow_dangerous_deserialization=True)
+        except Exception as e:
+            print(f"Error loading FAISS index: {e}")
+    return _VECTOR_STORE
 
 try:
     _get_gemini_model()
+    _get_vector_store()
 except Exception as e:
-    print(f"Error initializing Gemini model: {e}")
+    print(f"Error initializing cached AI resources: {e}")
 
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 
@@ -2018,6 +2035,7 @@ class AIChatView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        print("DEBUG: AIChatView POST received")
         user_message = request.data.get('message', '')
         context = request.data.get('context', {})
         current_path = context.get('path', '')
@@ -2036,24 +2054,22 @@ class AIChatView(APIView):
 
         # --- 1. GATHER CONTEXT FOR LLM (Hybrid Retrieval) ---
         found_colleges_info = ""
-        index_path = "college_faiss_index"
         vector_results = []
         
-        # A. Try Vector Search First (Semantic Search)
-        if os.path.exists(index_path) and len(user_message) > 5:
+        # A. Try Vector Search First (Semantic Search) - Using Cached Index
+        if len(user_message) > 5:
             try:
-                api_key = os.environ.get("GEMINI_API_KEY")
-                embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001", google_api_key=api_key)
-                vector_store = FAISS.load_local(index_path, embeddings, allow_dangerous_deserialization=True)
-                
-                # Search for 3 most relevant colleges
-                docs = vector_store.similarity_search(user_message, k=3)
-                if docs:
-                    found_colleges_info += "Relevant Colleges based on description:\n"
-                    for doc in docs:
-                        vector_results.append(doc.metadata.get("name"))
-                        found_colleges_info += f"- {doc.page_content}\n"
-                    found_colleges_info += "\n"
+                vector_store = _get_vector_store()
+                if vector_store:
+                    print("DEBUG: Vector store found, searching...")
+                    # Search for 3 most relevant colleges
+                    docs = vector_store.similarity_search(user_message, k=3)
+                    if docs:
+                        found_colleges_info += "Relevant Colleges based on description:\n"
+                        for doc in docs:
+                            vector_results.append(doc.metadata.get("name"))
+                            found_colleges_info += f"- {doc.page_content}\n"
+                        found_colleges_info += "\n"
             except Exception as e:
                 print(f"Vector search warning: {e}")
 
@@ -2219,24 +2235,28 @@ class AIChatView(APIView):
                 if role and content:
                     gemini_history.append({"role": role, "parts": [content]})
 
-            # Start a chat session with history
-            chat = model.start_chat(history=gemini_history)
-            
             # Create a generator for the streaming response
             def event_stream():
                 try:
-                    # Send message using chat session
-                    response = chat.send_message(system_prompt, stream=True)
+                    # Construct full prompt with history
+                    full_prompt = system_prompt
+                    if gemini_history:
+                        history_text = "\n\nCHAT HISTORY:\n"
+                        for msg in gemini_history:
+                            role = "User" if msg['role'] == 'user' else "Wormie"
+                            history_text += f"{role}: {msg['parts'][0]}\n"
+                        full_prompt = history_text + "\n" + system_prompt
+
+                    response = model.generate_content(full_prompt, stream=True)
                     for chunk in response:
                         if chunk.text:
                             yield chunk.text
                 except Exception as stream_e:
-                     error_str = str(stream_e).lower()
-                     print(f"Stream Error: {stream_e}")
-                     if "429" in error_str or "quota" in error_str:
-                         yield "\n\n(I'm currently receiving too many requests. Please try again in about a minute!)"
-                     else:
-                         yield f"\n[Error: {str(stream_e)}]"
+                    error_str = str(stream_e).lower()
+                    if "429" in error_str or "quota" in error_str:
+                        yield "\n\n(I'm currently receiving too many requests. Please try again in about a minute!)"
+                    else:
+                        yield f"\n[Error: {str(stream_e)}]"
 
             return StreamingHttpResponse(event_stream(), content_type='text/plain')
 
