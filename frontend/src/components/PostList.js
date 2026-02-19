@@ -49,7 +49,8 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
 
     const updateLikeStatus = (postId, isLiked) => {
         setPostLikes((prevPostLikes) => ({ ...prevPostLikes, [postId]: isLiked }));
-        onAddPost(false); // Update the post list when a like status changes
+        // Note: do NOT call onAddPost here — that triggers a full posts re-fetch
+        // on every like state check (including initial mount), causing a loop.
     };
 
     const [modalIsOpen, setModalIsOpen] = useState(null);

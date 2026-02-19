@@ -1,21 +1,23 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import axios from 'axios';
 
 
 const useFetch = (options = {}, token) => {
     const [data, setData] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+
+    // Store token in a ref so fetchData stays stable across renders
+    const tokenRef = useRef(token);
+    tokenRef.current = token;
 
     const fetchData = useCallback(async (url, method) => {
         try {
             setLoading(true);
             const res = await axios(url, {
                 method,
-                ...options,
                 headers: {
-                    ...options.headers,
-                    Authorization: `Bearer ${token}`,
+                    Authorization: `Bearer ${tokenRef.current}`,
                 },
             });
             setData(res.data);
@@ -24,7 +26,8 @@ const useFetch = (options = {}, token) => {
         } finally {
             setLoading(false);
         }
-    }, [options, token]);
+        // Empty deps: fetchData is now stable forever
+    }, []);
 
 
     return { data, loading, error, fetchData };
