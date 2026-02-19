@@ -2214,13 +2214,32 @@ class AIChatView(APIView):
                 if db_info:
                     found_colleges_info += "Database Match from IPEDS data:\n" + db_info
 
-        # --- 2. GATHER USER MEMORY (GPA, SAT, BOOKMARKS) ---
+        # --- 2. GATHER USER MEMORY & DEEP BOOKMARK AWARENESS ---
         user_memory = ""
         if request.user.is_authenticated:
             u = request.user
-            bookmarks = Bookmark.objects.filter(user=u).select_related('college').only('college__name')
-            bookmark_names = [b.college.name for b in bookmarks]
+            bookmarks_qs = Bookmark.objects.filter(user=u).select_related('college')
+            bookmark_names = [b.college.name for b in bookmarks_qs]
             
+            # Deep Awareness: Calculate the "Vibe" of their bookmarks
+            bookmark_details = ""
+            recommendations_text = ""
+            if bookmarks_qs.exists():
+                colleges = [b.college for b in bookmarks_qs]
+                avg_sat = sum(c.sat_score for c in colleges if c.sat_score) / max(1, len([c for c in colleges if c.sat_score]))
+                avg_adm = sum(c.admission_rate for c in colleges if c.admission_rate) / max(1, len([c for c in colleges if c.admission_rate]))
+                common_states = list(set(c.state for c in colleges))
+                
+                bookmark_details = f"Average stats of bookmarks: SAT: {avg_sat:.0f}, Admission Rate: {avg_adm*100:.1f}%. Common regions: {', '.join(common_states)}."
+                
+                # Proactive Recommendations: Find 3 similar colleges they haven't bookmarked
+                rec_query = Q(state__in=common_states) | Q(admission_rate__range=(avg_adm-0.1, avg_adm+0.1))
+                recs = College.objects.filter(rec_query).exclude(id__in=[c.id for c in colleges]).distinct()[:3]
+                if recs:
+                    recommendations_text = "Based on their bookmarks, here are some smart recommendations to suggest:\n"
+                    for r in recs:
+                        recommendations_text += f"- {r.name} ({r.city}, {r.state}) - Admission: {r.admission_rate*100:.1f}%\n"
+
             user_memory = f"""
             - User Name: {u.first_name or u.username}
             - Goal/Major: {u.major or 'Undecided'}
@@ -2228,6 +2247,10 @@ class AIChatView(APIView):
             - GPA: {u.gpa or 'Not provided'}
             - SAT Score: {u.sat_score or 'Not provided'}
             - Bookmarked Colleges: {', '.join(bookmark_names) if bookmark_names else 'None yet'}
+            {bookmark_details}
+            
+            PROACTIVE RECOMMENDATIONS (Suggest these if the user asks for more ideas):
+            {recommendations_text if recommendations_text else 'No specific suggestions yet.'}
             """
 
         # --- 3. CONSTRUCT SYSTEM PROMPT ---
