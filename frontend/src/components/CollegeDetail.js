@@ -7,6 +7,7 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import ScrollToTop from './ScrollToTop';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -107,6 +108,7 @@ const CollegeDetail = () => {
         <>
             <div className="bg-primary min-h-screen">
                 <div className="container mx-auto px-4 py-8">
+                    <ScrollToTop />
                     <div className="bg-white rounded-lg shadow-md p-6">
                         <div className="flex flex-col md:flex-row items-start gap-8">
                             <img
