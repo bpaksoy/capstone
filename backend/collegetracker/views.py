@@ -2238,7 +2238,8 @@ class AIChatView(APIView):
                 if recs:
                     recommendations_text = "Based on their bookmarks, here are some smart recommendations to suggest:\n"
                     for r in recs:
-                        recommendations_text += f"- {r.name} ({r.city}, {r.state}) - Admission: {r.admission_rate*100:.1f}%\n"
+                        adm_str = f"{r.admission_rate*100:.1f}%" if r.admission_rate is not None else "N/A"
+                        recommendations_text += f"- {r.name} ({r.city}, {r.state}) - Admission: {adm_str}\n"
 
             user_memory = f"""
             - User Name: {u.first_name or u.username}
