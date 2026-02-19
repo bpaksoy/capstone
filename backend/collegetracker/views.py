@@ -2,10 +2,10 @@ import re
 import json
 import jwt
 from goose3 import Goose
-from .models import User, College, Comment, Post, Bookmark, Reply, Like, Friendship, SmartCollege, CollegeProgram, Article, Notification
+from .models import User, College, Comment, Post, Bookmark, Reply, Like, Friendship, SmartCollege, CollegeProgram, Article, Notification, ChatMessage
 from django.http import JsonResponse, Http404
 from django.db import IntegrityError
-from .serializers import CollegeSerializer, UserSerializer, UploadFileSerializer, LoginSerializer, CommentSerializer, PostSerializer, BookmarkSerializer, ReplySerializer, LikeSerializer, FriendshipSerializer, SmartCollegeSerializer, CollegeProgramSerializer, ArticleSerializer, NotificationSerializer
+from .serializers import CollegeSerializer, UserSerializer, UploadFileSerializer, LoginSerializer, CommentSerializer, PostSerializer, BookmarkSerializer, ReplySerializer, LikeSerializer, FriendshipSerializer, SmartCollegeSerializer, CollegeProgramSerializer, ArticleSerializer, NotificationSerializer, ChatMessageSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -2031,6 +2031,19 @@ except Exception as e:
 
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 
+class ChatHistoryView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        messages = ChatMessage.objects.filter(user=request.user).order_by('created_at')
+        serializer = ChatMessageSerializer(messages, many=True)
+        return Response(serializer.data)
+
+    def delete(self, request):
+        ChatMessage.objects.filter(user=request.user).delete()
+        return Response({'message': 'Chat history cleared'})
+
+
 class AIChatView(APIView):
     permission_classes = [AllowAny]
 
@@ -2039,6 +2052,10 @@ class AIChatView(APIView):
         user_message = request.data.get('message', '')
         context = request.data.get('context', {})
         current_path = context.get('path', '')
+
+        # Save user message to memory
+        if request.user.is_authenticated and user_message != "PROACTIVE_GREETING":
+            ChatMessage.objects.create(user=request.user, role='user', content=user_message)
         
         # --- SPECIAL: PROACTIVE GREETING (Keep generic for now or use LLM later) ---
         if user_message == "PROACTIVE_GREETING":
@@ -2250,6 +2267,7 @@ class AIChatView(APIView):
 
             # Create a generator for the streaming response
             def event_stream():
+                full_response = ""
                 try:
                     # Construct full prompt with history
                     full_prompt = system_prompt
@@ -2263,7 +2281,13 @@ class AIChatView(APIView):
                     response = model.generate_content(full_prompt, stream=True)
                     for chunk in response:
                         if chunk.text:
+                            full_response += chunk.text
                             yield chunk.text
+                    
+                    # Save AI response once done
+                    if request.user.is_authenticated and full_response:
+                        ChatMessage.objects.create(user=request.user, role='model', content=full_response)
+
                 except Exception as stream_e:
                     error_str = str(stream_e).lower()
                     if "429" in error_str or "quota" in error_str:

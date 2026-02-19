@@ -314,3 +314,18 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"{self.sender.username} {self.notification_type} to {self.recipient.username}"
+
+
+class ChatMessage(models.Model):
+    # If user is null, it's a guest message (we might want to support this or not)
+    # For now, let's keep it tied to a user for "Memory"
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='chat_messages')
+    role = models.CharField(max_length=20)  # 'user' or 'model'
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"{self.user.username} ({self.role}): {self.content[:30]}..."

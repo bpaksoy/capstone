@@ -4,7 +4,8 @@ import {
     XMarkIcon,
     PaperAirplaneIcon,
     SparklesIcon,
-    AcademicCapIcon
+    AcademicCapIcon,
+    TrashIcon
 } from '@heroicons/react/24/outline';
 import { useCurrentUser } from '../UserProvider/UserProvider';
 import axios from 'axios';
@@ -35,36 +36,62 @@ const AIAgent = () => {
         scrollToBottom();
     }, [chatHistory, isThinking]);
 
-    // Proactive: Fetch personalized greeting on mount or location change
+    // Load chat history on mount/login
     useEffect(() => {
-        // if (isOpen && loggedIn) {
-        //     const fetchProactiveMessage = async () => {
-        //         try {
-        //             const token = localStorage.getItem('access');
-        //             const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-        //             // Send empty message with context to trigger proactive greeting
-        //             const response = await axios.post(`${baseUrl}api/ai/chat/`, {
-        //                 message: "PROACTIVE_GREETING",
-        //                 context: {
-        //                     path: location.pathname,
-        //                     search: location.search
-        //                 }
-        //             }, { headers });
+        if (loggedIn) {
+            const fetchHistory = async () => {
+                try {
+                    const token = localStorage.getItem('access');
+                    if (!token) return;
 
-        //             if (response.data && response.data.reply) {
-        //                 setChatHistory(prev => {
-        //                     // Avoid duplicate greetings if the last message is same
-        //                     if (prev.length > 0 && prev[prev.length - 1].content === response.data.reply) return prev;
-        //                     return [...prev, { role: 'assistant', content: response.data.reply }];
-        //                 });
-        //             }
-        //         } catch (error) {
-        //             console.error("Proactive fetch error", error);
-        //         }
-        //     };
-        //     fetchProactiveMessage();
-        // }
-    }, [isOpen, location.pathname, loggedIn]); // Re-trigger when path changes
+                    const response = await axios.get(`${baseUrl}api/ai/history/`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (response.data && response.data.length > 0) {
+                        // Map roles: 'model' -> 'assistant'
+                        const history = response.data.map(m => ({
+                            role: m.role === 'model' ? 'assistant' : 'user',
+                            content: m.content
+                        }));
+                        setChatHistory(history);
+                    }
+                } catch (error) {
+                    console.error("Error fetching chat history", error);
+                }
+            };
+            fetchHistory();
+        } else {
+            // Reset to default greeting if logged out
+            setChatHistory([
+                {
+                    role: 'assistant',
+                    content: "Hello! I'm Wormie, your personal college admissions assistant. I'm analyzing your profile to give you the best advice..."
+                }
+            ]);
+        }
+    }, [loggedIn]); // Re-trigger when login state changes
+
+    const handleClearHistory = async () => {
+        if (!window.confirm("Are you sure you want to clear your chat history?")) return;
+
+        try {
+            const token = localStorage.getItem('access');
+            if (token) {
+                await axios.delete(`${baseUrl}api/ai/history/`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+            }
+            setChatHistory([
+                {
+                    role: 'assistant',
+                    content: "History cleared! How can I help you today?"
+                }
+            ]);
+        } catch (error) {
+            console.error("Error clearing history", error);
+        }
+    };
 
     const handleSendMessage = async (e) => {
         e.preventDefault();
@@ -72,11 +99,8 @@ const AIAgent = () => {
 
         const userMessage = message.trim();
         setMessage('');
-        setChatHistory(prev => [...prev, { role: 'user', content: userMessage }]);
+        setChatHistory(prev => [...prev, { role: 'user', content: userMessage }, { role: 'assistant', content: "" }]);
         setIsThinking(true);
-
-        // Add a placeholder "Thinking..." message or directly start with an empty assistant message
-        setChatHistory(prev => [...prev, { role: 'assistant', content: "" }]);
 
         try {
             const token = localStorage.getItem('access');
@@ -171,12 +195,23 @@ const AIAgent = () => {
                                 </div>
                             </div>
                         </div>
-                        <button
-                            onClick={() => setIsOpen(false)}
-                            className="p-1.5 hover:bg-white/10 rounded-xl transition-colors"
-                        >
-                            <XMarkIcon className="w-6 h-6" />
-                        </button>
+                        <div className="flex items-center gap-1">
+                            {loggedIn && (
+                                <button
+                                    onClick={handleClearHistory}
+                                    className="p-1.5 hover:bg-white/10 rounded-xl transition-colors text-white/50 hover:text-white"
+                                    title="Clear History"
+                                >
+                                    <TrashIcon className="w-5 h-5" />
+                                </button>
+                            )}
+                            <button
+                                onClick={() => setIsOpen(false)}
+                                className="p-1.5 hover:bg-white/10 rounded-xl transition-colors"
+                            >
+                                <XMarkIcon className="w-6 h-6" />
+                            </button>
+                        </div>
                     </div>
 
                     {/* Messages Area */}

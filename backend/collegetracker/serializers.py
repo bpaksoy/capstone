@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import College
 from django.contrib.auth import authenticate
-from .models import Comment, Post, Bookmark, Reply, User, Like, Friendship, SmartCollege, CollegeProgram, Article, Notification
+from .models import Comment, Post, Bookmark, Reply, User, Like, Friendship, SmartCollege, CollegeProgram, Article, Notification, ChatMessage
 from django.contrib.contenttypes.models import ContentType
 from rest_framework.validators import UniqueTogetherValidator
 
@@ -192,3 +192,9 @@ class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
         fields = '__all__'
+
+
+class ChatMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChatMessage
+        fields = ('id', 'role', 'content', 'created_at')
