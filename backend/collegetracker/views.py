@@ -1993,11 +1993,24 @@ from django.http import StreamingHttpResponse
 from langchain_community.vectorstores import FAISS
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 import os
-# Configure Gemini
+
+# Configure Gemini once at module level and cache the model
+# Re-initializing on every request adds ~1-2s overhead
+_GEMINI_MODEL = None
+
+def _get_gemini_model():
+    global _GEMINI_MODEL
+    if _GEMINI_MODEL is None:
+        api_key = os.environ.get("GEMINI_API_KEY")
+        if api_key:
+            genai.configure(api_key=api_key)
+            _GEMINI_MODEL = genai.GenerativeModel('gemini-2.0-flash')
+    return _GEMINI_MODEL
+
 try:
-    genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
+    _get_gemini_model()
 except Exception as e:
-    print(f"Error configuring Gemini: {e}")
+    print(f"Error initializing Gemini model: {e}")
 
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 
@@ -2044,45 +2057,129 @@ class AIChatView(APIView):
             except Exception as e:
                 print(f"Vector search warning: {e}")
 
-        # B. Fallback/Supplement: Exact Keyword Matching (if vector didn't find specific names mentioned)
-        # This is useful if user says specific name but vector search missed it for some reason
-        keywords = [w for w in re.findall(r'\w+', user_message.lower()) if len(w) > 3]
-        if keywords:
+        # B. Fallback/Supplement: Smart college name matching from DB
+        STOP_WORDS = {
+            'what', 'where', 'when', 'which', 'tell', 'about', 'hard',
+            'college', 'university', 'institute', 'school', 'rate', 'cost',
+            'tuition', 'admission', 'looking', 'want', 'need', 'know',
+            'does', 'have', 'with', 'from', 'that', 'this', 'more', 'into',
+            'their', 'there', 'find', 'good', 'best', 'like', 'also', 'offer',
+            'program', 'programs', 'major', 'majors', 'degree', 'campus',
+            'apply', 'applied', 'attend', 'enrolled', 'student', 'students',
+        }
+
+        meaningful_words = []
+        for w in re.findall(r'[a-zA-Z]+', user_message):
+            w_lower = w.lower()
+            if w_lower in STOP_WORDS:
+                continue
+            # Keep acronyms (ALL-CAPS words >= 2 chars like UCLA, NYU, HBCU)
+            if w.isupper() and len(w) >= 2:
+                meaningful_words.append(w)
+            # Keep normal words >= 5 chars (reduces false positives)
+            elif len(w) >= 5:
+                meaningful_words.append(w)
+
+        # Map common acronyms to full substrings for better matching
+        ACRONYM_MAP = {
+            'MIT': 'Massachusetts Institute of Technology',
+            'UCLA': 'University of California-Los Angeles',
+            'UCB': 'University of California-Berkeley',
+            'UCSD': 'University of California-San Diego',
+            'UCSB': 'University of California-Santa Barbara',
+            'UCI': 'University of California-Irvine',
+            'UCD': 'University of California-Davis',
+            'NYU': 'New York University',
+            'USC': 'University of Southern California',
+            'UNC': 'University of North Carolina',
+            'UVA': 'University of Virginia',
+            'UMICH': 'University of Michigan',
+            'UPENN': 'University of Pennsylvania',
+            'LSU': 'Louisiana State University',
+            'ASU': 'Arizona State University',
+            'PSU': 'Pennsylvania State University',
+            'MSU': 'Michigan State University',
+            'OSU': 'Ohio State University',
+            'TAMU': 'Texas A & M',
+            'BYU': 'Brigham Young University',
+            'RPI': 'Rensselaer Polytechnic Institute',
+            'RIT': 'Rochester Institute of Technology',
+            'WPI': 'Worcester Polytechnic Institute',
+            'CMU': 'Carnegie Mellon',
+            'SMU': 'Southern Methodist University',
+            'TCU': 'Texas Christian University',
+        }
+
+        expanded_words = []
+        for w in meaningful_words:
+            upper_w = w.upper()
+            if upper_w in ACRONYM_MAP:
+                # Add the full name parts to the search
+                full_name = ACRONYM_MAP[upper_w]
+                # We add the whole phrase as a single query term if possible, or just use the mapped string
+                # For regex search we'll use the mapped string directly in the loop below
+                expanded_words.append(full_name) # Treat as a direct phrase to search
+            else:
+                expanded_words.append(w)
+        
+        if expanded_words:
             query = Q()
-            for k in keywords:
-                query |= Q(name__icontains=k)
-            
-            # Get top 3 matches
-            matches = College.objects.filter(query).distinct()[:3]
-            
-            if matches.exists():
+            for w in expanded_words:
+                # If it looks like a full name (has spaces), use icontains
+                if ' ' in w:
+                     query |= Q(name__icontains=w)
+                else:
+                    # Use word-boundary regex so 'UCLA' doesn't match 'Paul Mitchell'
+                    query |= Q(name__iregex=rf'\b{re.escape(w)}\b')
+
+            matches = College.objects.filter(query).distinct()
+
+            # Score: count how many meaningful words appear (word-bounded) in the college name
+            scored = []
+            for c in matches:
+                # Check match against original or expanded words
+                score = 0
+                c_name_lower = c.name.lower()
+                for w in expanded_words:
+                    if ' ' in w:
+                        if w.lower() in c_name_lower: score += 1
+                    else:
+                        if re.search(rf'\b{re.escape(w)}\b', c.name, re.IGNORECASE): score += 1
+                
+                # Require reliable match
+                if score > 0:
+                    scored.append((score, c))
+
+            scored.sort(key=lambda x: -x[0])
+            top_matches = [c for _, c in scored[:3]]
+
+            if top_matches:
                 db_info = ""
-                for c in matches:
-                    # Avoid duplicating if vector search already found it
+                for c in top_matches:
                     if c.name in vector_results:
                         continue
-                        
                     db_info += f"- Name: {c.name}\n"
                     db_info += f"  - Location: {c.city}, {c.state}\n"
                     if c.admission_rate: db_info += f"  - Admission Rate: {c.admission_rate*100:.1f}%\n"
                     if c.sat_score: db_info += f"  - Avg SAT: {c.sat_score}\n"
-                    if c.cost_of_attendance: db_info += f"  - Cost: ${c.cost_of_attendance:,}\n"
-                    
-                    # New Metadata
+                    if c.cost_of_attendance: db_info += f"  - Cost of Attendance: ${c.cost_of_attendance:,}\n"
+                    if c.tuition_in_state: db_info += f"  - Tuition (In-State): ${c.tuition_in_state:,}\n"
+                    if c.tuition_out_state: db_info += f"  - Tuition (Out-of-State): ${c.tuition_out_state:,}\n"
+                    if c.grad_rate: db_info += f"  - Graduation Rate: {c.grad_rate*100:.1f}%\n"
+                    if c.retention_rate: db_info += f"  - Retention Rate: {c.retention_rate*100:.1f}%\n"
                     cc_disp = c.get_carnegie_classification_display()
                     if cc_disp and cc_disp != "Not classified":
                         db_info += f"  - Classification: {cc_disp}\n"
-                    
                     if c.is_open_admission:
                         db_info += f"  - Admissions: Open Admission Policy\n"
-                    
                     if c.is_distance_education:
                         db_info += f"  - Learning Mode: 100% Online/Distance Education\n"
-                        
+                    if c.top_major:
+                        db_info += f"  - Top Major: {c.top_major}\n"
                     db_info += "\n"
-                
+
                 if db_info:
-                    found_colleges_info += "Additional Database Matches:\n" + db_info
+                    found_colleges_info += "Database Match from IPEDS data:\n" + db_info
 
         # --- 2. CONSTRUCT SYSTEM PROMPT ---
         system_prompt = f"""You are Wormie, a helpful, enthusiastic, and knowledgeable AI college counselor agent.
@@ -2107,14 +2204,11 @@ class AIChatView(APIView):
         User Query: {user_message}
         """
 
-        # --- 3. CALL GEMINI & STREAM ---
+        # --- 3. CALL GEMINI & STREAM (using cached model) ---
         try:
-            api_key = os.environ.get("GEMINI_API_KEY")
-            if not api_key:
-                 raise Exception("GEMINI_API_KEY not found in environment variables.")
-
-            genai.configure(api_key=api_key)
-            model = genai.GenerativeModel('gemini-flash-latest')
+            model = _get_gemini_model()
+            if not model:
+                raise Exception("GEMINI_API_KEY not configured.")
 
             # Parse history for Gemini
             raw_history = request.data.get('history', [])

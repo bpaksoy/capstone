@@ -32,7 +32,7 @@ function Search() {
                     </svg>
                 </div>
                 <input
-                    className="flex-grow px-4 py-4 text-sm text-gray-700 placeholder-gray-400 bg-transparent outline-none border-none focus:ring-0 font-medium"
+                    className="flex-grow px-5 py-5 text-base text-gray-700 placeholder-gray-400 bg-transparent outline-none border-none focus:ring-0 font-medium"
                     placeholder="Search for a college or specific program..."
                     type="text"
                     value={query}
@@ -42,7 +42,7 @@ function Search() {
                 />
                 <button
                     type="submit"
-                    className="bg-primary hover:bg-teal-700 text-white font-bold py-3.5 px-10 text-sm shrink-0 transition-all duration-200 m-1 rounded-full shadow-lg shadow-teal-500/20 hover:shadow-xl hover:-translate-x-1"
+                    className="bg-primary hover:bg-teal-700 text-white font-bold py-4 px-12 text-sm shrink-0 transition-all duration-200 m-1.5 rounded-full shadow-lg shadow-teal-500/20 hover:shadow-xl hover:-translate-x-1"
                 >
                     Search
                 </button>

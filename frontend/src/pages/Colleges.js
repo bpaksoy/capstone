@@ -74,15 +74,15 @@ const Colleges = () => {
                     {showColleges ? (
                         <>
                             {viewMode === 'featured' ? (
-                                <div className="flex flex-col items-center animate-fadeIn">
-                                    <div className="w-full text-center py-8">
+                                <div className="flex flex-col items-center animate-fadeIn pt-6">
+                                    <div className="w-full text-center py-10">
                                         <h2 className="text-4xl font-extrabold text-white tracking-tight drop-shadow-md">
                                             Featured Colleges
                                         </h2>
                                         <p className="text-blue-100 mt-2 text-lg">Discover top-rated institutions</p>
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-6 w-full max-w-7xl mx-auto">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-6 w-full max-w-7xl mx-auto">
                                         {featuredColleges.length > 0 ? (
                                             featuredColleges.map((college) => (
                                                 <College key={college.id} {...college} />
