@@ -31,7 +31,8 @@ const CollegeDetail = () => {
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [programs, setPrograms] = useState([]);
-    console.log("programs", programs);
+    const [showAllPrograms, setShowAllPrograms] = useState(false);
+    const PROGRAMS_LIMIT = 10;
 
 
     useEffect(() => {
@@ -297,9 +298,14 @@ const CollegeDetail = () => {
                                 </div>
                                 {programs && programs.length > 0 && (
                                     <div className="mt-8">
-                                        <h3 className="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">Programs Offered</h3>
+                                        <h3 className="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">
+                                            Programs Offered
+                                            <span className="ml-3 text-sm font-normal text-gray-400">
+                                                ({programs.length} total)
+                                            </span>
+                                        </h3>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {programs.map(program => (
+                                            {(showAllPrograms ? programs : programs.slice(0, PROGRAMS_LIMIT)).map(program => (
                                                 <div key={program.id} className="bg-gray-50 hover:bg-white border border-gray-100 p-4 rounded-xl transition-all duration-300 hover:shadow-md hover:border-blue-100 group flex items-start gap-3">
                                                     <div className="bg-white p-2 rounded-lg text-blue-500 group-hover:text-blue-600 transition-colors shadow-sm">
                                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
@@ -319,6 +325,30 @@ const CollegeDetail = () => {
                                                 </div>
                                             ))}
                                         </div>
+                                        {programs.length > PROGRAMS_LIMIT && (
+                                            <div className="mt-6 flex justify-center">
+                                                <button
+                                                    onClick={() => setShowAllPrograms(prev => !prev)}
+                                                    className="flex items-center gap-2 px-6 py-2.5 bg-white border border-gray-200 text-gray-700 font-semibold rounded-full shadow-sm hover:shadow-md hover:border-blue-300 hover:text-blue-600 transition-all duration-200"
+                                                >
+                                                    {showAllPrograms ? (
+                                                        <>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-4 h-4">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                                                            </svg>
+                                                            Show less
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-4 h-4">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                                            </svg>
+                                                            Show all {programs.length} programs
+                                                        </>
+                                                    )}
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
 
