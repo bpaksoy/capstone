@@ -99,7 +99,7 @@ const AIAgent = () => {
 
         const userMessage = message.trim();
         setMessage('');
-        setChatHistory(prev => [...prev, { role: 'user', content: userMessage }, { role: 'assistant', content: "" }]);
+        setChatHistory(prev => [...prev, { role: 'user', content: userMessage }]);
         setIsThinking(true);
 
         try {
@@ -137,27 +137,20 @@ const AIAgent = () => {
                 const chunkValue = decoder.decode(value, { stream: !done });
 
                 if (chunkValue) {
+                    if (fullReply === "") {
+                        setIsThinking(false);
+                        setChatHistory(prev => [...prev, { role: 'assistant', content: chunkValue }]);
+                    } else {
+                        setChatHistory(prev => {
+                            const newHistory = [...prev];
+                            newHistory[newHistory.length - 1] = {
+                                role: 'assistant',
+                                content: fullReply + chunkValue
+                            };
+                            return newHistory;
+                        });
+                    }
                     fullReply += chunkValue;
-
-                    // Update the last message (assistant's reply) with the new chunk
-                    setChatHistory(prev => {
-                        const newHistory = [...prev];
-                        // If it's a proactive greeting (special generic response object from views), 
-                        // the format might be different, but here we expect plain text stream.
-                        // However, our proactive greeting logic returns JSON. 
-                        // Wait, we need to handle if it returns JSON (proactive) vs Stream (chat).
-                        // Actually, chat view now returns StreamingHttpResponse for normal chat. 
-                        // But proactive returns JSON Response. Fetch handles both but we need to parse.
-
-                        // Check if it looks like JSON error or simple text
-                        // For this implementation, we assume stream is text. 
-
-                        newHistory[newHistory.length - 1] = {
-                            role: 'assistant',
-                            content: fullReply
-                        };
-                        return newHistory;
-                    });
                 }
             }
 

@@ -2224,10 +2224,18 @@ class AIChatView(APIView):
             # Deep Awareness: Calculate the "Vibe" of their bookmarks
             bookmark_details = ""
             recommendations_text = ""
-            if bookmarks_qs.exists():
+            
+            # Optimization: only run heavy recommendation logic if it's a first message or contains key words
+            trigger_words = ['recommend', 'suggest', 'fit', 'next', 'other', 'match']
+            is_first_msg = not ChatMessage.objects.filter(user=u).exists()
+            is_rec_request = any(word in user_message.lower() for word in trigger_words)
+
+            if bookmarks_qs.exists() and (is_first_msg or is_rec_request):
                 colleges = [b.college for b in bookmarks_qs]
-                avg_sat = sum(c.sat_score for c in colleges if c.sat_score) / max(1, len([c for c in colleges if c.sat_score]))
-                avg_adm = sum(c.admission_rate for c in colleges if c.admission_rate) / max(1, len([c for c in colleges if c.admission_rate]))
+                calc_sat = [c.sat_score for c in colleges if c.sat_score]
+                calc_adm = [c.admission_rate for c in colleges if c.admission_rate]
+                avg_sat = sum(calc_sat) / max(1, len(calc_sat)) if calc_sat else 1100
+                avg_adm = sum(calc_adm) / max(1, len(calc_adm)) if calc_adm else 0.6
                 common_states = list(set(c.state for c in colleges))
                 
                 bookmark_details = f"Average stats of bookmarks: SAT: {avg_sat:.0f}, Admission Rate: {avg_adm*100:.1f}%. Common regions: {', '.join(common_states)}."
