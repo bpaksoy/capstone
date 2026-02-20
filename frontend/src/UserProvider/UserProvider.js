@@ -93,6 +93,38 @@ export const UserProvider = ({ children }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [clerkUser?.id, isClerkLoaded]);
 
+    // Cross-tab Synchronization:
+    // Listen for tab focus/visibility and storage changes to keep session in sync
+    useEffect(() => {
+        const handleSync = () => {
+            // If the document becomes visible, check if we need to re-sync
+            if (document.visibilityState === 'visible') {
+                const token = localStorage.getItem('access');
+                const currentlyLoggedIn = !!token;
+
+                // If there's a mismatch between state and storage, force a refresh or re-sync
+                if (currentlyLoggedIn !== loggedIn) {
+                    // One option is window.location.reload(), but we can just re-sync with backend
+                    window.location.reload();
+                }
+            }
+        };
+
+        const handleStorageChange = (e) => {
+            if (e.key === 'access' || e.key === 'refresh') {
+                window.location.reload();
+            }
+        };
+
+        window.addEventListener('visibilitychange', handleSync);
+        window.addEventListener('storage', handleStorageChange);
+
+        return () => {
+            window.removeEventListener('visibilitychange', handleSync);
+            window.removeEventListener('storage', handleStorageChange);
+        };
+    }, [loggedIn]);
+
     const handleLogout = useCallback(async () => {
         await signOut();
         localStorage.clear();
