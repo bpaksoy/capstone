@@ -93,34 +93,39 @@ export const UserProvider = ({ children }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [clerkUser?.id, isClerkLoaded]);
 
-    // Cross-tab Synchronization:
-    // Listen for tab focus/visibility and storage changes to keep session in sync
+    // Cross-tab Synchronization: Keep session in sync across multiple tabs
     useEffect(() => {
-        const handleSync = () => {
-            // If the document becomes visible, check if we need to re-sync
-            if (document.visibilityState === 'visible') {
-                const token = localStorage.getItem('access');
-                const currentlyLoggedIn = !!token;
+        const performSync = () => {
+            const token = localStorage.getItem('access');
+            const hasTokenInStorage = !!token;
 
-                // If there's a mismatch between state and storage, force a refresh or re-sync
-                if (currentlyLoggedIn !== loggedIn) {
-                    // One option is window.location.reload(), but we can just re-sync with backend
-                    window.location.reload();
-                }
-            }
-        };
-
-        const handleStorageChange = (e) => {
-            if (e.key === 'access' || e.key === 'refresh') {
+            // If our React state (loggedIn) doesn't match the actual source of truth (localStorage),
+            // a full refresh is the safest way to reset all providers and states.
+            if (hasTokenInStorage !== loggedIn) {
+                console.log("Session change detected via tab activity. Refreshing...");
                 window.location.reload();
             }
         };
 
-        window.addEventListener('visibilitychange', handleSync);
+        const handleStorageChange = (e) => {
+            // Storage events fire when another tab modifies localStorage.
+            // e.key is null if localStorage.clear() was called.
+            if (e.key === 'access' || e.key === 'refresh' || e.key === null) {
+                console.log("Session change detected via storage event. Refreshing...");
+                window.location.reload();
+            }
+        };
+
+        // Listen for tab focus and visibility changes
+        window.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') performSync();
+        });
+        window.addEventListener('focus', performSync);
         window.addEventListener('storage', handleStorageChange);
 
         return () => {
-            window.removeEventListener('visibilitychange', handleSync);
+            window.removeEventListener('visibilitychange', performSync);
+            window.removeEventListener('focus', performSync);
             window.removeEventListener('storage', handleStorageChange);
         };
     }, [loggedIn]);
