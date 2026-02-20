@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { baseUrl } from '../shared';
 import axios from 'axios';
 import { useCurrentUser } from '../UserProvider/UserProvider';
@@ -23,8 +23,17 @@ const DetailedSearch = () => {
     const [searchError, setSearchError] = useState('');
     const navigate = useNavigate();
     const location = useLocation();
-    const { updateLoggedInStatus } = useCurrentUser();
+    const { user, updateLoggedInStatus, loggedIn } = useCurrentUser();
     const [errorStatus] = useState();
+
+    // Pre-fill search with user data if available
+    useEffect(() => {
+        if (loggedIn && user?.sat_score) {
+            // Set range around their SAT score (e.g., -100 to +50)
+            setMinSat(Math.max(400, user.sat_score - 100));
+            setMaxSat(Math.min(1600, user.sat_score + 100));
+        }
+    }, [loggedIn, user]);
 
     const fetchColleges = async () => {
         setIsLoading(true);
@@ -109,6 +118,17 @@ const DetailedSearch = () => {
                     <p className="mt-2 text-sm text-gray-500">
                         Use our detailed search to narrow down the best options for your future.
                     </p>
+                    {loggedIn && user?.sat_score && (
+                        <div className="mt-4 inline-flex items-center gap-2 bg-purple-50 px-4 py-2 rounded-full border border-purple-100 animate-fadeIn">
+                            <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-purple"></span>
+                            </span>
+                            <span className="text-[11px] font-bold text-purple-700 uppercase tracking-wider">
+                                Smart Assistant: Using your profile stats
+                            </span>
+                        </div>
+                    )}
                 </div>
 
                 <form className="mt-8 space-y-6" onSubmit={handleSearch}>

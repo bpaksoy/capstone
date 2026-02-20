@@ -20,7 +20,7 @@ const formatter = new Intl.NumberFormat('en-US', {
 })
 
 const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, cost_of_attendance, image, img, control, locale, hbcu, hsi, programs_count, relaffil, top_major, grad_rate, retention_rate, avg_net_price }) => {
-    const { loggedIn } = useCurrentUser();
+    const { loggedIn, user } = useCurrentUser();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -147,6 +147,11 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
                             {relaffil && relaffil > 0 && (
                                 <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-100">
                                     Rel. Affil.
+                                </span>
+                            )}
+                            {loggedIn && user?.sat_score && sat_score > 0 && Math.abs(user.sat_score - sat_score) <= 50 && (
+                                <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-teal-600 text-white border border-teal-500 shadow-sm animate-pulse">
+                                    Competitive Match
                                 </span>
                             )}
                         </div>
