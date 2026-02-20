@@ -99,9 +99,14 @@ export const UserProvider = ({ children }) => {
     useEffect(() => {
         const syncSession = () => {
             const currentToken = localStorage.getItem('access');
-            // Only reload if the token has actually changed since we last looked
-            if (currentToken !== lastTokenRef.current) {
-                console.log("Session change detected. Refreshing for sync...");
+
+            // CRITICAL FIX: Only reload if the LOGGED-IN STATE (true/false) has changed.
+            // Do NOT compare the specific token string, as tokens rotate and change frequently.
+            const wasLoggedIn = !!lastTokenRef.current;
+            const isNowLoggedIn = !!currentToken;
+
+            if (wasLoggedIn !== isNowLoggedIn) {
+                console.log("Session state change detected. Syncing tab state...");
                 window.location.reload();
             }
         };
