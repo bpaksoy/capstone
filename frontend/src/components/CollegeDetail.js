@@ -33,6 +33,8 @@ const CollegeDetail = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [programs, setPrograms] = useState([]);
     const [showAllPrograms, setShowAllPrograms] = useState(false);
+    const [logoError, setLogoError] = useState(false);
+    const [bgError, setBgError] = useState(false);
     const PROGRAMS_LIMIT = 10;
 
 
@@ -112,14 +114,53 @@ const CollegeDetail = () => {
                     <div className="bg-white rounded-lg shadow-md p-6">
                         <div className="flex flex-col md:flex-row items-start gap-8">
                             <img
-                                src={college.image ? (college.image.startsWith('http') ? college.image : baseUrl + college.image.replace(/^\//, '')) : images.collegeImages[(parseInt(collegeId) || 0) % images.collegeImages.length]}
-                                onError={(e) => { e.target.onerror = null; e.target.src = images.collegeImg; }}
-                                alt={college.name}
+                                src={college.image
+                                    ? (college.image.startsWith('http') ? college.image : baseUrl + college.image.replace(/^\//, ''))
+                                    : (bgError ? images.collegeImages[(parseInt(collegeId) || 0) % images.collegeImages.length] : `https://images.unsplash.com/featured/?university,campus,${encodeURIComponent(college.name)}`)
+                                }
+                                onError={(e) => {
+                                    if (!bgError && !college.image) {
+                                        setBgError(true);
+                                    } else {
+                                        e.target.onerror = null;
+                                        e.target.src = images.collegeImg;
+                                    }
+                                }}
+                                alt={`${college.name} campus`}
                                 className="w-64 h-64 rounded-lg object-cover shadow-md md:w-auto md:max-w-[300px]"
                             />
                             <div>
-                                <h1 className="text-3xl font-bold mb-2">{college.name}</h1>
-                                <p className="text-gray-600 text-lg mb-4">{college.city}, {college.state}</p>
+                                <div className="flex items-center gap-4 mb-2">
+                                    {(() => {
+                                        const url = college.website;
+                                        let domain = null;
+                                        if (url) {
+                                            try {
+                                                domain = url.replace('http://', '').replace('https://', '').split(/[/?#]/)[0];
+                                                if (domain.startsWith('www.')) domain = domain.substring(4);
+                                            } catch (e) { }
+                                        }
+                                        const logoUrl = college.logo_url || (domain ? `https://logo.clearbit.com/${domain}` : null);
+
+                                        if (logoUrl && !logoError) {
+                                            return (
+                                                <div className="w-16 h-16 bg-white rounded-xl p-2 shadow-sm border border-gray-100 flex items-center justify-center">
+                                                    <img
+                                                        src={logoUrl}
+                                                        alt="logo"
+                                                        className="w-full h-full object-contain"
+                                                        onError={() => setLogoError(true)}
+                                                    />
+                                                </div>
+                                            );
+                                        }
+                                        return null;
+                                    })()}
+                                    <div>
+                                        <h1 className="text-3xl font-bold">{college.name}</h1>
+                                        <p className="text-gray-600 text-lg">{college.city}, {college.state}</p>
+                                    </div>
+                                </div>
 
                                 {/* New Metadata Badges */}
                                 <div className="flex flex-wrap gap-2 mb-6">

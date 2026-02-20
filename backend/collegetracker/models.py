@@ -71,6 +71,7 @@ class College(models.Model):
     application_deadline = models.CharField(max_length=100, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     image = models.ImageField(upload_to='college_images/', blank=True, null=True)
+    logo_url = models.URLField(max_length=500, null=True, blank=True)
     
     # --- New Metadata from Scorecard ---
     locale = models.IntegerField(null=True, blank=True) # 11-13 City, 21-23 Suburb, etc.

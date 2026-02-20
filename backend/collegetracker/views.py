@@ -1,6 +1,7 @@
 import re
 import json
 import jwt
+import difflib
 from goose3 import Goose
 from .models import User, College, Comment, Post, Bookmark, Reply, Like, Friendship, SmartCollege, CollegeProgram, Article, Notification, ChatMessage
 from django.http import JsonResponse, Http404
@@ -573,9 +574,34 @@ class DetailedSearchListView(generics.ListAPIView):
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset, many=True)
+        data = serializer.data
+        suggestion = None
+        
+        name_param = self.request.query_params.get('name', None)
+        if not data and name_param:
+            # Try intelligent fuzzy matching
+            name_lower = name_param.lower()
+            original_names = list(College.objects.values_list('name', flat=True))
+            
+            def get_score(n):
+                n_lower = n.lower()
+                ratio = difflib.SequenceMatcher(None, name_lower, n_lower).ratio()
+                # Bonus if any word starts with the first 3 letters of query
+                if any(word.startswith(name_lower[:3]) for word in n_lower.split()):
+                    ratio += 0.4
+                return ratio
+
+            scored_matches = sorted([(get_score(n), n) for n in original_names], key=lambda x: x[0], reverse=True)
+            
+            if scored_matches and scored_matches[0][0] > 0.4:
+                suggestion = scored_matches[0][1]
+                suggested_colleges = College.objects.filter(name=suggestion)
+                data = self.get_serializer(suggested_colleges, many=True).data
+
         return Response({
-            'colleges': serializer.data,
-            'has_more': queryset.has_next()
+            'colleges': data,
+            'has_more': queryset.has_next() if hasattr(queryset, 'has_next') else False,
+            'suggestion': suggestion
         })
 
 
@@ -597,12 +623,32 @@ api_view(['GET', 'POST'])
 
 @permission_classes([IsAuthenticatedOrReadOnly])
 def search(request, name):
-    try:
-        data = College.objects.filter(name__contains=name)
-    except College.DoesNotExist:
-        raise Http404("College does not exist")
+    data = College.objects.filter(name__icontains=name)
+    suggestion = None
+    
+    if not data.exists():
+        # Intelligent fuzzy match
+        name_lower = name.lower()
+        original_names = list(College.objects.values_list('name', flat=True))
+        
+        def get_score(n):
+            n_lower = n.lower()
+            ratio = difflib.SequenceMatcher(None, name_lower, n_lower).ratio()
+            if any(word.startswith(name_lower[:3]) for word in n_lower.split()):
+                ratio += 0.4
+            return ratio
+
+        scored_matches = sorted([(get_score(n), n) for n in original_names], key=lambda x: x[0], reverse=True)
+        
+        if scored_matches and scored_matches[0][0] > 0.4:
+            suggestion = scored_matches[0][1]
+            data = College.objects.filter(name=suggestion)
+            
     serializer = CollegeSerializer(data, many=True)
-    return JsonResponse({"college": serializer.data})
+    return JsonResponse({
+        "college": serializer.data,
+        "suggestion": suggestion
+    })
 
 
 @api_view(['POST'])

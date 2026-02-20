@@ -19,12 +19,30 @@ const formatter = new Intl.NumberFormat('en-US', {
     maximumFractionDigits: 0,
 })
 
-const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, cost_of_attendance, image, img, control, locale, hbcu, hsi, programs_count, relaffil, top_major, grad_rate, retention_rate, avg_net_price }) => {
+const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, cost_of_attendance, image, img, control, locale, hbcu, hsi, programs_count, relaffil, top_major, grad_rate, retention_rate, avg_net_price, website, logo_url }) => {
     const { loggedIn, user } = useCurrentUser();
     const navigate = useNavigate();
     const location = useLocation();
 
+    // Prioritize backend logo_url, then fallback to dynamic Clearbit extraction
+    const [logoUrl, setLogoUrl] = useState(logo_url);
+
+    useEffect(() => {
+        if (!logoUrl && website) {
+            try {
+                let domain = website.replace('http://', '').replace('https://', '').split(/[/?#]/)[0];
+                if (domain.startsWith('www.')) domain = domain.substring(4);
+                setLogoUrl(`https://logo.clearbit.com/${domain}`);
+            } catch (e) { }
+        }
+    }, [website, logoUrl]);
+
+    // Dynamic Campus Image
+    const dynamicImageUrl = `https://images.unsplash.com/featured/?university,campus,${encodeURIComponent(name)}`;
+
     const [isBookmarked, setIsBookmarked] = useState(false);
+    const [logoError, setLogoError] = useState(false);
+    const [bgError, setBgError] = useState(false);
 
     const checkBookmark = async () => {
         if (!loggedIn) return;
@@ -82,15 +100,37 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
                 {/* Image Section */}
                 <div className="relative aspect-video overflow-hidden shrink-0">
                     <img
-                        src={(image || img) ? ((image || img).startsWith('http') ? (image || img) : baseUrl + (image || img).replace(/^\//, '')) : images.collegeImages[(parseInt(collegeId) || 0) % images.collegeImages.length]}
-                        onError={(e) => { e.target.onerror = null; e.target.src = images.collegeImg; }}
+                        src={(image || img)
+                            ? ((image || img).startsWith('http') ? (image || img) : baseUrl + (image || img).replace(/^\//, ''))
+                            : (!bgError ? dynamicImageUrl : images.collegeImages[(parseInt(collegeId) || 0) % images.collegeImages.length])
+                        }
+                        onError={(e) => {
+                            if (!bgError && !(image || img)) {
+                                setBgError(true);
+                            } else {
+                                e.target.onerror = null;
+                                e.target.src = images.collegeImg;
+                            }
+                        }}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                        alt={name}
+                        alt={`${name} campus`}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
 
+                    {/* College Logo Overlay */}
+                    {logoUrl && !logoError && (
+                        <div className="absolute top-3 left-3 w-12 h-12 bg-white rounded-2xl p-1.5 shadow-lg flex items-center justify-center border border-white/20 backdrop-blur-sm group-hover:scale-110 transition-transform duration-300">
+                            <img
+                                src={logoUrl}
+                                alt={`${name} logo`}
+                                onError={() => setLogoError(true)}
+                                className="w-full h-full object-contain"
+                            />
+                        </div>
+                    )}
+
                     {/* Location Badge */}
-                    <div className="absolute bottom-3 left-3 flex items-center gap-1 text-white bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-bold border border-white/10 uppercase tracking-tight">
+                    <div className={`absolute bottom-3 ${logoUrl && !logoError ? 'right-3' : 'left-3'} flex items-center gap-1 text-white bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-bold border border-white/10 uppercase tracking-tight`}>
                         <MapPinIcon className="w-3 h-3" />
                         {city}, {state}
                     </div>
