@@ -94,41 +94,39 @@ export const UserProvider = ({ children }) => {
     }, [clerkUser?.id, isClerkLoaded]);
 
     // Cross-tab Synchronization: Keep session in sync across multiple tabs
-    useEffect(() => {
-        const performSync = () => {
-            const token = localStorage.getItem('access');
-            const hasTokenInStorage = !!token;
+    const lastTokenRef = useRef(localStorage.getItem('access'));
 
-            // If our React state (loggedIn) doesn't match the actual source of truth (localStorage),
-            // a full refresh is the safest way to reset all providers and states.
-            if (hasTokenInStorage !== loggedIn) {
-                console.log("Session change detected via tab activity. Refreshing...");
+    useEffect(() => {
+        const syncSession = () => {
+            const currentToken = localStorage.getItem('access');
+            // Only reload if the token has actually changed since we last looked
+            if (currentToken !== lastTokenRef.current) {
+                console.log("Session change detected. Refreshing for sync...");
                 window.location.reload();
             }
         };
 
         const handleStorageChange = (e) => {
             // Storage events fire when another tab modifies localStorage.
-            // e.key is null if localStorage.clear() was called.
             if (e.key === 'access' || e.key === 'refresh' || e.key === null) {
-                console.log("Session change detected via storage event. Refreshing...");
-                window.location.reload();
+                syncSession();
             }
         };
 
-        // Listen for tab focus and visibility changes
-        window.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible') performSync();
-        });
-        window.addEventListener('focus', performSync);
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                syncSession();
+            }
+        };
+
+        window.addEventListener('visibilitychange', handleVisibilityChange);
         window.addEventListener('storage', handleStorageChange);
 
         return () => {
-            window.removeEventListener('visibilitychange', performSync);
-            window.removeEventListener('focus', performSync);
+            window.removeEventListener('visibilitychange', handleVisibilityChange);
             window.removeEventListener('storage', handleStorageChange);
         };
-    }, [loggedIn]);
+    }, []);
 
     const handleLogout = useCallback(async () => {
         await signOut();
