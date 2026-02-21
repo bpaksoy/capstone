@@ -996,6 +996,9 @@ def claim_college(request):
         return Response({"error": "College not found"}, status=404)
     
     user = request.user
+    if not user.is_eligible_to_claim:
+        return Response({"error": "You are not authorized to claim a college. This process is invitation-only. Please contact support for access."}, status=403)
+
     if user.associated_college:
         return Response({"error": "You already have an associated college"}, status=400)
     

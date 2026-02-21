@@ -6,7 +6,7 @@ import { images } from '../constants';
 import useFetch from '../hooks/FetchData';
 import { useCurrentUser } from '../UserProvider/UserProvider';
 import PostList from '../components/PostList';
-import { LockClosedIcon, ChatBubbleLeftRightIcon, Squares2X2Icon } from '@heroicons/react/24/outline';
+import { LockClosedIcon, ChatBubbleLeftRightIcon, Squares2X2Icon, CheckBadgeIcon } from '@heroicons/react/24/outline';
 
 const PublicProfile = () => {
     const location = useLocation();
@@ -96,8 +96,14 @@ const PublicProfile = () => {
                                         )}
                                     </div>
                                     <div className="pb-2">
-                                        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900">
+                                        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 flex items-center gap-2">
                                             {otherUserData?.username}
+                                            {otherUserData?.role === 'college_staff' && otherUserData?.is_verified && (
+                                                <div className="flex items-center gap-1 bg-teal-50 text-teal-600 text-[10px] uppercase tracking-widest px-2 py-1 rounded-lg border border-teal-100 shadow-sm">
+                                                    <CheckBadgeIcon className="w-3.5 h-3.5" />
+                                                    <span>Verified</span>
+                                                </div>
+                                            )}
                                         </h1>
                                         <div className="flex flex-wrap justify-center sm:justify-start gap-4 mt-2 text-sm text-gray-500 font-medium">
                                             <span className="flex items-center gap-1.5">

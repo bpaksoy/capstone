@@ -340,7 +340,7 @@ const CollegeDetail = () => {
                                 </div>
 
                                 {/* College Portal Claim Section */}
-                                {loggedIn && user?.role === 'student' && !user?.associated_college && (
+                                {loggedIn && user?.role === 'student' && !user?.associated_college && user?.is_eligible_to_claim && (
                                     <div className="mb-10 bg-teal-50/50 border border-primary/20 rounded-2xl p-6 shadow-sm animate-fadeIn">
                                         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                                             <div className="flex items-center gap-4">

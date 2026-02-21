@@ -7,6 +7,7 @@ import { icons, images } from '../constants';
 import { baseUrl } from '../shared';
 import useFetch from '../hooks/FetchData';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { CheckBadgeIcon } from '@heroicons/react/24/solid';
 
 const Profile = () => {
 
@@ -271,8 +272,14 @@ const Profile = () => {
 
                             {/* User Info & Bio */}
                             <div className="text-center mt-12">
-                                <h3 className="text-4xl font-semibold leading-normal text-gray-800 mb-2">
+                                <h3 className="text-4xl font-semibold leading-normal text-gray-800 mb-2 flex items-center justify-center gap-2">
                                     {user?.username}
+                                    {user?.role === 'college_staff' && user?.is_verified && (
+                                        <div className="flex items-center gap-1 bg-teal-50 text-teal-600 text-[10px] uppercase tracking-widest px-2 py-1 rounded-lg border border-teal-100 shadow-sm">
+                                            <CheckBadgeIcon className="w-4 h-4" />
+                                            <span>Verified Representative</span>
+                                        </div>
+                                    )}
                                 </h3>
 
                                 <div className="text-sm leading-normal mt-0 mb-2 text-gray-500 font-bold uppercase flex justify-center items-center gap-2">

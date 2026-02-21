@@ -23,6 +23,7 @@ class User(AbstractUser):
     role = models.CharField(max_length=20, choices=USER_ROLES, default='student')
     associated_college = models.ForeignKey('College', on_delete=models.SET_NULL, null=True, blank=True, related_name='staff_members')
     is_verified = models.BooleanField(default=False)
+    is_eligible_to_claim = models.BooleanField(default=False)  # Invitation-only gate
     image = models.ImageField('image', upload_to='user_images', blank=True, null=True,
                               validators=[FileExtensionValidator(['png', 'jpg', 'jpeg'])])
     city = models.CharField(max_length=100, blank=True, null=True)
