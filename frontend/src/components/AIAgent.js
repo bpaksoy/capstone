@@ -5,6 +5,8 @@ import {
     PaperAirplaneIcon,
     SparklesIcon,
     AcademicCapIcon,
+    DocumentDuplicateIcon,
+    ArrowPathIcon,
     TrashIcon
 } from '@heroicons/react/24/outline';
 import { useCurrentUser } from '../UserProvider/UserProvider';
@@ -75,6 +77,17 @@ const AIAgent = () => {
             ]);
         }
     }, [loggedIn]); // Re-trigger when login state changes
+
+    const handleVisualClear = () => {
+        setChatHistory([
+            {
+                role: 'assistant',
+                content: user?.role === 'college_staff'
+                    ? "Screen cleared! I still remember our conversation context. How can I help you further?"
+                    : "Screen cleared! I'm ready for your next question."
+            }
+        ]);
+    };
 
     const handleClearHistory = async () => {
         if (!window.confirm("Are you sure you want to clear your chat history?")) return;
@@ -159,12 +172,12 @@ const AIAgent = () => {
             }
 
         } catch (error) {
-            console.error('AI Error:', error);
+            console.error('Wormie Chat Error:', error);
             setChatHistory(prev => {
                 const newHistory = [...prev];
                 newHistory[newHistory.length - 1] = {
                     role: 'assistant',
-                    content: "I'm having a little trouble connecting to my knowledge base. Please try again in a moment!"
+                    content: `I'm having a little trouble connecting to my knowledge base (Error: ${error.message}). Please try again in a moment!`
                 };
                 return newHistory;
             });
@@ -194,13 +207,22 @@ const AIAgent = () => {
                         </div>
                         <div className="flex items-center gap-1">
                             {loggedIn && (
-                                <button
-                                    onClick={handleClearHistory}
-                                    className="p-1.5 hover:bg-white/10 rounded-xl transition-colors text-white/50 hover:text-white"
-                                    title="Clear History"
-                                >
-                                    <TrashIcon className="w-5 h-5" />
-                                </button>
+                                <>
+                                    <button
+                                        onClick={handleVisualClear}
+                                        className="p-1.5 hover:bg-white/10 rounded-xl transition-colors text-white/50 hover:text-white"
+                                        title="Clear Screen (Keep Memory)"
+                                    >
+                                        <ArrowPathIcon className="w-5 h-5" />
+                                    </button>
+                                    <button
+                                        onClick={handleClearHistory}
+                                        className="p-1.5 hover:bg-white/10 rounded-xl transition-colors text-white/50 hover:text-red-400"
+                                        title="Wipe Memory (Delete All)"
+                                    >
+                                        <TrashIcon className="w-5 h-5" />
+                                    </button>
+                                </>
                             )}
                             <button
                                 onClick={() => setIsOpen(false)}

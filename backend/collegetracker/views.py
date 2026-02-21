@@ -3,7 +3,7 @@ import json
 import jwt
 import difflib
 from goose3 import Goose
-from .models import User, College, Comment, Post, Bookmark, Reply, Like, Friendship, SmartCollege, CollegeProgram, Article, Notification, ChatMessage
+from .models import User, College, Comment, Post, Bookmark, Reply, Like, Friendship, SmartCollege, CollegeProgram, Article, Notification, ChatMessage, DirectMessage
 from django.http import JsonResponse, Http404
 from django.db import IntegrityError
 from .serializers import CollegeSerializer, UserSerializer, UploadFileSerializer, LoginSerializer, CommentSerializer, PostSerializer, BookmarkSerializer, ReplySerializer, LikeSerializer, FriendshipSerializer, SmartCollegeSerializer, CollegeProgramSerializer, ArticleSerializer, NotificationSerializer, ChatMessageSerializer
@@ -1131,7 +1131,7 @@ def post_list(request):
     if request.method == 'GET':
         posts = Post.objects.all()
         serializer = PostSerializer(posts, many=True)
-        return Response(serializer)
+        return Response(serializer.data)
     elif request.method == 'POST':
         print("request.data!!!", request.data)
         serializer = PostSerializer(data=request.data)
@@ -2202,8 +2202,12 @@ def _get_gemini_model():
     if _GEMINI_MODEL is None:
         api_key = os.environ.get("GEMINI_API_KEY")
         if api_key:
+            print(f"DEBUG: Initializing Gemini with key found (length: {len(api_key)})")
             genai.configure(api_key=api_key)
-            _GEMINI_MODEL = genai.GenerativeModel('gemini-flash-lite-latest')
+            # Using verified model that works: models/gemini-flash-latest
+            _GEMINI_MODEL = genai.GenerativeModel('gemini-flash-latest')
+        else:
+            print("DEBUG: GEMINI_API_KEY NOT FOUND IN ENVIRONMENT")
     return _GEMINI_MODEL
 
 def _get_vector_store():
@@ -2413,76 +2417,83 @@ class AIChatView(APIView):
 
         # --- 2. GATHER USER MEMORY & RECRUITMENT INTELLIGENCE ---
         user_memory = ""
-        if request.user.is_authenticated:
-            u = request.user
-            
-            if u.role == 'college_staff' and u.associated_college:
-                college = u.associated_college
-                # 1. Fans: Students who have bookmarked this college
-                fans = User.objects.filter(role='student', bookmarks__college=college).distinct()[:5]
-                # 2. Smart Matches: Students who match the college stats or major
-                # (Simple logic: same major OR high SAT/GPA)
-                match_query = Q(role='student') & (Q(major=college.top_major) | Q(sat_score__gte=college.sat_score or 1200))
-                matches = User.objects.filter(match_query).exclude(id__in=[f.id for f in fans]).distinct()[:5]
+        try:
+            if request.user.is_authenticated:
+                u = request.user
                 
-                fan_names = [f"{f.first_name or f.username} (Major: {f.major or 'Undecided'}, SAT: {f.sat_score or 'N/A'})" for f in fans]
-                match_names = [f"{m.first_name or m.username} (Major: {m.major or 'Undecided'}, SAT: {m.sat_score or 'N/A'})" for m in matches]
-                
-                user_memory = f"""
-                - YOU ARE ACTING AS: A Recruitment Consultant/Advisor for {college.name}.
-                - USER: {u.first_name or u.username} ({u.role})
-                - INSTITUTION: {college.name} ({college.city}, {college.state})
-                - TOP PROSPECTS (Bookmarked your college): {', '.join(fan_names) if fan_names else 'None identified yet'}
-                - SMART MATCHES (High potential for your college): {', '.join(match_names) if match_names else 'None identified yet'}
-                
-                MISSION: Help the staff member identify the best students to recruit and suggest personalized outreach messages. 
-                Focus on the students listed above.
-                """
-            else:
-                # Existing Student Logic
-                bookmarks_qs = Bookmark.objects.filter(user=u).select_related('college')
-                bookmark_names = [b.college.name for b in bookmarks_qs]
-                
-                bookmark_details = ""
-                recommendations_text = ""
-                
-                trigger_words = ['recommend', 'suggest', 'fit', 'next', 'other', 'match']
-                is_first_msg = not ChatMessage.objects.filter(user=u).exists()
-                is_rec_request = any(word in user_message.lower() for word in trigger_words)
-
-                if bookmarks_qs.exists() and (is_first_msg or is_rec_request):
-                    colleges = [b.college for b in bookmarks_qs]
-                    calc_sat = [c.sat_score for c in colleges if c.sat_score]
-                    calc_adm = [c.admission_rate for c in colleges if c.admission_rate]
-                    avg_sat = sum(calc_sat) / max(1, len(calc_sat)) if calc_sat else 1100
-                    avg_adm = sum(calc_adm) / max(1, len(calc_adm)) if calc_adm else 0.6
-                    common_states = list(set(c.state for c in colleges))
+                if u.role == 'college_staff' and u.associated_college:
+                    college = u.associated_college
+                    # 1. Fans: Students who have bookmarked this college
+                    fans = User.objects.filter(role='student', bookmarks__college=college).distinct()[:5]
+                    # 2. Smart Matches: Students who match the college stats or major
+                    match_query = Q(role='student') & (Q(major=college.top_major) | Q(sat_score__gte=college.sat_score or 1200))
+                    matches = User.objects.filter(match_query).exclude(id__in=[f.id for f in fans]).distinct()[:5]
                     
-                    bookmark_details = f"Average stats of bookmarks: SAT: {avg_sat:.0f}, Admission Rate: {avg_adm*100:.1f}%. Common regions: {', '.join(common_states)}."
+                    fan_names = [f"{f.first_name or f.username} (Major: {f.major or 'Undecided'}, SAT: {f.sat_score or 'N/A'})" for f in fans]
+                    match_names = [f"{m.first_name or m.username} (Major: {m.major or 'Undecided'}, SAT: {m.sat_score or 'N/A'})" for m in matches]
                     
-                    rec_query = Q(state__in=common_states) | Q(admission_rate__range=(avg_adm-0.1, avg_adm+0.1))
-                    recs = College.objects.filter(rec_query).exclude(id__in=[c.id for c in colleges]).distinct()[:3]
-                    if recs:
-                        recommendations_text = "Based on their bookmarks, here are some smart recommendations to suggest:\n"
-                        for r in recs:
-                            adm_str = f"{r.admission_rate*100:.1f}%" if r.admission_rate is not None else "N/A"
-                            recommendations_text += f"- {r.name} ({r.city}, {r.state}) - Admission: {adm_str}\n"
+                    user_memory = f"""
+                    - YOU ARE ACTING AS: A Recruitment Consultant/Advisor for {college.name}.
+                    - USER: {u.first_name or u.username} ({u.role})
+                    - INSTITUTION: {college.name} ({college.city}, {college.state})
+                    - TOP PROSPECTS (Bookmarked your college): {', '.join(fan_names) if fan_names else 'None identified yet'}
+                    - SMART MATCHES (High potential for your college): {', '.join(match_names) if match_names else 'None identified yet'}
+                    
+                    MISSION: Help the staff member identify the best students to recruit and suggest personalized outreach messages. 
+                    Focus on the students listed above.
+                    """
+                else:
+                    # Existing Student Logic
+                    bookmarks_qs = Bookmark.objects.filter(user=u).select_related('college')
+                    bookmark_names = [b.college.name for b in bookmarks_qs]
+                    
+                    bookmark_details = ""
+                    recommendations_text = ""
+                    
+                    trigger_words = ['recommend', 'suggest', 'fit', 'next', 'other', 'match']
+                    is_first_msg = not ChatMessage.objects.filter(user=u).exists()
+                    is_rec_request = any(word in user_message.lower() for word in trigger_words)
 
-                user_memory = f"""
-                - YOU ARE ACTING AS: A Personal Admissions Assistant for {u.first_name or u.username}.
-                - User Goal/Major: {u.major or 'Undecided'}
-                - GPA: {u.gpa or 'Not provided'}
-                - SAT Score: {u.sat_score or 'Not provided'}
-                - Bookmarked Colleges: {', '.join(bookmark_names) if bookmark_names else 'None yet'}
-                {bookmark_details}
-                
-                PROACTIVE RECOMMENDATIONS:
-                {recommendations_text if recommendations_text else 'No specific suggestions yet.'}
-                """
+                    if bookmarks_qs.exists() and (is_first_msg or is_rec_request):
+                        colleges = [b.college for b in bookmarks_qs]
+                        calc_sat = [c.sat_score for c in colleges if c.sat_score]
+                        calc_adm = [c.admission_rate for c in colleges if c.admission_rate]
+                        avg_sat = sum(calc_sat) / max(1, len(calc_sat)) if calc_sat else 1100
+                        avg_adm = sum(calc_adm) / max(1, len(calc_adm)) if calc_adm else 0.6
+                        common_states = list(set(c.state for c in colleges))
+                        
+                        bookmark_details = f"Average stats of bookmarks: SAT: {avg_sat:.0f}, Admission Rate: {avg_adm*100:.1f}%. Common regions: {', '.join(common_states)}."
+                        
+                        rec_query = Q(state__in=common_states) | Q(admission_rate__range=(avg_adm-0.1, avg_adm+0.1))
+                        recs = College.objects.filter(rec_query).exclude(id__in=[c.id for c in colleges]).distinct()[:3]
+                        if recs:
+                            recommendations_text = "Based on their bookmarks, here are some smart recommendations to suggest:\n"
+                            for r in recs:
+                                adm_str = f"{r.admission_rate*100:.1f}%" if r.admission_rate is not None else "N/A"
+                                recommendations_text += f"- {r.name} ({r.city}, {r.state}) - Admission: {adm_str}\n"
+
+                    user_memory = f"""
+                    - YOU ARE ACTING AS: A Personal Admissions Assistant for {u.first_name or u.username}.
+                    - User Goal/Major: {u.major or 'Undecided'}
+                    - GPA: {u.gpa or 'Not provided'}
+                    - SAT Score: {u.sat_score or 'Not provided'}
+                    - Bookmarked Colleges: {', '.join(bookmark_names) if bookmark_names else 'None yet'}
+                    {bookmark_details}
+                    
+                    PROACTIVE RECOMMENDATIONS:
+                    {recommendations_text if recommendations_text else 'No specific suggestions yet.'}
+                    """
+        except Exception as memory_e:
+            print(f"Memory processing error: {memory_e}")
+            user_memory = "Error gathering user context."
 
         # --- 3. CONSTRUCT SYSTEM PROMPT ---
+        is_staff = request.user.is_authenticated and request.user.role == 'college_staff'
+        
+        goal_text = "Your goal is to help institutional representatives identify and recruit the best student matches for their college." if is_staff else "Your goal is to help students find their perfect college match."
+        
         system_prompt = f"""You are Wormie, a helpful, enthusiastic, and knowledgeable AI college counselor agent.
-        Your goal is to help students find their perfect college match.
+        {goal_text}
         
         CONTEXT FROM DATABASE (Real IPEDS data):
         {found_colleges_info}
@@ -2514,6 +2525,17 @@ class AIChatView(APIView):
                 content = msg.get('parts', [""])[0]
                 if role and content:
                     gemini_history.append({"role": role, "parts": [content]})
+            
+            # --- CONVERSATIONAL PERSISTENCE: Restore history if UI was cleared ---
+            if not gemini_history and request.user.is_authenticated:
+                # Retrieve last 8 messages to maintain context even after visual clear
+                last_messages = ChatMessage.objects.filter(user=request.user).order_by('-created_at')[:8]
+                # Map and reverse to maintain chronological order for Gemini
+                for m in reversed(last_messages):
+                    gemini_history.append({
+                        "role": m.role if m.role else "user",
+                        "parts": [m.content]
+                    })
 
             # Create a generator for the streaming response
             def event_stream():
