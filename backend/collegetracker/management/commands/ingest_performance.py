@@ -52,41 +52,59 @@ class Command(BaseCommand):
             # - AWLEVEL in [3, 5, 7, 9, 17, 18, 19] (Degrees, not just certificates)
             degrees = [3, 5, 7, 9, 17, 18, 19]
             u_majors = c_df[(c_df['MAJORNUM'] == 1) & (c_df['AWLEVEL'].isin(degrees))].copy()
-            u_majors = u_majors[u_majors['CIP_NUM'] < 99.0]
             
-            # Find max CTOTALT per UNITID
+            # Prioritize Bachelor's (5), then Master's (7), then Associate's (3)
+            # We add a temporary sort order for AWLEVEL
+            # 5 -> 1, 7 -> 2, 3 -> 3, others -> 4
+            def degree_prio(lvl):
+                if lvl == 5: return 1
+                if lvl == 7: return 2
+                if lvl == 3: return 3
+                return 4
+            
+            u_majors['prio'] = u_majors['AWLEVEL'].apply(degree_prio)
+            u_majors = u_majors[u_majors['CIP_NUM'] < 99.0]  # Filter total
+            
+            # Find max CTOTALT per UNITID, prioritizing Bachelor's in case of ties or close numbers
             if not u_majors.empty:
-                # Group by UNITID and find the row with max CTOTALT
-                top_mj_idx = u_majors.sort_values(['UNITID', 'CTOTALT'], ascending=[True, False]).drop_duplicates('UNITID').index
+                # Sort by UNITID (asc), degree priority (asc), then total (desc)
+                top_mj_idx = u_majors.sort_values(['UNITID', 'prio', 'CTOTALT'], ascending=[True, True, False]).drop_duplicates('UNITID').index
                 top_mj_data = u_majors.loc[top_mj_idx]
                 
                 # Load titles
                 cip_dict_df = pd.read_excel(cip_xlsx_path, sheet_name='Frequencies')
                 cip_titles = cip_dict_df[cip_dict_df['VarName'] == 'CIPCODE'].copy()
-                title_lookup = {str(row['CodeValue']): row['ValueLabel'] for _, row in cip_titles.iterrows()}
+                title_lookup = {str(row['CodeValue']).strip(): row['ValueLabel'] for _, row in cip_titles.iterrows()}
+                
+                # Expand lookup with numeric formatting permutations
                 for _, row in cip_titles.iterrows():
                     try:
                         f_val = float(row['CodeValue'])
-                        title_lookup[f"{f_val:.4g}"] = row['ValueLabel']
-                        title_lookup[f"{f_val:.1f}"] = row['ValueLabel']
-                        title_lookup[f"{f_val:.2f}"] = row['ValueLabel']
-                        title_lookup[f"{f_val:.4f}"] = row['ValueLabel']
+                        # Don't overwrite exact string matches, only fill gaps
+                        for fmt in [f"{f_val:.4g}", f"{f_val:.1f}", f"{f_val:.2f}", f"{f_val:.4f}", f"{f_val:g}"]:
+                            if fmt not in title_lookup:
+                                title_lookup[fmt] = row['ValueLabel']
                     except: pass
 
                 for _, row in top_mj_data.iterrows():
-                    cip = str(row['CIPCODE'])
-                    # Try various lookups
+                    unitid = str(row['UNITID'])
+                    cip = str(row['CIPCODE']).strip()
+                    title = None  # CRITICAL: Reset title for each college
+                    
+                    # 1. Exact string lookup
                     title = title_lookup.get(cip)
+                    
+                    # 2. Numeric variation lookup
                     if not title:
                         try:
                             f_cip = float(cip)
-                            title = title_lookup.get(f"{f_cip:.4g}") or \
-                                    title_lookup.get(f"{f_cip:.1f}") or \
-                                    title_lookup.get(f"{f_cip:.2f}") or \
-                                    title_lookup.get(f"{f_cip:.4f}")
+                            for fmt in [f"{f_cip:.4g}", f"{f_cip:.1f}", f"{f_cip:.2f}", f"{f_cip:.4f}", f"{f_cip:g}"]:
+                                if fmt in title_lookup:
+                                    title = title_lookup[fmt]
+                                    break
                         except: pass
                     
-                    top_major_map[row['UNITID']] = title or f"Program {cip}"
+                    top_major_map[unitid] = title or f"Program {cip}"
             
             self.stdout.write(f"Identified {len(top_major_map)} top majors.")
 
