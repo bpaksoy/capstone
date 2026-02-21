@@ -14,6 +14,7 @@ import {
     PhotoIcon,
     SparklesIcon
 } from '@heroicons/react/24/outline';
+import DirectMessageModal from '../utils/DirectMessageModal';
 
 const CollegePortal = () => {
     const { user, loggedIn, fetchUserData } = useCurrentUser();
@@ -26,6 +27,8 @@ const CollegePortal = () => {
     const [logoError, setLogoError] = useState(false);
     const [bgError, setBgError] = useState(false);
     const [interestedStudents, setInterestedStudents] = useState([]);
+    const [selectedStudent, setSelectedStudent] = useState(null);
+    const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -70,23 +73,9 @@ const CollegePortal = () => {
         }
     };
 
-    const handleContact = async (student) => {
-        const message = window.prompt(`Message to ${student.first_name || student.username}:`, `Hi ${student.first_name || student.username}, we noticed your profile and think you'd be a great fit for ${college.name}. Would you like to chat?`);
-        if (!message) return;
-
-        try {
-            const token = localStorage.getItem('access');
-            await axios.post(`${baseUrl}api/messages/send/`, {
-                recipient_id: student.id,
-                content: message
-            }, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            alert("Invitation sent successfully!");
-        } catch (err) {
-            console.error("Error sending message:", err);
-            alert("Failed to send invitation.");
-        }
+    const handleContact = (student) => {
+        setSelectedStudent(student);
+        setIsMessageModalOpen(true);
     };
 
     const handleSave = async () => {
@@ -324,7 +313,11 @@ const CollegePortal = () => {
                             <div className="space-y-4">
                                 {interestedStudents.length > 0 ? (
                                     interestedStudents.map(student => (
-                                        <div key={student.id} className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-2xl transition-all cursor-pointer group">
+                                        <div
+                                            key={student.id}
+                                            onClick={() => handleContact(student)}
+                                            className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-2xl transition-all cursor-pointer group"
+                                        >
                                             {student.image ? (
                                                 <img src={student.image.startsWith('http') ? student.image : (baseUrl + student.image.replace(/^\//, ''))} alt="Avatar" className="w-10 h-10 rounded-full object-cover" />
                                             ) : (
@@ -437,6 +430,14 @@ const CollegePortal = () => {
                     </div>
                 </div>
             </div>
+            {college && (
+                <DirectMessageModal
+                    isOpen={isMessageModalOpen}
+                    onClose={() => setIsMessageModalOpen(false)}
+                    student={selectedStudent}
+                    collegeName={college.name}
+                />
+            )}
         </div>
     );
 };

@@ -12,6 +12,7 @@ const navigation = [
     { name: 'Bookmarks', href: '/bookmarks', current: false },
     { name: 'Trending', href: '/trending', current: false },
     { name: 'Profile', href: '/profile', current: false },
+    { name: 'Messages', href: '/messages', current: false },
     { name: 'Advanced', href: '/detailed-search', current: false },
 
 ]
@@ -69,6 +70,7 @@ const Header = (props) => {
             case 'comment': return <><b>{sender}</b> commented on your post</>;
             case 'friend_request': return <><b>{sender}</b> sent you a connection request</>;
             case 'accepted_request': return <><b>{sender}</b> accepted your connection request</>;
+            case 'direct_message': return <><b>{sender}</b> sent you a private message</>;
             default: return <>New activity from <b>{sender}</b></>;
         }
     };
@@ -191,6 +193,11 @@ const Header = (props) => {
                                                                 {notif.notification_type === 'like' && <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a2 2 0 00-.8 1.6z" /></svg>}
                                                                 {notif.notification_type === 'comment' && <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" /></svg>}
                                                                 {(notif.notification_type === 'friend_request' || notif.notification_type === 'accepted_request') && <UserIcon className="w-4 h-4" />}
+                                                                {notif.notification_type === 'direct_message' && (
+                                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                                                    </svg>
+                                                                )}
                                                             </div>
                                                         </div>
                                                         <div className="flex-1">

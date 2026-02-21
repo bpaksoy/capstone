@@ -1111,9 +1111,17 @@ def send_direct_message(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_messages(request):
-    messages = DirectMessage.objects.filter(
-        Q(sender=request.user) | Q(recipient=request.user)
-    ).order_by('created_at')
+    other_user_id = request.query_params.get('other_user_id')
+    
+    if other_user_id:
+        messages = DirectMessage.objects.filter(
+            (Q(sender=request.user) & Q(recipient_id=other_user_id)) |
+            (Q(sender_id=other_user_id) & Q(recipient=request.user))
+        ).order_by('created_at')
+    else:
+        messages = DirectMessage.objects.filter(
+            Q(sender=request.user) | Q(recipient=request.user)
+        ).order_by('created_at')
     
     # We might need a serializer for this or just manual mapping
     data = []

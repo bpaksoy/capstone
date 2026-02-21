@@ -24,6 +24,7 @@ import AIAgent from "./components/AIAgent";
 import Friends from "./pages/Friends";
 import ForgotPassword from "./pages/ForgotPassword";
 import CollegePortal from "./pages/CollegePortal";
+import DirectMessages from "./pages/DirectMessages";
 
 
 import ScrollToTopOnNavigate from "./utils/ScrollToTopOnNavigate";
@@ -56,6 +57,7 @@ const App = () => {
             <Route path="/settings" element={<Settings />} />
             <Route path="/detailed-search" element={<DetailedSearch />} />
             <Route path="/college/portal" element={<CollegePortal />} />
+            <Route path="/messages" element={<DirectMessages />} />
             <Route path="/404" element={<NotFound />} />
             <Route path="*" element={<NotFound />} />
           </Route>
