@@ -10,7 +10,9 @@ import {
     CheckBadgeIcon,
     ExclamationTriangleIcon,
     GlobeAltIcon,
-    AcademicCapIcon
+    AcademicCapIcon,
+    PhotoIcon,
+    SparklesIcon
 } from '@heroicons/react/24/outline';
 
 const CollegePortal = () => {
@@ -99,6 +101,9 @@ const CollegePortal = () => {
             if (editData.logo instanceof File) {
                 formData.append('logo', editData.logo);
             }
+            if (editData.image instanceof File) {
+                formData.append('image', editData.image);
+            }
 
             const res = await axios.patch(`${baseUrl}api/colleges/${college.id}/staff-update/`, formData, {
                 headers: {
@@ -141,10 +146,34 @@ const CollegePortal = () => {
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
             {/* Header / Banner Area */}
-            <div className="relative bg-primary pt-24 pb-32 px-8 overflow-hidden">
+            <div className="relative bg-primary pt-24 pb-32 px-8 overflow-hidden group/banner">
+                {isEditing && (
+                    <div className="absolute top-6 right-8 z-30 flex gap-3">
+                        <label className="bg-white/90 hover:bg-white backdrop-blur-md text-primary font-bold px-4 py-2 rounded-xl cursor-pointer transition-all shadow-lg flex items-center gap-2 text-sm">
+                            <PhotoIcon className="w-5 h-5" />
+                            Change Banner
+                            <input
+                                type="file"
+                                className="hidden"
+                                accept="image/*"
+                                onChange={(e) => {
+                                    if (e.target.files?.[0]) {
+                                        setEditData({ ...editData, image: e.target.files[0] });
+                                        setBgError(false);
+                                        const reader = new FileReader();
+                                        reader.onload = (event) => {
+                                            setCollege(prev => ({ ...prev, image: event.target.result }));
+                                        };
+                                        reader.readAsDataURL(e.target.files[0]);
+                                    }
+                                }}
+                            />
+                        </label>
+                    </div>
+                )}
                 <img
                     src={college.image
-                        ? (college.image.startsWith('http') ? college.image : baseUrl + college.image.replace(/^\//, ''))
+                        ? (college.image.startsWith('http') || college.image.startsWith('data:') ? college.image : baseUrl + college.image.replace(/^\//, ''))
                         : (bgError ? `https://images.unsplash.com/featured/?university,campus` : `https://images.unsplash.com/featured/?university,campus,${encodeURIComponent(college.name)}`)
                     }
                     onError={(e) => {
@@ -156,7 +185,7 @@ const CollegePortal = () => {
                         }
                     }}
                     alt="Campus"
-                    className="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-overlay"
+                    className="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-overlay transition-all duration-700"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/80 to-transparent"></div>
                 <div className="relative max-w-7xl mx-auto">
@@ -173,7 +202,7 @@ const CollegePortal = () => {
                                         } catch (e) { }
                                     }
                                     const logoUrl = college.logo
-                                        ? (college.logo.startsWith('http') ? college.logo : baseUrl + (college.logo.startsWith('/') ? college.logo.substring(1) : college.logo))
+                                        ? (college.logo.startsWith('http') || college.logo.startsWith('data:') ? college.logo : baseUrl + (college.logo.startsWith('/') ? college.logo.substring(1) : college.logo))
                                         : (college.logo_url || (domain ? `https://logo.clearbit.com/${domain}` : null));
 
                                     if (logoUrl && !logoError) {
@@ -187,34 +216,36 @@ const CollegePortal = () => {
                                         );
                                     }
                                     return (
-                                        <div className="w-full h-full bg-teal-50 flex items-center justify-center">
-                                            <span className="text-2xl font-bold text-primary uppercase">
-                                                {college.name?.substring(0, 2)}
-                                            </span>
+                                        <div className="w-full h-full bg-gradient-to-br from-teal-400/20 to-primary/20 flex items-center justify-center relative overflow-hidden group-hover:scale-110 transition-transform duration-500">
+                                            <AcademicCapIcon className="w-12 h-12 text-primary/10 absolute -bottom-2 -right-2 transform rotate-12" />
+                                            <SparklesIcon className="w-6 h-6 text-primary/40 animate-pulse" />
                                         </div>
                                     );
                                 })()}
                                 {isEditing && (
-                                    <label className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center cursor-pointer opacity-100 transition-opacity">
-                                        <PencilSquareIcon className="w-8 h-8 text-white mb-1" />
-                                        <span className="text-[10px] text-white font-bold uppercase tracking-widest">Upload Logo</span>
-                                        <input
-                                            type="file"
-                                            className="hidden"
-                                            accept="image/*"
-                                            onChange={(e) => {
-                                                if (e.target.files?.[0]) {
-                                                    setEditData({ ...editData, logo: e.target.files[0] });
-                                                    // Local preview
-                                                    const reader = new FileReader();
-                                                    reader.onload = (event) => {
-                                                        setCollege({ ...college, logo: event.target.result });
-                                                    };
-                                                    reader.readAsDataURL(e.target.files[0]);
-                                                }
-                                            }}
-                                        />
-                                    </label>
+                                    <div className="absolute inset-0 bg-gray-100/40 backdrop-blur-[2px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all z-20">
+                                        <label className="bg-white/95 text-primary text-[10px] font-bold px-2 py-1.5 rounded-lg shadow-md cursor-pointer hover:bg-white flex items-center gap-1 uppercase tracking-tighter">
+                                            <PencilSquareIcon className="w-3 h-3" />
+                                            Update
+                                            <input
+                                                type="file"
+                                                className="hidden"
+                                                accept="image/*"
+                                                onChange={(e) => {
+                                                    if (e.target.files?.[0]) {
+                                                        const file = e.target.files[0];
+                                                        setEditData({ ...editData, logo: file });
+                                                        setLogoError(false);
+                                                        const reader = new FileReader();
+                                                        reader.onload = (event) => {
+                                                            setCollege(prev => ({ ...prev, logo: event.target.result }));
+                                                        };
+                                                        reader.readAsDataURL(file);
+                                                    }
+                                                }}
+                                            />
+                                        </label>
+                                    </div>
                                 )}
                             </div>
                             <div>
@@ -297,8 +328,8 @@ const CollegePortal = () => {
                                             {student.image ? (
                                                 <img src={student.image.startsWith('http') ? student.image : (baseUrl + student.image.replace(/^\//, ''))} alt="Avatar" className="w-10 h-10 rounded-full object-cover" />
                                             ) : (
-                                                <div className="w-10 h-10 bg-teal-50 rounded-full flex items-center justify-center text-primary font-bold text-xs">
-                                                    {(student.first_name || student.username).substring(0, 2).toUpperCase()}
+                                                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-gray-100 to-gray-50 flex items-center justify-center border border-gray-100 shadow-inner group-hover:scale-105 transition-transform duration-300">
+                                                    <UsersIcon className="w-5 h-5 text-gray-400" />
                                                 </div>
                                             )}
                                             <div className="flex-1">

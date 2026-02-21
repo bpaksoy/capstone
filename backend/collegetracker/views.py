@@ -1032,6 +1032,10 @@ def staff_update_college(request, pk):
     # Handle logo upload
     if 'logo' in request.FILES:
         college.logo = request.FILES['logo']
+        
+    # Handle banner image upload
+    if 'image' in request.FILES:
+        college.image = request.FILES['image']
 
     college.save()
 
