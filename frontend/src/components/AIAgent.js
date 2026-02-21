@@ -22,7 +22,9 @@ const AIAgent = () => {
     const [chatHistory, setChatHistory] = useState([
         {
             role: 'assistant',
-            content: "Hello! I'm Wormie, your personal college admissions assistant. I'm analyzing your profile to give you the best advice..."
+            content: user?.role === 'college_staff'
+                ? "Hello! I'm Wormie, your institutional development consultant. I'm analyzing your candidate pools and recruitment matches right now..."
+                : "Hello! I'm Wormie, your personal college admissions assistant. I'm analyzing your profile to give you the best advice..."
         }
     ]);
     const [isThinking, setIsThinking] = useState(false);
@@ -66,7 +68,9 @@ const AIAgent = () => {
             setChatHistory([
                 {
                     role: 'assistant',
-                    content: "Hello! I'm Wormie, your personal college admissions assistant. I'm analyzing your profile to give you the best advice..."
+                    content: user?.role === 'college_staff'
+                        ? "Hello! I'm Wormie, your institutional development consultant. I'm analyzing your candidate pools and recruitment matches right now..."
+                        : "Hello! I'm Wormie, your personal college admissions assistant. I'm analyzing your profile to give you the best advice..."
                 }
             ]);
         }

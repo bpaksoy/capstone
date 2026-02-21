@@ -1040,6 +1040,90 @@ def staff_update_college(request, pk):
         "college": CollegeSerializer(college).data
     })
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_interested_students(request, pk):
+    try:
+        college = College.objects.get(pk=pk)
+    except College.DoesNotExist:
+        return Response({"error": "College not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    user = request.user
+    if user.role != 'college_staff' or user.associated_college_id != college.id:
+        return Response({"error": "You do not have permission to view this college's data"}, status=status.HTTP_403_FORBIDDEN)
+
+    # Students who bookmarked this college
+    bookmarks = Bookmark.objects.filter(college=college).select_related('user')
+    students = []
+    for b in bookmarks:
+        s = b.user
+        students.append({
+            "id": s.id,
+            "username": s.username,
+            "first_name": s.first_name,
+            "major": s.major,
+            "gpa": s.gpa,
+            "sat_score": s.sat_score,
+            "image": s.image.url if s.image else None
+        })
+
+    return Response(students)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def send_direct_message(request):
+    recipient_id = request.data.get('recipient_id')
+    content = request.data.get('content')
+
+    if not recipient_id or not content:
+        return Response({"error": "Missing recipient_id or content"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        recipient = User.objects.get(id=recipient_id)
+    except User.DoesNotExist:
+        return Response({"error": "Recipient not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    message = DirectMessage.objects.create(
+        sender=request.user,
+        recipient=recipient,
+        content=content
+    )
+
+    # Create notification for student
+    from django.contrib.contenttypes.models import ContentType
+    Notification.objects.create(
+        recipient=recipient,
+        sender=request.user,
+        notification_type='direct_message',
+        content_type=ContentType.objects.get_for_model(DirectMessage),
+        object_id=message.id
+    )
+
+    return Response({"message": "Message sent successfully", "id": message.id})
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_messages(request):
+    messages = DirectMessage.objects.filter(
+        Q(sender=request.user) | Q(recipient=request.user)
+    ).order_by('created_at')
+    
+    # We might need a serializer for this or just manual mapping
+    data = []
+    for m in messages:
+        data.append({
+            "id": m.id,
+            "sender_id": m.sender.id,
+            "sender_name": m.sender.username,
+            "recipient_id": m.recipient.id,
+            "recipient_name": m.recipient.username,
+            "content": m.content,
+            "created_at": m.created_at,
+            "is_read": m.is_read
+        })
+    return Response(data)
+
+
 
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
@@ -2327,53 +2411,74 @@ class AIChatView(APIView):
                 if db_info:
                     found_colleges_info += "Database Match from IPEDS data:\n" + db_info
 
-        # --- 2. GATHER USER MEMORY & DEEP BOOKMARK AWARENESS ---
+        # --- 2. GATHER USER MEMORY & RECRUITMENT INTELLIGENCE ---
         user_memory = ""
         if request.user.is_authenticated:
             u = request.user
-            bookmarks_qs = Bookmark.objects.filter(user=u).select_related('college')
-            bookmark_names = [b.college.name for b in bookmarks_qs]
             
-            # Deep Awareness: Calculate the "Vibe" of their bookmarks
-            bookmark_details = ""
-            recommendations_text = ""
-            
-            # Optimization: only run heavy recommendation logic if it's a first message or contains key words
-            trigger_words = ['recommend', 'suggest', 'fit', 'next', 'other', 'match']
-            is_first_msg = not ChatMessage.objects.filter(user=u).exists()
-            is_rec_request = any(word in user_message.lower() for word in trigger_words)
-
-            if bookmarks_qs.exists() and (is_first_msg or is_rec_request):
-                colleges = [b.college for b in bookmarks_qs]
-                calc_sat = [c.sat_score for c in colleges if c.sat_score]
-                calc_adm = [c.admission_rate for c in colleges if c.admission_rate]
-                avg_sat = sum(calc_sat) / max(1, len(calc_sat)) if calc_sat else 1100
-                avg_adm = sum(calc_adm) / max(1, len(calc_adm)) if calc_adm else 0.6
-                common_states = list(set(c.state for c in colleges))
+            if u.role == 'college_staff' and u.associated_college:
+                college = u.associated_college
+                # 1. Fans: Students who have bookmarked this college
+                fans = User.objects.filter(role='student', bookmarks__college=college).distinct()[:5]
+                # 2. Smart Matches: Students who match the college stats or major
+                # (Simple logic: same major OR high SAT/GPA)
+                match_query = Q(role='student') & (Q(major=college.top_major) | Q(sat_score__gte=college.sat_score or 1200))
+                matches = User.objects.filter(match_query).exclude(id__in=[f.id for f in fans]).distinct()[:5]
                 
-                bookmark_details = f"Average stats of bookmarks: SAT: {avg_sat:.0f}, Admission Rate: {avg_adm*100:.1f}%. Common regions: {', '.join(common_states)}."
+                fan_names = [f"{f.first_name or f.username} (Major: {f.major or 'Undecided'}, SAT: {f.sat_score or 'N/A'})" for f in fans]
+                match_names = [f"{m.first_name or m.username} (Major: {m.major or 'Undecided'}, SAT: {m.sat_score or 'N/A'})" for m in matches]
                 
-                # Proactive Recommendations: Find 3 similar colleges they haven't bookmarked
-                rec_query = Q(state__in=common_states) | Q(admission_rate__range=(avg_adm-0.1, avg_adm+0.1))
-                recs = College.objects.filter(rec_query).exclude(id__in=[c.id for c in colleges]).distinct()[:3]
-                if recs:
-                    recommendations_text = "Based on their bookmarks, here are some smart recommendations to suggest:\n"
-                    for r in recs:
-                        adm_str = f"{r.admission_rate*100:.1f}%" if r.admission_rate is not None else "N/A"
-                        recommendations_text += f"- {r.name} ({r.city}, {r.state}) - Admission: {adm_str}\n"
+                user_memory = f"""
+                - YOU ARE ACTING AS: A Recruitment Consultant/Advisor for {college.name}.
+                - USER: {u.first_name or u.username} ({u.role})
+                - INSTITUTION: {college.name} ({college.city}, {college.state})
+                - TOP PROSPECTS (Bookmarked your college): {', '.join(fan_names) if fan_names else 'None identified yet'}
+                - SMART MATCHES (High potential for your college): {', '.join(match_names) if match_names else 'None identified yet'}
+                
+                MISSION: Help the staff member identify the best students to recruit and suggest personalized outreach messages. 
+                Focus on the students listed above.
+                """
+            else:
+                # Existing Student Logic
+                bookmarks_qs = Bookmark.objects.filter(user=u).select_related('college')
+                bookmark_names = [b.college.name for b in bookmarks_qs]
+                
+                bookmark_details = ""
+                recommendations_text = ""
+                
+                trigger_words = ['recommend', 'suggest', 'fit', 'next', 'other', 'match']
+                is_first_msg = not ChatMessage.objects.filter(user=u).exists()
+                is_rec_request = any(word in user_message.lower() for word in trigger_words)
 
-            user_memory = f"""
-            - User Name: {u.first_name or u.username}
-            - Goal/Major: {u.major or 'Undecided'}
-            - Location: {u.city or ''}, {u.state or ''}
-            - GPA: {u.gpa or 'Not provided'}
-            - SAT Score: {u.sat_score or 'Not provided'}
-            - Bookmarked Colleges: {', '.join(bookmark_names) if bookmark_names else 'None yet'}
-            {bookmark_details}
-            
-            PROACTIVE RECOMMENDATIONS (Suggest these if the user asks for more ideas):
-            {recommendations_text if recommendations_text else 'No specific suggestions yet.'}
-            """
+                if bookmarks_qs.exists() and (is_first_msg or is_rec_request):
+                    colleges = [b.college for b in bookmarks_qs]
+                    calc_sat = [c.sat_score for c in colleges if c.sat_score]
+                    calc_adm = [c.admission_rate for c in colleges if c.admission_rate]
+                    avg_sat = sum(calc_sat) / max(1, len(calc_sat)) if calc_sat else 1100
+                    avg_adm = sum(calc_adm) / max(1, len(calc_adm)) if calc_adm else 0.6
+                    common_states = list(set(c.state for c in colleges))
+                    
+                    bookmark_details = f"Average stats of bookmarks: SAT: {avg_sat:.0f}, Admission Rate: {avg_adm*100:.1f}%. Common regions: {', '.join(common_states)}."
+                    
+                    rec_query = Q(state__in=common_states) | Q(admission_rate__range=(avg_adm-0.1, avg_adm+0.1))
+                    recs = College.objects.filter(rec_query).exclude(id__in=[c.id for c in colleges]).distinct()[:3]
+                    if recs:
+                        recommendations_text = "Based on their bookmarks, here are some smart recommendations to suggest:\n"
+                        for r in recs:
+                            adm_str = f"{r.admission_rate*100:.1f}%" if r.admission_rate is not None else "N/A"
+                            recommendations_text += f"- {r.name} ({r.city}, {r.state}) - Admission: {adm_str}\n"
+
+                user_memory = f"""
+                - YOU ARE ACTING AS: A Personal Admissions Assistant for {u.first_name or u.username}.
+                - User Goal/Major: {u.major or 'Undecided'}
+                - GPA: {u.gpa or 'Not provided'}
+                - SAT Score: {u.sat_score or 'Not provided'}
+                - Bookmarked Colleges: {', '.join(bookmark_names) if bookmark_names else 'None yet'}
+                {bookmark_details}
+                
+                PROACTIVE RECOMMENDATIONS:
+                {recommendations_text if recommendations_text else 'No specific suggestions yet.'}
+                """
 
         # --- 3. CONSTRUCT SYSTEM PROMPT ---
         system_prompt = f"""You are Wormie, a helpful, enthusiastic, and knowledgeable AI college counselor agent.

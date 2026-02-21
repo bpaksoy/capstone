@@ -302,6 +302,7 @@ class Notification(models.Model):
         ('comment', 'Comment'),
         ('friend_request', 'Friend Request'),
         ('accepted_request', 'Accepted Request'),
+        ('direct_message', 'Direct Message'),
     ]
 
     recipient = models.ForeignKey(
@@ -340,3 +341,17 @@ class ChatMessage(models.Model):
 
     def __str__(self):
         return f"{self.user.username} ({self.role}): {self.content[:30]}..."
+
+
+class DirectMessage(models.Model):
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages')
+    content = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"From {self.sender.username} to {self.recipient.username}"

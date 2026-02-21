@@ -23,6 +23,7 @@ const CollegePortal = () => {
     const [saveStatus, setSaveStatus] = useState('idle');
     const [logoError, setLogoError] = useState(false);
     const [bgError, setBgError] = useState(false);
+    const [interestedStudents, setInterestedStudents] = useState([]);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -54,10 +55,35 @@ const CollegePortal = () => {
                 likes: Math.floor(Math.random() * 1000) + 100,
                 followers: Math.floor(Math.random() * 200) + 20
             });
+
+            // Fetch real interested students
+            const studentsRes = await axios.get(`${baseUrl}api/colleges/${user.associated_college}/interested-students/`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setInterestedStudents(studentsRes.data);
         } catch (err) {
             console.error("Error fetching college portal data", err);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleContact = async (student) => {
+        const message = window.prompt(`Message to ${student.first_name || student.username}:`, `Hi ${student.first_name || student.username}, we noticed your profile and think you'd be a great fit for ${college.name}. Would you like to chat?`);
+        if (!message) return;
+
+        try {
+            const token = localStorage.getItem('access');
+            await axios.post(`${baseUrl}api/messages/send/`, {
+                recipient_id: student.id,
+                content: message
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            alert("Invitation sent successfully!");
+        } catch (err) {
+            console.error("Error sending message:", err);
+            alert("Failed to send invitation.");
         }
     };
 
@@ -265,16 +291,35 @@ const CollegePortal = () => {
                         <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100">
                             <h3 className="text-lg font-bold text-gray-900 mb-6">Interested Students</h3>
                             <div className="space-y-4">
-                                {[1, 2, 3].map(i => (
-                                    <div key={i} className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-2xl transition-all cursor-pointer">
-                                        <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
-                                        <div className="flex-1">
-                                            <p className="text-sm font-bold text-gray-900">Student #{Math.floor(Math.random() * 9000) + 1000}</p>
-                                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Potential Candidate</p>
+                                {interestedStudents.length > 0 ? (
+                                    interestedStudents.map(student => (
+                                        <div key={student.id} className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-2xl transition-all cursor-pointer group">
+                                            {student.image ? (
+                                                <img src={student.image.startsWith('http') ? student.image : (baseUrl + student.image.replace(/^\//, ''))} alt="Avatar" className="w-10 h-10 rounded-full object-cover" />
+                                            ) : (
+                                                <div className="w-10 h-10 bg-teal-50 rounded-full flex items-center justify-center text-primary font-bold text-xs">
+                                                    {(student.first_name || student.username).substring(0, 2).toUpperCase()}
+                                                </div>
+                                            )}
+                                            <div className="flex-1">
+                                                <p className="text-sm font-bold text-gray-900">{student.first_name || student.username}</p>
+                                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                                                    {student.major || 'Undecided'} • {student.sat_score ? `SAT: ${student.sat_score}` : 'Potential Candidate'}
+                                                </p>
+                                            </div>
+                                            <button
+                                                onClick={() => handleContact(student)}
+                                                className="text-primary hover:text-white hover:bg-primary text-xs font-bold px-3 py-1 bg-teal-50 rounded-lg transition-all"
+                                            >
+                                                Contact
+                                            </button>
                                         </div>
-                                        <button className="text-primary hover:text-teal-700 text-xs font-bold px-3 py-1 bg-teal-50 rounded-lg">Notify</button>
+                                    ))
+                                ) : (
+                                    <div className="text-center py-8">
+                                        <p className="text-gray-400 text-sm">No students have bookmarked your college yet.</p>
                                     </div>
-                                ))}
+                                )}
                             </div>
                         </div>
                     </div>
