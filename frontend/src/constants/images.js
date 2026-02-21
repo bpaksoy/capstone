@@ -32,10 +32,8 @@ const collegeImages = [
     "https://images.unsplash.com/photo-1535982330050-f1c2fb970584?auto=format&fit=crop&w=800&q=80",
     "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=800&q=80",
     "https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1568244106659-cbcc3b429be1?auto=format&fit=crop&w=800&q=80",
     "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=800&q=80",
     "https://images.unsplash.com/photo-1544148103-0773bf10d330?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1579033374099-36a5cda7766b?auto=format&fit=crop&w=800&q=80",
     "https://images.unsplash.com/photo-1519452635265-7b1fbfd1e4e0?auto=format&fit=crop&w=800&q=80",
     "https://images.unsplash.com/photo-1560769629-975ec94e6a86?auto=format&fit=crop&w=800&q=80",
     "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80",
@@ -45,7 +43,9 @@ const collegeImages = [
     "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80",
     "https://images.unsplash.com/photo-1492538363530-973e00780287?auto=format&fit=crop&w=800&q=80",
     "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=800&q=80"
+    "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1507537362145-9f7e4e1a5f4a?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1558223608-b1310705a968?auto=format&fit=crop&w=800&q=80"
 ];
 
 

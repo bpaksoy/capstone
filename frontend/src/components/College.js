@@ -37,17 +37,13 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
         }
     }, [website, logoUrl]);
 
-    // Dynamic Campus Image - add more keywords for variety
-    const dynamicImageUrl = `https://images.unsplash.com/featured/?university,campus,${encodeURIComponent(name)},${encodeURIComponent(city || '')}`;
-
     const [isBookmarked, setIsBookmarked] = useState(false);
     const [logoError, setLogoError] = useState(false);
     const [bgError, setBgError] = useState(false);
 
-    // Get a more unique stable index for fallbacks
+    // Get a unique stable index for fallbacks using the expanded gallery
     const getStableImage = () => {
         const idInt = parseInt(collegeId) || 0;
-        // Mix in name length for more entropy in selection
         const salt = name ? name.length : 0;
         const index = (idInt + salt) % images.collegeImages.length;
         return images.collegeImages[index];
@@ -110,16 +106,12 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
                 <div className="relative aspect-video overflow-hidden shrink-0">
                     <img
                         src={(image || img)
-                            ? ((image || img).startsWith('http') ? (image || img) : baseUrl + (image || img).replace(/^\//, ''))
-                            : (!bgError ? dynamicImageUrl : getStableImage())
+                            ? ((image || img).startsWith('http') ? (image || img) : `${baseUrl}media/${(image || img).replace(/^\//, '')}`)
+                            : getStableImage()
                         }
                         onError={(e) => {
-                            if (!bgError && !(image || img)) {
-                                setBgError(true);
-                            } else {
-                                e.target.onerror = null;
-                                e.target.src = images.collegeImg;
-                            }
+                            e.target.onerror = null;
+                            e.target.src = images.collegeImg;
                         }}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                         alt={`${name} campus`}
