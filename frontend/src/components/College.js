@@ -106,7 +106,7 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
                 <div className="relative aspect-video overflow-hidden shrink-0">
                     <img
                         src={(image || img)
-                            ? ((image || img).startsWith('http') ? (image || img) : `${baseUrl}media/${(image || img).replace(/^\//, '')}`)
+                            ? ((image || img).startsWith('http') ? (image || img) : `${baseUrl}${(image || img).replace(/^\//, '')}`)
                             : getStableImage()
                         }
                         onError={(e) => {
