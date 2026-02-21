@@ -71,7 +71,11 @@ const ArticleItem = ({ id, title, content, image, created_at, author, slug }) =>
                         <div className="flex justify-between items-center w-full">
                             {author &&
                                 (<div className="flex items-center space-x-2">
-                                    <img src={images.avatar} alt="User Avatar" className="w-6 h-6 rounded-full" />
+                                    <img
+                                        src={author.image ? `${baseUrl}${author.image.startsWith('/') ? author.image.substring(1) : author.image}` : images.avatar}
+                                        alt="User Avatar"
+                                        className="w-6 h-6 rounded-full object-cover"
+                                    />
                                     <p className="text-gray-500 text-sm">{author.username}</p>
                                 </div>
                                 )

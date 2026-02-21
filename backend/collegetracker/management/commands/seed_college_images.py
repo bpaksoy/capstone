@@ -45,14 +45,23 @@ class Command(BaseCommand):
                     # Score the image
                     score = 0
                     low_url = img_url.lower()
-                    if any(x in low_url for x in ['campus', 'aerial', 'building', 'library', 'quad', 'hall']): score += 10
-                    if any(x in low_url for x in ['logo', 'seal', 'crest', 'arms', 'svg', 'icon']): score -= 20
-                    if low_url.endswith('.svg') or low_url.endswith('.png'): score -= 50
+                    
+                    # Positive signals
+                    if any(x in low_url for x in ['campus', 'aerial', 'building', 'library', 'quad', 'hall', 'exterior', 'facade']): score += 20
+                    if any(x in low_url for x in ['view', 'landscape', 'architecture']): score += 10
+                    
+                    # Negative signals
+                    if any(x in low_url for x in ['logo', 'seal', 'crest', 'arms', 'svg', 'icon']): score -= 40
+                    if any(x in low_url for x in ['protest', 'encampment', 'police', 'arrest', 'crowd', 'internal', 'inside']): score -= 50
+                    if low_url.endswith('.svg') or low_url.endswith('.png'): score -= 100
                     
                     candidates.append((score, img_url))
                 
                 if candidates:
                     candidates.sort(key=lambda x: x[0], reverse=True)
+                    # Filter out candidates with terrible scores (likely news or logos)
+                    if candidates[0][0] < -10: continue
+                    
                     best_img = candidates[0][1]
                     # Convert thumb URL back to original or just use it
                     # Wikipedia thumbs look like: .../thumb/path/to/img.jpg/1000px-img.jpg
@@ -105,7 +114,7 @@ class Command(BaseCommand):
         success_count = 0
         for college in colleges:
             # Respectful delay for APIs - increased to avoid 429
-            time.sleep(2)
+            time.sleep(5)
             self.stdout.write(f"Analyzing {college.name}...")
             
             headers = {'User-Agent': random.choice(user_agents)}
@@ -120,7 +129,10 @@ class Command(BaseCommand):
                     pass
 
             # 2. Update Image (Check if legacy or forced)
-            is_generic = college.image and re.match(r'college_\d+_image\.jpg', college.image.name.split('/')[-1])
+            is_generic = college.image and (
+                re.match(r'college_\d+_image\.jpg', college.image.name.split('/')[-1]) or
+                'unsplash' in college.image.name.lower()
+            )
             
             if not college.image or is_generic or force:
                 self.stdout.write(f"  Attempting to refresh image for {college.name}...")
@@ -129,9 +141,9 @@ class Command(BaseCommand):
                 # Try Wikipedia first
                 wiki_img = self.get_wikipedia_image(college.name)
                 if wiki_img:
-                    # Skip SVG logos as backgrounds
-                    if wiki_img.lower().endswith('.svg'):
-                        self.stdout.write(f"  Skipping Wikipedia SVG: {wiki_img}")
+                    # Skip SVG and PNG as they are often not campus photos
+                    if any(wiki_img.lower().endswith(ext) for ext in ['.svg', '.png', '.gif']):
+                        self.stdout.write(f"  Skipping non-photo Wikipedia asset: {wiki_img}")
                     else:
                         try:
                             self.stdout.write(f"  Downloading Wikipedia Image: {wiki_img}")
@@ -139,8 +151,7 @@ class Command(BaseCommand):
                             if response.status_code == 200:
                                 new_image_data = (f"college_{college.id}_wiki.jpg", response.content)
                             elif response.status_code == 429:
-                                self.stdout.write(self.style.WARNING("  Wikipedia rate limit hit. Switching to Unsplash fallback..."))
-                                # Don't sleep too long here, just let the next step handle it
+                                self.stdout.write(self.style.WARNING("  Wikipedia rate limit hit."))
                             else:
                                 self.stdout.write(f"  Wikipedia download failed (status {response.status_code})")
                         except Exception as wiki_err:

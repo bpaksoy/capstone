@@ -217,7 +217,11 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
                                         navigate('/profile/')
                                     }
                                 }}>
-                                    <img src={post.author.image ? `${baseUrl}${post.author.image.startsWith('/') ? post.author.image.substring(1) : post.author.image}` : images.profile} alt="User Avatar" className="w-10 h-10 rounded-full object-cover border border-gray-100" />
+                                    <img
+                                        src={post.author.image ? `${baseUrl}${post.author.image.startsWith('/') ? post.author.image.substring(1) : post.author.image}` : images.profile}
+                                        alt="User Avatar"
+                                        className="w-10 h-10 rounded-full object-cover border border-gray-100 shadow-sm"
+                                    />
                                     <div>
                                         <p className="text-gray-900 font-semibold text-sm hover:underline">{post.author.username}</p>
                                         <p className="text-gray-500 text-xs">{timeSince(post.created_at)}</p>
