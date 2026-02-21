@@ -1127,6 +1127,8 @@ def get_messages(request):
             (Q(sender=request.user) & Q(recipient_id=other_user_id)) |
             (Q(sender_id=other_user_id) & Q(recipient=request.user))
         ).order_by('created_at')
+        # Mark incoming messages as read
+        messages.filter(recipient=request.user, is_read=False).update(is_read=True)
     else:
         messages = DirectMessage.objects.filter(
             Q(sender=request.user) | Q(recipient=request.user)

@@ -13,12 +13,22 @@ const DirectMessages = () => {
     const [newMessage, setNewMessage] = useState('');
     const [selectedFile, setSelectedFile] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [showSideBadge, setShowSideBadge] = useState(true);
+    const [lastTotalUnread, setLastTotalUnread] = useState(0);
     const messagesEndRef = useRef(null);
     const fileInputRef = useRef(null);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
+
+    // Fade out sidebar badges after 8 seconds to prevent them "standing there"
+    useEffect(() => {
+        if (showSideBadge) {
+            const timer = setTimeout(() => setShowSideBadge(false), 8000);
+            return () => clearTimeout(timer);
+        }
+    }, [showSideBadge]);
 
     const fetchAllMessages = async () => {
         try {
@@ -27,6 +37,7 @@ const DirectMessages = () => {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
+            let currentTotalUnread = 0;
             const groups = {};
             response.data.forEach(m => {
                 const otherUser = m.sender_id === user.id ?
@@ -49,6 +60,16 @@ const DirectMessages = () => {
                 }
             });
 
+            // Calculate total unread to trigger badge visibility
+            Object.values(groups).forEach(g => {
+                currentTotalUnread += g.unreadCount;
+            });
+
+            if (currentTotalUnread > lastTotalUnread) {
+                setShowSideBadge(true);
+            }
+            setLastTotalUnread(currentTotalUnread);
+
             const sortedConversations = Object.values(groups).sort((a, b) =>
                 new Date(b.lastMessage.created_at) - new Date(a.lastMessage.created_at)
             );
@@ -66,6 +87,8 @@ const DirectMessages = () => {
             });
             setMessages(response.data);
             scrollToBottom();
+            // Refresh conversation list to clear unread counts immediately
+            fetchAllMessages();
         } catch (err) {
             console.error("Error fetching chat messages:", err);
         }
@@ -201,8 +224,8 @@ const DirectMessages = () => {
                                     <p className={`text-xs truncate ${selectedUser?.id === conv.user.id ? 'text-white/80' : 'text-gray-500'}`}>
                                         {conv.lastMessage.content || 'Sent an attachment'}
                                     </p>
-                                    {conv.unreadCount > 0 && selectedUser?.id !== conv.user.id && (
-                                        <div className="mt-2 flex justify-end">
+                                    {conv.unreadCount > 0 && selectedUser?.id !== conv.user.id && showSideBadge && (
+                                        <div className="mt-2 flex justify-end transition-opacity duration-500">
                                             <span className="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">
                                                 {conv.unreadCount}
                                             </span>
