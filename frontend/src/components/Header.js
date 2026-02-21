@@ -28,6 +28,8 @@ const Header = (props) => {
     const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
+    const [showBadge, setShowBadge] = useState(false);
+    const [lastCount, setLastCount] = useState(0);
 
     const fetchNotifications = async () => {
         if (!loggedIn) return;
@@ -37,8 +39,16 @@ const Header = (props) => {
                 axios.get(`${baseUrl}api/notifications/`, config),
                 axios.get(`${baseUrl}api/notifications/count/`, config)
             ]);
+
+            const newCount = countRes.data.unread_count;
             setNotifications(notifsRes.data);
-            setUnreadCount(countRes.data.unread_count);
+            setUnreadCount(newCount);
+
+            // Show badge only when it's the first fetch or count increased
+            if (newCount > 0 && newCount !== lastCount) {
+                setShowBadge(true);
+                setLastCount(newCount);
+            }
         } catch (error) {
             console.error('Error fetching notifications:', error);
         }
@@ -51,6 +61,16 @@ const Header = (props) => {
         return () => clearInterval(interval);
     }, [loggedIn, forceFetchFriendRequests]);
 
+    // Handle the "Stand there" issue: hide badge after a delay
+    useEffect(() => {
+        if (showBadge) {
+            const timer = setTimeout(() => {
+                setShowBadge(false);
+            }, 8000); // 8 seconds visibility
+            return () => clearTimeout(timer);
+        }
+    }, [showBadge]);
+
     const markAsRead = async (id = null) => {
         try {
             await axios.post(`${baseUrl}api/notifications/mark-read/`,
@@ -58,6 +78,7 @@ const Header = (props) => {
                 { headers: { Authorization: `Bearer ${localStorage.getItem('access')}` } }
             );
             fetchNotifications();
+            setShowBadge(false);
         } catch (error) {
             console.error('Error marking as read:', error);
         }
@@ -149,11 +170,14 @@ const Header = (props) => {
                             {/* Unified Notifications Menu */}
                             <Menu as="div" className="relative">
                                 <div>
-                                    <MenuButton className="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
+                                    <MenuButton
+                                        onClick={() => setShowBadge(false)}
+                                        className="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                                    >
                                         <span className="sr-only">View notifications</span>
                                         <BellIcon aria-hidden="true" className="h-6 w-6" />
-                                        {unreadCount > 0 && (
-                                            <span className="absolute -top-1 -right-1 inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold text-white bg-purple rounded-full border-2 border-gray-800 shadow-sm animate-pulse">
+                                        {unreadCount > 0 && showBadge && (
+                                            <span className="absolute -top-1 -right-1 inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold text-white bg-purple rounded-full border-2 border-gray-800 shadow-sm animate-pulse transition-opacity duration-500">
                                                 {unreadCount > 9 ? '9+' : unreadCount}
                                             </span>
                                         )}
