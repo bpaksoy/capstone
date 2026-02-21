@@ -23,6 +23,7 @@ import Footer from "./components/Footer";
 import AIAgent from "./components/AIAgent";
 import Friends from "./pages/Friends";
 import ForgotPassword from "./pages/ForgotPassword";
+import CollegePortal from "./pages/CollegePortal";
 
 
 import ScrollToTopOnNavigate from "./utils/ScrollToTopOnNavigate";
@@ -54,6 +55,7 @@ const App = () => {
             <Route path="/friends" element={<Friends />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/detailed-search" element={<DetailedSearch />} />
+            <Route path="/college/portal" element={<CollegePortal />} />
             <Route path="/404" element={<NotFound />} />
             <Route path="*" element={<NotFound />} />
           </Route>

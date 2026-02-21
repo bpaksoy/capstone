@@ -59,6 +59,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/colleges/scroll/', views.colleges, name='colleges'),
     path('api/colleges/<int:id>/', views.college, name='college'),
+    path('api/colleges/claim/', views.claim_college, name='claim-college'),
+    path('api/colleges/<int:pk>/staff-update/', views.staff_update_college, name='staff-update-college'),
     path('api/colleges/', CollegeListView.as_view()),
     path('api/colleges/<int:college_id>/', views.CollegeDetailView.as_view()),
     path('api/colleges/featured/', views.FeaturedCollegesView.as_view(), name='featured-colleges'),

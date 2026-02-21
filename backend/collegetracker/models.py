@@ -12,8 +12,17 @@ from django.utils.text import slugify
 
 # User = get_user_model()
 
+USER_ROLES = [
+    ('student', 'Student'),
+    ('college_staff', 'College Staff'),
+    ('admin', 'Administrator'),
+]
+
 
 class User(AbstractUser):
+    role = models.CharField(max_length=20, choices=USER_ROLES, default='student')
+    associated_college = models.ForeignKey('College', on_delete=models.SET_NULL, null=True, blank=True, related_name='staff_members')
+    is_verified = models.BooleanField(default=False)
     image = models.ImageField('image', upload_to='user_images', blank=True, null=True,
                               validators=[FileExtensionValidator(['png', 'jpg', 'jpeg'])])
     city = models.CharField(max_length=100, blank=True, null=True)
@@ -72,6 +81,7 @@ class College(models.Model):
     description = models.TextField(null=True, blank=True)
     image = models.ImageField(upload_to='college_images/', blank=True, null=True)
     logo_url = models.URLField(max_length=500, null=True, blank=True)
+    logo = models.ImageField(upload_to='college_logos/', blank=True, null=True)
     
     # --- New Metadata from Scorecard ---
     locale = models.IntegerField(null=True, blank=True) # 11-13 City, 21-23 Suburb, etc.

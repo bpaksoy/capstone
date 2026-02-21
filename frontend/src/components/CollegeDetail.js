@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useCurrentUser } from '../UserProvider/UserProvider';
 import { baseUrl } from '../shared';
 import { images } from '../constants';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
@@ -35,6 +36,9 @@ const CollegeDetail = () => {
     const [showAllPrograms, setShowAllPrograms] = useState(false);
     const [logoError, setLogoError] = useState(false);
     const [bgError, setBgError] = useState(false);
+    const [claimStatus, setClaimStatus] = useState(null); // 'idle', 'loading', 'success', 'error'
+    const { user, loggedIn, fetchUserData } = useCurrentUser();
+    const navigate = useNavigate();
     const PROGRAMS_LIMIT = 10;
 
 
@@ -140,11 +144,13 @@ const CollegeDetail = () => {
                                                 if (domain.startsWith('www.')) domain = domain.substring(4);
                                             } catch (e) { }
                                         }
-                                        const logoUrl = college.logo_url || (domain ? `https://logo.clearbit.com/${domain}` : null);
+                                        const logoUrl = college.logo
+                                            ? (college.logo.startsWith('http') ? college.logo : baseUrl + (college.logo.startsWith('/') ? college.logo.substring(1) : college.logo))
+                                            : (college.logo_url || (domain ? `https://logo.clearbit.com/${domain}` : null));
 
                                         if (logoUrl && !logoError) {
                                             return (
-                                                <div className="w-16 h-16 bg-white rounded-xl p-2 shadow-sm border border-gray-100 flex items-center justify-center">
+                                                <div className="w-16 h-16 bg-white rounded-xl p-2 shadow-sm border border-gray-100 flex items-center justify-center overflow-hidden">
                                                     <img
                                                         src={logoUrl}
                                                         alt="logo"
@@ -268,7 +274,7 @@ const CollegeDetail = () => {
                                                 {college.avg_net_price && (
                                                     <div>
                                                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Average Net Price</p>
-                                                        <p className="text-3xl font-black text-gray-900 leading-none">
+                                                        <p className="text-3xl font-bold text-gray-900 leading-none">
                                                             {formatter.format(college.avg_net_price).replace(/(\.|,)00$/g, '')}
                                                         </p>
                                                         <p className="text-[11px] text-gray-500 mt-2 leading-relaxed">Average cost after aid for students receiving Title IV aid.</p>
@@ -303,7 +309,7 @@ const CollegeDetail = () => {
                                                     <div>
                                                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Graduation Rate</p>
                                                         <div className="flex items-baseline gap-2">
-                                                            <p className="text-4xl font-black text-gray-900 leading-none">
+                                                            <p className="text-4xl font-bold text-gray-900 leading-none">
                                                                 {(college.grad_rate * 100).toFixed(0)}%
                                                             </p>
                                                             <span className="text-gray-400 text-xs font-semibold">(150% time)</span>
@@ -330,7 +336,60 @@ const CollegeDetail = () => {
                                             </div>
                                         </div>
                                     )}
+                                    {/* Financial Aid & Value Section Removed/Moved */}
                                 </div>
+
+                                {/* College Portal Claim Section */}
+                                {loggedIn && user?.role === 'student' && !user?.associated_college && (
+                                    <div className="mb-10 bg-teal-50/50 border border-primary/20 rounded-2xl p-6 shadow-sm animate-fadeIn">
+                                        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-6 h-6">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 12c0 3.839 2.302 7.144 5.575 8.556a12.017 12.017 0 0 0 12.85 0c3.273-1.412 5.575-4.717 5.575-8.556 0-3.14-1.382-5.957-3.598-7.882M12 21V10.332" />
+                                                    </svg>
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-lg font-bold text-gray-900">Official Representative?</h3>
+                                                    <p className="text-sm text-gray-500">Claim your institution to manage details, view analytics, and message students.</p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={async () => {
+                                                    if (window.confirm(`Are you the official representative of ${college.name}?`)) {
+                                                        try {
+                                                            setClaimStatus('loading');
+                                                            const response = await fetch(`${baseUrl}api/colleges/claim/`, {
+                                                                method: 'POST',
+                                                                headers: {
+                                                                    'Content-Type': 'application/json',
+                                                                    'Authorization': `Bearer ${localStorage.getItem('access')}`
+                                                                },
+                                                                body: JSON.stringify({ college_id: collegeId })
+                                                            });
+                                                            if (response.ok) {
+                                                                setClaimStatus('success');
+                                                                await fetchUserData(); // Refresh local user state
+                                                                setTimeout(() => navigate('/college/portal'), 1500); // Redirect after short delay
+                                                            } else {
+                                                                setClaimStatus('error');
+                                                            }
+                                                        } catch (err) {
+                                                            setClaimStatus('error');
+                                                        }
+                                                    }
+                                                }}
+                                                disabled={claimStatus === 'loading' || claimStatus === 'success'}
+                                                className={`px-6 py-2.5 rounded-full font-bold text-white transition-all shadow-md ${claimStatus === 'success'
+                                                    ? 'bg-green-500'
+                                                    : 'bg-primary hover:bg-teal-700 active:scale-95'
+                                                    }`}
+                                            >
+                                                {claimStatus === 'loading' ? 'Processing...' : claimStatus === 'success' ? 'Request Sent' : 'Claim College'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
 
 
                                 <div className="mt-8 pt-8 border-t border-gray-100 flex flex-col gap-4">

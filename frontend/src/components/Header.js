@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
-import { Bars3Icon, BellIcon, XMarkIcon, UserIcon, Cog6ToothIcon, ArrowRightOnRectangleIcon, ArrowLeftOnRectangleIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon, BellIcon, XMarkIcon, UserIcon, Cog6ToothIcon, ArrowRightOnRectangleIcon, ArrowLeftOnRectangleIcon, AcademicCapIcon } from '@heroicons/react/24/outline';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { images } from "../constants";
 import { useCurrentUser } from '../UserProvider/UserProvider';
@@ -251,6 +251,18 @@ const Header = (props) => {
                                             Your Profile
                                         </NavLink>
                                     </MenuItem>
+
+                                    {user?.role === 'college_staff' && (
+                                        <MenuItem>
+                                            <NavLink
+                                                to="/college/portal"
+                                                className="group flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 rounded-xl transition-all hover:bg-teal-50 hover:text-primary data-[focus]:bg-teal-50 data-[focus]:text-primary"
+                                            >
+                                                <AcademicCapIcon className="h-4 w-4 text-gray-400 group-hover:text-primary" />
+                                                College Portal
+                                            </NavLink>
+                                        </MenuItem>
+                                    )}
 
                                     <MenuItem>
                                         <NavLink

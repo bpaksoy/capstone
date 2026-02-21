@@ -562,6 +562,18 @@ class DetailedSearchListView(generics.ListAPIView):
                 queryset = queryset.filter(sat_score__lte=max_sat)
             except ValueError:
                 pass
+
+        # Add Ordering
+        sort_param = self.request.query_params.get('sort', 'name')
+        if sort_param == 'admission_rate':
+            queryset = queryset.order_by('admission_rate')
+        elif sort_param == 'cost':
+            queryset = queryset.order_by('cost_of_attendance')
+        elif sort_param == 'grad_rate':
+            queryset = queryset.order_by('-grad_rate')
+        else:
+            queryset = queryset.order_by('name')
+
         paginator = Paginator(queryset, page_size)
         try:
             colleges = paginator.page(page)
@@ -972,6 +984,61 @@ class LikeDeleteView(APIView):
             like.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response({"error": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def claim_college(request):
+    college_id = request.data.get('college_id')
+    try:
+        college_obj = College.objects.get(pk=college_id)
+    except College.DoesNotExist:
+        return Response({"error": "College not found"}, status=404)
+    
+    user = request.user
+    if user.associated_college:
+        return Response({"error": "You already have an associated college"}, status=400)
+    
+    user.role = 'college_staff'
+    user.associated_college = college_obj
+    user.is_verified = False  # Requires admin approval
+    user.save()
+    
+    serializer = UserSerializer(user)
+    return Response({
+        "message": "Claim request submitted successfully. Verification pending.",
+        "user": serializer.data
+    })
+
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def staff_update_college(request, pk):
+    try:
+        college = College.objects.get(pk=pk)
+    except College.DoesNotExist:
+        return Response({"error": "College not found"}, status=404)
+
+    user = request.user
+    if user.role != 'college_staff' or user.associated_college_id != college.id:
+        return Response({"error": "You do not have permission to edit this college"}, status=403)
+
+    # Fields allowed to be updated by staff
+    allowed_fields = ['description', 'website', 'top_major']
+    for field in allowed_fields:
+        if field in request.data:
+            setattr(college, field, request.data.get(field))
+
+    # Handle logo upload
+    if 'logo' in request.FILES:
+        college.logo = request.FILES['logo']
+
+    college.save()
+
+    return Response({
+        "message": "College updated successfully",
+        "college": CollegeSerializer(college).data
+    })
 
 
 @api_view(['GET', 'POST'])
