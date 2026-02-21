@@ -212,7 +212,7 @@ const DirectMessages = () => {
                                     onClick={() => setSelectedUser(conv.user)}
                                     className={`p-4 rounded-2xl cursor-pointer transition-all ${selectedUser?.id === conv.user.id
                                         ? 'bg-primary text-white shadow-lg shadow-teal-700/20'
-                                        : 'hover:bg-white text-gray-700 hover:shadow-sm'
+                                        : 'bg-gray-50 hover:bg-white text-gray-700 hover:shadow-sm'
                                         }`}
                                 >
                                     <div className="flex justify-between items-start mb-1">
