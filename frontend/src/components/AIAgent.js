@@ -187,7 +187,7 @@ const AIAgent = () => {
     };
 
     return (
-        <div className="fixed top-1/2 right-6 -translate-y-1/2 z-[100] flex flex-col items-end pointer-events-none">
+        <div className="fixed top-1/2 right-6 -translate-y-1/2 z-[9999] flex flex-col items-end pointer-events-none">
             {/* Chat Window */}
             {isOpen && (
                 <div className="mb-4 w-full max-w-[420px] h-[550px] bg-white/95 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/40 overflow-hidden flex flex-col animate-slideUp pointer-events-auto">
