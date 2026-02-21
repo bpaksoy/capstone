@@ -188,8 +188,8 @@ const DirectMessages = () => {
                                     key={conv.user.id}
                                     onClick={() => setSelectedUser(conv.user)}
                                     className={`p-4 rounded-2xl cursor-pointer transition-all ${selectedUser?.id === conv.user.id
-                                            ? 'bg-primary text-white shadow-lg shadow-teal-700/20'
-                                            : 'hover:bg-white text-gray-700 hover:shadow-sm'
+                                        ? 'bg-primary text-white shadow-lg shadow-teal-700/20'
+                                        : 'hover:bg-white text-gray-700 hover:shadow-sm'
                                         }`}
                                 >
                                     <div className="flex justify-between items-start mb-1">
@@ -241,8 +241,8 @@ const DirectMessages = () => {
                                     return (
                                         <div key={m.id || idx} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
                                             <div className={`max-w-[70%] px-4 py-3 rounded-2xl text-sm shadow-sm ${isMine
-                                                    ? 'bg-primary text-white rounded-tr-none'
-                                                    : 'bg-white text-gray-800 border border-gray-100 rounded-tl-none'
+                                                ? 'bg-primary text-white rounded-tr-none'
+                                                : 'bg-white text-gray-800 border border-gray-100 rounded-tl-none'
                                                 }`}>
                                                 {m.content && <p className="leading-relaxed whitespace-pre-wrap">{m.content}</p>}
                                                 {renderAttachment(m)}
@@ -287,7 +287,7 @@ const DirectMessages = () => {
                                     value={newMessage}
                                     onChange={(e) => setNewMessage(e.target.value)}
                                     placeholder="Type a message..."
-                                    className="flex-1 bg-gray-100 border-none rounded-2xl px-5 py-3.5 text-sm focus:ring-2 focus:ring-primary/20 transition-all outline-none font-medium text-gray-700"
+                                    className="flex-1 bg-gray-50 border-none rounded-2xl px-5 py-3.5 text-sm focus:ring-2 focus:ring-primary/20 transition-all outline-none font-medium text-gray-700"
                                 />
                                 <button
                                     type="submit"
