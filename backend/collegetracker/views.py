@@ -1081,9 +1081,13 @@ def get_interested_students(request, pk):
 def send_direct_message(request):
     recipient_id = request.data.get('recipient_id')
     content = request.data.get('content')
+    attachment = request.FILES.get('attachment')
 
-    if not recipient_id or not content:
-        return Response({"error": "Missing recipient_id or content"}, status=status.HTTP_400_BAD_REQUEST)
+    if not recipient_id:
+        return Response({"error": "Missing recipient_id"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    if not content and not attachment:
+        return Response({"error": "Message must have content or an attachment"}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
         recipient = User.objects.get(id=recipient_id)
@@ -1093,10 +1097,11 @@ def send_direct_message(request):
     message = DirectMessage.objects.create(
         sender=request.user,
         recipient=recipient,
-        content=content
+        content=content,
+        attachment=attachment
     )
 
-    # Create notification for student
+    # Create notification for recipient
     from django.contrib.contenttypes.models import ContentType
     Notification.objects.create(
         recipient=recipient,
@@ -1106,7 +1111,11 @@ def send_direct_message(request):
         object_id=message.id
     )
 
-    return Response({"message": "Message sent successfully", "id": message.id})
+    return Response({
+        "message": "Message sent successfully", 
+        "id": message.id,
+        "attachment_url": message.attachment.url if message.attachment else None
+    })
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -1126,6 +1135,10 @@ def get_messages(request):
     # We might need a serializer for this or just manual mapping
     data = []
     for m in messages:
+        attachment_url = None
+        if m.attachment:
+            attachment_url = request.build_absolute_uri(m.attachment.url)
+            
         data.append({
             "id": m.id,
             "sender_id": m.sender.id,
@@ -1133,6 +1146,7 @@ def get_messages(request):
             "recipient_id": m.recipient.id,
             "recipient_name": m.recipient.username,
             "content": m.content,
+            "attachment_url": attachment_url,
             "created_at": m.created_at,
             "is_read": m.is_read
         })
