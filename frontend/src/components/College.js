@@ -37,6 +37,9 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
         }
     }, [website, logoUrl]);
 
+    // Dynamic Campus Image - Hardened query to avoid sneakers/lifestyle shots
+    const dynamicImageUrl = `https://images.unsplash.com/featured/?university,campus,architecture,building,${encodeURIComponent(name)}`;
+
     const [isBookmarked, setIsBookmarked] = useState(false);
     const [logoError, setLogoError] = useState(false);
     const [bgError, setBgError] = useState(false);
@@ -107,11 +110,15 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
                     <img
                         src={(image || img)
                             ? ((image || img).startsWith('http') ? (image || img) : `${baseUrl}${(image || img).replace(/^\//, '')}`)
-                            : getStableImage()
+                            : (!bgError ? dynamicImageUrl : getStableImage())
                         }
                         onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = images.collegeImg;
+                            if (!bgError && !(image || img)) {
+                                setBgError(true);
+                            } else {
+                                e.target.onerror = null;
+                                e.target.src = images.collegeImg;
+                            }
                         }}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                         alt={`${name} campus`}
