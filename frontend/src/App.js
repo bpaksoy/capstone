@@ -25,6 +25,7 @@ import Friends from "./pages/Friends";
 import ForgotPassword from "./pages/ForgotPassword";
 import CollegePortal from "./pages/CollegePortal";
 import DirectMessages from "./pages/DirectMessages";
+import StaffVerification from "./pages/StaffVerification";
 
 
 import ScrollToTopOnNavigate from "./utils/ScrollToTopOnNavigate";

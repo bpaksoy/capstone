@@ -137,7 +137,14 @@ function Comment({ postId, lastUpdatedComment, onAddPost, user }) {
                                                 <img src={images.avatar} alt="User Avatar" className="w-6 h-6 rounded-full mt-1 ring-2 ring-primary/30 bg-primary/5 p-0.5 object-cover opacity-80" />
                                                 <div>
                                                     <div className="bg-white px-4 py-2 rounded-2xl shadow-sm inline-block">
-                                                        <p className="text-gray-900 font-semibold text-sm">{comment.author.username}</p>
+                                                        <div className="flex items-center gap-1.5 mb-0.5">
+                                                            <p className="text-gray-900 font-semibold text-sm">{comment.author.username}</p>
+                                                            {comment.author.role === 'college_staff' && comment.author.is_verified && (
+                                                                <span className="flex items-center gap-0.5 text-primary text-[8px] font-extrabold uppercase bg-teal-50 px-1 py-0.25 rounded border border-teal-100">
+                                                                    Verified
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                         <p className="text-gray-700 text-sm">{comment.content}</p>
                                                     </div>
                                                     {/* Action Row - Now below the bubble */}

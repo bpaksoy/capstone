@@ -55,6 +55,22 @@ function Search() {
                     <p className="text-red-500 text-xs font-bold uppercase tracking-wider">{searchWarning}</p>
                 </div>
             )}
+
+            <div className="mt-6 flex flex-wrap justify-center gap-2 max-w-2xl px-4 animate-fadeIn">
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest mr-2 self-center">Popular:</span>
+                {['Ivy League', 'California', 'Computer Science', 'HBCU', 'Nursing'].map((tag) => (
+                    <button
+                        key={tag}
+                        onClick={() => {
+                            setQuery(tag);
+                            navigate('/search/' + tag);
+                        }}
+                        className="px-4 py-1.5 bg-white/50 backdrop-blur-sm border border-gray-100 hover:border-primary hover:text-primary rounded-full text-xs font-medium text-gray-500 transition-all shadow-sm"
+                    >
+                        {tag}
+                    </button>
+                ))}
+            </div>
         </div>
     );
 }

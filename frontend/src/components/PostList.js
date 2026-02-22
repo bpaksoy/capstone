@@ -223,7 +223,15 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
                                         className="w-10 h-10 rounded-full object-cover border border-gray-100 shadow-sm"
                                     />
                                     <div>
-                                        <p className="text-gray-900 font-semibold text-sm hover:underline">{post.author.username}</p>
+                                        <div className="flex items-center gap-1.5">
+                                            <p className="text-gray-900 font-semibold text-sm hover:underline">{post.author.username}</p>
+                                            {post.author.role === 'college_staff' && post.author.is_verified && (
+                                                <span className="flex items-center gap-0.5 bg-teal-50 text-primary text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-teal-100 uppercase tracking-tighter">
+                                                    <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24"><path d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 12c0 3.839 2.302 7.144 5.575 8.556a12.017 12.017 0 0 0 12.85 0c3.273-1.412 5.575-4.717 5.575-8.556 0-3.14-1.382-5.957-3.598-7.882M12 21V10.332" /></svg>
+                                                    Verified Institution
+                                                </span>
+                                            )}
+                                        </div>
                                         <p className="text-gray-500 text-xs">{timeSince(post.created_at)}</p>
                                     </div>
                                 </div>

@@ -273,7 +273,7 @@ const CollegePortal = () => {
             <div className="relative z-20 max-w-7xl mx-auto px-8 mt-8 pb-12">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                    {/* Left Column: Stats */}
+                    {/* Left Column: Stats & Students */}
                     <div className="lg:col-span-1 space-y-8">
                         <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100">
                             <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
@@ -299,6 +299,15 @@ const CollegePortal = () => {
                                     </div>
                                     <span className="text-xl font-bold text-gray-900">{stats.likes}</span>
                                 </div>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                                        </div>
+                                        <span className="text-sm font-medium text-gray-500">Active Followers</span>
+                                    </div>
+                                    <span className="text-xl font-bold text-gray-900">{stats.followers}</span>
+                                </div>
                             </div>
                             <div className="mt-8 pt-8 border-t border-gray-50">
                                 <p className="text-xs text-info leading-relaxed">
@@ -309,7 +318,10 @@ const CollegePortal = () => {
 
                         {/* Recent Student Bookmarks */}
                         <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100">
-                            <h3 className="text-lg font-bold text-gray-900 mb-6">Interested Students</h3>
+                            <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+                                <UsersIcon className="w-5 h-5 text-primary" />
+                                Interested Students
+                            </h3>
                             <div className="space-y-4">
                                 {interestedStudents.length > 0 ? (
                                     interestedStudents.map(student => (
@@ -332,7 +344,7 @@ const CollegePortal = () => {
                                                 </p>
                                             </div>
                                             <button
-                                                onClick={() => handleContact(student)}
+                                                onClick={(e) => { e.stopPropagation(); handleContact(student); }}
                                                 className="text-primary hover:text-white hover:bg-primary text-xs font-bold px-3 py-1 bg-teal-50 rounded-lg transition-all"
                                             >
                                                 Contact
@@ -349,7 +361,7 @@ const CollegePortal = () => {
                     </div>
 
                     {/* Right Column: Editor */}
-                    <div className="lg:col-span-2">
+                    <div className="lg:col-span-2 space-y-8">
                         <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
                             <div className="px-8 py-6 border-b border-gray-50 flex items-center justify-between bg-white sticky top-0 z-10">
                                 <div>
@@ -429,15 +441,15 @@ const CollegePortal = () => {
                         </div>
                     </div>
                 </div>
+                {college && (
+                    <DirectMessageModal
+                        isOpen={isMessageModalOpen}
+                        onClose={() => setIsMessageModalOpen(false)}
+                        student={selectedStudent}
+                        collegeName={college.name}
+                    />
+                )}
             </div>
-            {college && (
-                <DirectMessageModal
-                    isOpen={isMessageModalOpen}
-                    onClose={() => setIsMessageModalOpen(false)}
-                    student={selectedStudent}
-                    collegeName={college.name}
-                />
-            )}
         </div>
     );
 };

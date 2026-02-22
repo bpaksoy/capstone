@@ -181,6 +181,17 @@ function SearchResults() {
                 </div>
             )}
 
+            {searchResult && searchResult.length > 0 && (
+                <div className="max-w-7xl mx-auto px-8 mt-12 flex items-center justify-between">
+                    <div>
+                        <h2 className="text-2xl font-bold text-white tracking-tight">
+                            Found {searchResult.length} {searchResult.length === 1 ? 'College' : 'Colleges'}
+                        </h2>
+                        <p className="text-white/40 text-sm mt-1">Discovering matches for "<span className="text-teal-300 font-bold">{query}</span>"</p>
+                    </div>
+                </div>
+            )}
+
             {!isLoading && searchResult && searchResult.length === 0 && (
                 <div className="max-w-4xl mx-auto px-8 mt-16 text-center animate-fadeIn">
                     <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-10 backdrop-blur-sm">

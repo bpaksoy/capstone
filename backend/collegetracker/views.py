@@ -1076,6 +1076,85 @@ def get_interested_students(request, pk):
 
     return Response(students)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_college_analytics(request, college_id):
+    user = request.user
+    # Ensure only authorized staff or admin can see analytics
+    if user.role != 'college_staff' and not user.is_staff:
+        return Response({"error": "Unauthorized"}, status=403)
+    
+    if user.role == 'college_staff' and user.associated_college_id != int(college_id):
+        return Response({"error": "You can only view analytics for your own institution"}, status=403)
+
+    try:
+        college = College.objects.get(pk=college_id)
+    except College.DoesNotExist:
+        return Response({"error": "College not found"}, status=404)
+
+    # Real data aggregation
+    bookmarks_count = Bookmark.objects.filter(college=college).count()
+    followers_count = User.objects.filter(following_colleges=college).count()
+    
+    # Recent Trend - bookmarks in the last 7 days
+    seven_days_ago = timezone.now() - timedelta(days=7)
+    recent_bookmarks = Bookmark.objects.filter(college=college, created_at__gte=seven_days_ago).count()
+
+    return Response({
+        "college_id": college.id,
+        "college_name": college.name,
+        "bookmarks": bookmarks_count,
+        "followers": followers_count,
+        "recent_bookmarks": recent_bookmarks,
+        "engagement_score": (bookmarks_count * 2) + followers_count
+    })
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def list_unverified_staff(request):
+    if not request.user.is_staff:
+        return Response({"error": "Admin access required"}, status=403)
+    
+    unverified_users = User.objects.filter(role='college_staff', is_verified=False).select_related('associated_college')
+    data = []
+    for u in unverified_users:
+        data.append({
+            "id": u.id,
+            "username": u.username,
+            "email": u.email,
+            "college_id": u.associated_college.id if u.associated_college else None,
+            "college_name": u.associated_college.name if u.associated_college else "N/A",
+            "request_date": u.date_joined # Using joined date as request date for now
+        })
+    return Response(data)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def verify_staff(request):
+    if not request.user.is_staff:
+        return Response({"error": "Admin access required"}, status=403)
+    
+    user_id = request.data.get('user_id')
+    action = request.data.get('action') # 'approve' or 'deny'
+    
+    try:
+        target_user = User.objects.get(pk=user_id)
+    except User.DoesNotExist:
+        return Response({"error": "User not found"}, status=404)
+    
+    if action == 'approve':
+        target_user.is_verified = True
+        target_user.save()
+        return Response({"message": f"User {target_user.username} verified successfully."})
+    elif action == 'deny':
+        target_user.role = 'student'
+        target_user.associated_college = None
+        target_user.is_verified = False
+        target_user.save()
+        return Response({"message": f"User {target_user.username} claim denied and reverted to student."})
+    else:
+        return Response({"error": "Invalid action"}, status=400)
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def send_direct_message(request):
