@@ -1,69 +1,83 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
+import axios from "axios";
+import { baseUrl } from '../shared';
+import { useCurrentUser } from '../UserProvider/UserProvider';
 import College from './College';
 import NotFound from './NotFound';
 import Search from './Search';
-import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
-import { useState, useEffect, useContext } from 'react';
-import { baseUrl } from '../shared';
-import { LoginContext } from '../App';
-import axios from "axios";
-import { useCurrentUser } from '../UserProvider/UserProvider';
-
+import SearchFilterBar from './SearchFilterBar';
 
 function SearchResults() {
     let { query } = useParams();
-    console.log("query in Search Results", query);
-    const { loggedIn, updateLoggedInStatus } = useCurrentUser();
+    const { loggedIn } = useCurrentUser();
     const [searchResult, setSearchResult] = useState([]);
-    console.log("searchResult", searchResult);
     const [isLoading, setLoading] = useState(false);
     const [searchError, setSearchError] = useState(null);
-    const [notFound, setNotFound] = useState(false);
     const [errorStatus, setErrorStatus] = useState();
     const [hasMore, setHasMore] = useState(true)
     const [page, setPage] = useState(1);
     const [suggestion, setSuggestion] = useState(null);
 
+    const [filters, setFilters] = useState({
+        state: '',
+        control: '',
+        max_cost: '',
+        max_admission: '',
+        min_admission: ''
+    });
 
     const navigate = useNavigate();
     const location = useLocation();
 
-    const [backendData, setBackendData] = useState();
-    // console.log("backendData", backendData);
-
+    const handleFilterChange = (name, value) => {
+        if (name === 'clear') {
+            setFilters({
+                state: '',
+                control: '',
+                max_cost: '',
+                max_admission: '',
+                min_admission: ''
+            });
+        } else {
+            setFilters(prev => ({ ...prev, [name]: value }));
+        }
+        setPage(1); // Reset page on filter change
+    };
 
     async function fetchData() {
         setLoading(true);
         try {
+            const hasActiveFilters = Object.values(filters).some(val => val !== '');
             let collegeData = null;
             let programData = null;
-            if (location.state && location.state.colleges) {
+
+            const token = localStorage.getItem('access');
+            const headers = token ? { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
+
+            if (hasActiveFilters) {
+                // Use detailed search endpoint if filters are active
+                const filterParams = {
+                    ...filters,
+                    name: query,
+                    page: page
+                };
+                const response = await axios.get(`${baseUrl}api/colleges/detailed/`, {
+                    params: filterParams,
+                    headers: headers
+                });
+
+                if (response.status === 200) {
+                    collegeData = response.data.colleges;
+                    setHasMore(response.data.has_more);
+                    setSuggestion(response.data.suggestion);
+                }
+            } else if (location.state && location.state.colleges && page === 1 && !hasActiveFilters) {
+                // Use data from location state if available and no filters
                 collegeData = location.state.colleges;
                 setHasMore(location.state.hasMore);
-                if (location.state.searchQuery) {
-                    const token = localStorage.getItem('access');
-                    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-
-                    const detailedSearchOptions = {
-                        method: "GET",
-                        url: `${baseUrl}api/colleges/detailed/?page=${page}`,
-                        params: location.state.searchQuery,
-                        headers: headers
-                    };
-                    const detailedResponse = await axios.request(detailedSearchOptions);
-                    if (detailedResponse.status === 200) {
-                        setHasMore(detailedResponse.data.has_more);
-                        setSuggestion(detailedResponse.data.suggestion);
-                        if (detailedResponse.data.colleges) {
-                            collegeData = detailedResponse.data.colleges;
-                        }
-                    }
-                }
             } else {
-                console.log("query goes in here", query);
-                const token = localStorage.getItem('access');
-                const headers = token ? { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
-
+                // Default mixed search
                 const collegeOptions = {
                     method: "GET",
                     url: `${baseUrl}api/search/${query}/`,
@@ -74,7 +88,6 @@ function SearchResults() {
                     url: `${baseUrl}api/colleges/programs/?search=${query}&page=${page}`,
                     headers: headers
                 };
-
 
                 const results = await Promise.allSettled([
                     axios.request(collegeOptions),
@@ -98,54 +111,39 @@ function SearchResults() {
                         programData = null;
                     }
                 }
-
-                if (!collegeData && !programData && (!collegeRes || collegeRes.status === 404)) {
-                    // Only really 404 if both fail or return nothing
-                }
-
-
             }
+
             let combinedResults = [];
-            if (collegeData) {
-                combinedResults.push(...collegeData);
-            }
-            if (programData) {
-                combinedResults.push(...programData);
-            }
+            if (collegeData) combinedResults.push(...collegeData);
+            if (programData) combinedResults.push(...programData);
 
             let uniqueResults = [];
             if (page > 1) {
                 uniqueResults = Array.from(new Set([...searchResult, ...combinedResults].map((college) => college.id))).map((id) => {
                     return [...searchResult, ...combinedResults].find((college) => college.id === id);
                 });
-
-            }
-            else {
+            } else {
                 uniqueResults = Array.from(new Set(combinedResults.map((college) => college.id))).map((id) => {
                     return combinedResults.find((college) => college.id === id);
                 });
             }
             setSearchResult(uniqueResults);
-            setBackendData(combinedResults)
         } catch (error) {
             setSearchError(error);
-            console.log(error);
+            console.error(error);
         } finally {
             setLoading(false);
         }
     }
 
-
     useEffect(() => {
-        setSuggestion(null); // Reset suggestion on new query
+        setSuggestion(null);
         fetchData();
-    }, [query, page, location]);
-
+    }, [query, page, filters]); // Added filters to dependency array
 
     const loadMore = () => {
         if (hasMore) {
             setPage(page + 1)
-
         }
     }
 
@@ -171,6 +169,7 @@ function SearchResults() {
     return (
         <div className="bg-primary min-h-screen">
             <Search />
+            <SearchFilterBar onFilterChange={handleFilterChange} activeFilters={filters} />
 
             {suggestion && (
                 <div className="max-w-xl mx-auto px-8 mt-6 flex justify-center">

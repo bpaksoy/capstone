@@ -518,6 +518,10 @@ class DetailedSearchListView(generics.ListAPIView):
         locale_category = self.request.query_params.get('locale_category', None)
         hbcu_param = self.request.query_params.get('hbcu', None)
         hsi_param = self.request.query_params.get('hsi', None)
+        min_cost_param = self.request.query_params.get('min_cost', None)
+        max_cost_param = self.request.query_params.get('max_cost', None)
+        min_admission_param = self.request.query_params.get('min_admission', None)
+        max_admission_param = self.request.query_params.get('max_admission', None)
         page = int(self.request.query_params.get('page', 1))
         page_size = int(self.request.query_params.get('page_size', 9))
 
@@ -546,6 +550,34 @@ class DetailedSearchListView(generics.ListAPIView):
             queryset = queryset.filter(hbcu=True)
         if hsi_param == 'true':
             queryset = queryset.filter(hsi=True)
+
+        if min_cost_param:
+            try:
+                min_cost = int(min_cost_param)
+                queryset = queryset.filter(cost_of_attendance__gte=min_cost)
+            except ValueError:
+                pass
+        
+        if max_cost_param:
+            try:
+                max_cost = int(max_cost_param)
+                queryset = queryset.filter(cost_of_attendance__lte=max_cost)
+            except ValueError:
+                pass
+
+        if min_admission_param:
+            try:
+                min_adm = float(min_admission_param)
+                queryset = queryset.filter(admission_rate__gte=min_adm)
+            except ValueError:
+                pass
+
+        if max_admission_param:
+            try:
+                max_adm = float(max_admission_param)
+                queryset = queryset.filter(admission_rate__lte=max_adm)
+            except ValueError:
+                pass
 
         if program_param:
             queryset = queryset.filter(
