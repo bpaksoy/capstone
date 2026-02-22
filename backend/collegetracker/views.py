@@ -577,8 +577,25 @@ class DetailedSearchListView(generics.ListAPIView):
 
         if city_param:
             queryset = queryset.filter(city__iexact=city_param)
+        
         if name_param:
-            queryset = queryset.filter(name__icontains=name_param)
+            name_lower = name_param.lower()
+            if name_lower == 'hbcu':
+                queryset = queryset.filter(hbcu=True)
+            elif name_lower in ['ivy', 'ivy league']:
+                ivy_list = [
+                    'Brown University', 
+                    'Columbia University in the City of New York', 
+                    'Cornell University', 
+                    'Dartmouth College', 
+                    'Harvard University', 
+                    'Princeton University', 
+                    'University of Pennsylvania', 
+                    'Yale University'
+                ]
+                queryset = queryset.filter(name__in=ivy_list)
+            else:
+                queryset = queryset.filter(name__icontains=name_param)
 
         if control_param:
             queryset = queryset.filter(control=control_param)
@@ -714,12 +731,28 @@ api_view(['GET', 'POST'])
 
 @permission_classes([IsAuthenticatedOrReadOnly])
 def search(request, name):
-    data = College.objects.filter(name__icontains=name)[:12]
+    name_lower = name.lower()
     suggestion = None
     
-    if not data.exists():
+    if name_lower == 'hbcu':
+        data = College.objects.filter(hbcu=True).order_by('name')[:12]
+    elif name_lower in ['ivy', 'ivy league']:
+        ivy_list = [
+            'Brown University', 
+            'Columbia University in the City of New York', 
+            'Cornell University', 
+            'Dartmouth College', 
+            'Harvard University', 
+            'Princeton University', 
+            'University of Pennsylvania', 
+            'Yale University'
+        ]
+        data = College.objects.filter(name__in=ivy_list).order_by('name')[:12]
+    else:
+        data = College.objects.filter(name__icontains=name)[:12]
+        
+    if not data.exists() and name_lower not in ['hbcu', 'ivy', 'ivy league']:
         # Intelligent fuzzy match
-        name_lower = name.lower()
         original_names = list(College.objects.values_list('name', flat=True))
         
         def get_score(n):

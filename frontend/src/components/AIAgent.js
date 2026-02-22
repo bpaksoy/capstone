@@ -18,6 +18,7 @@ import { useLocation } from 'react-router-dom';
 const AIAgent = () => {
     const { user, loggedIn } = useCurrentUser();
     const [isOpen, setIsOpen] = useState(false);
+    const [unreadWormieMessage, setUnreadWormieMessage] = useState(null);
     const [message, setMessage] = useState('');
     const location = useLocation();
 
@@ -37,13 +38,19 @@ const AIAgent = () => {
     };
 
     useEffect(() => {
-        scrollToBottom();
-    }, [chatHistory, isThinking]);
+        if (isOpen) {
+            setTimeout(() => {
+                scrollToBottom();
+            }, 50);
+        }
+    }, [chatHistory, isThinking, isOpen]);
 
-    const [notifiedMatches, setNotifiedMatches] = useState(new Set());
+    const notifiedMatchesRef = useRef(new Set(
+        JSON.parse(sessionStorage.getItem('notifiedMatches') || '[]')
+    ));
 
     useEffect(() => {
-        if (!loggedIn) return;
+        if (!loggedIn || !user) return;
 
         const pingOnlineStatus = async () => {
             try {
@@ -55,14 +62,11 @@ const AIAgent = () => {
                 });
 
                 if (response.data && response.data.matches) {
-                    const newMatches = response.data.matches.filter(m => !notifiedMatches.has(m.user_id));
+                    const newMatches = response.data.matches.filter(m => !notifiedMatchesRef.current.has(m.user_id));
 
                     if (newMatches.length > 0) {
-                        setNotifiedMatches(prev => {
-                            const updated = new Set(prev);
-                            newMatches.forEach(m => updated.add(m.user_id));
-                            return updated;
-                        });
+                        newMatches.forEach(m => notifiedMatchesRef.current.add(m.user_id));
+                        sessionStorage.setItem('notifiedMatches', JSON.stringify(Array.from(notifiedMatchesRef.current)));
 
                         const aiMessages = newMatches.map(m => {
                             if (user?.role === 'college_staff') {
@@ -76,7 +80,12 @@ const AIAgent = () => {
                             ...prev,
                             ...aiMessages.map(msg => ({ role: 'assistant', content: msg }))
                         ]);
-                        setIsOpen(true); // Open the Wormie tab automatically
+
+                        // Set the thought bubble to the first message if it's closed,
+                        // otherwise just let it scroll down inside the open chat
+                        if (!isOpen) {
+                            setUnreadWormieMessage(aiMessages[0]);
+                        }
                     }
                 }
             } catch (error) {
@@ -89,7 +98,7 @@ const AIAgent = () => {
         const intervalId = setInterval(pingOnlineStatus, 30000);
 
         return () => clearInterval(intervalId);
-    }, [loggedIn, user?.role, notifiedMatches]);
+    }, [loggedIn, user]);
 
     // Load chat history on mount/login
     useEffect(() => {
@@ -276,7 +285,9 @@ const AIAgent = () => {
                                 </>
                             )}
                             <button
-                                onClick={() => setIsOpen(false)}
+                                onClick={() => {
+                                    setIsOpen(false);
+                                }}
                                 className="p-1.5 hover:bg-white/10 rounded-xl transition-colors"
                             >
                                 <XMarkIcon className="w-6 h-6" />
@@ -345,13 +356,42 @@ const AIAgent = () => {
 
             {/* Floating Open Button - Only shows when closed */}
             {!isOpen && (
-                <button
-                    onClick={() => setIsOpen(true)}
-                    className="group relative p-5 rounded-full shadow-2xl transition-all duration-500 hover:scale-110 active:scale-90 flex items-center justify-center pointer-events-auto bg-[#A855F7] text-white border border-white/10"
-                >
-                    <div className="absolute inset-0 rounded-full bg-purple animate-ping opacity-20 group-hover:opacity-40"></div>
-                    <img src="/wormie-logo.svg" alt="Wormie" className="w-10 h-10 relative z-10" />
-                </button>
+                <div className="relative group">
+                    {/* Unread thought bubble */}
+                    {unreadWormieMessage && (
+                        <div className="absolute right-full mr-4 top-1/2 -translate-y-1/2 transform transition-all duration-300 pointer-events-auto">
+                            <div
+                                onClick={() => {
+                                    setIsOpen(true);
+                                    setUnreadWormieMessage(null);
+                                }}
+                                className="bg-white px-4 py-3 rounded-2xl rounded-tr-sm shadow-xl border border-gray-100 min-w-[200px] max-w-[280px] cursor-pointer hover:bg-gray-50 transition-colors animate-[pulse_3s_ease-in-out_infinite]"
+                            >
+                                <p className="text-sm font-medium text-gray-800 line-clamp-3">
+                                    {unreadWormieMessage}
+                                </p>
+                                {/* Triangle pointer */}
+                                <div className="absolute top-1/2 right-[-6px] -translate-y-1/2 w-3 h-3 bg-white border-r border-t border-gray-100 rotate-45"></div>
+                            </div>
+                        </div>
+                    )}
+
+                    <button
+                        onClick={() => {
+                            setIsOpen(true);
+                            setUnreadWormieMessage(null);
+                        }}
+                        className={`group relative p-5 rounded-full shadow-2xl transition-all duration-500 hover:scale-110 active:scale-90 flex items-center justify-center pointer-events-auto bg-[#A855F7] text-white border border-white/10 ${unreadWormieMessage ? 'animate-[bounce_2s_infinite]' : ''}`}
+                    >
+                        <div className={`absolute inset-0 rounded-full bg-purple opacity-20 group-hover:opacity-40 ${unreadWormieMessage ? 'animate-ping' : ''}`}></div>
+                        <img src="/wormie-logo.svg" alt="Wormie" className="w-10 h-10 relative z-10" />
+
+                        {/* Red dot indicator if there's a message and bubble is hidden for some reason */}
+                        {unreadWormieMessage && (
+                            <div className="absolute top-0 right-0 w-4 h-4 bg-red-500 rounded-full border-2 border-[#A855F7] shadow-sm z-20"></div>
+                        )}
+                    </button>
+                </div>
             )}
         </div>
     );
