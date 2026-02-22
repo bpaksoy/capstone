@@ -78,6 +78,25 @@ const CollegePortal = () => {
         setIsMessageModalOpen(true);
     };
 
+    const handleUpdateStatus = async (studentId, newStatus) => {
+        try {
+            const token = localStorage.getItem('access');
+            await axios.post(`${baseUrl}api/colleges/update-lead-status/`, {
+                college_id: user.associated_college,
+                student_id: studentId,
+                status: newStatus
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            // Update local state
+            setInterestedStudents(prev =>
+                prev.map(s => s.id === studentId ? { ...s, status: newStatus } : s)
+            );
+        } catch (err) {
+            console.error("Error updating lead status", err);
+        }
+    };
+
     const handleSave = async () => {
         setSaveStatus('saving');
         try {
@@ -301,7 +320,7 @@ const CollegePortal = () => {
                                 </div>
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
+                                        <div className="p-2 bg-teal-50 rounded-lg text-teal-600">
                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
                                         </div>
                                         <span className="text-sm font-medium text-gray-500">Active Followers</span>
@@ -338,17 +357,43 @@ const CollegePortal = () => {
                                                 </div>
                                             )}
                                             <div className="flex-1">
-                                                <p className="text-sm font-bold text-gray-900">{student.first_name || student.username}</p>
+                                                <div className="flex items-center gap-2">
+                                                    <p className="text-sm font-bold text-gray-900">{student.first_name || student.username}</p>
+                                                    <span className={`px-2 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-wider ${student.status === 'enrolled' ? 'bg-green-100 text-green-600' :
+                                                        student.status === 'qualified' ? 'bg-teal-100 text-teal-600' :
+                                                            student.status === 'contacted' ? 'bg-amber-100 text-amber-600' :
+                                                                student.status === 'interviewed' ? 'bg-purple-100 text-purple-600' :
+                                                                    student.status === 'rejected' ? 'bg-red-100 text-red-600' :
+                                                                        'bg-gray-100 text-gray-500'
+                                                        }`}>
+                                                        {student.status || 'new'}
+                                                    </span>
+                                                </div>
                                                 <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
                                                     {student.major || 'Undecided'} • {student.sat_score ? `SAT: ${student.sat_score}` : 'Potential Candidate'}
                                                 </p>
                                             </div>
-                                            <button
-                                                onClick={(e) => { e.stopPropagation(); handleContact(student); }}
-                                                className="text-primary hover:text-white hover:bg-primary text-xs font-bold px-3 py-1 bg-teal-50 rounded-lg transition-all"
-                                            >
-                                                Contact
-                                            </button>
+                                            <div className="flex flex-col gap-2.5">
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); handleContact(student); }}
+                                                    className="text-primary hover:text-white hover:bg-primary text-[10px] font-bold px-3 py-1 bg-teal-50 rounded-lg transition-all"
+                                                >
+                                                    Contact
+                                                </button>
+                                                <select
+                                                    value={student.status || 'new'}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    onChange={(e) => handleUpdateStatus(student.id, e.target.value)}
+                                                    className="text-[9px] font-bold text-purple-700 bg-purple-50/30 border border-purple-400/50 rounded-lg px-2 py-1 cursor-pointer focus:ring-2 focus:ring-purple-200 focus:border-purple-500 outline-none transition-all"
+                                                >
+                                                    <option value="new">New</option>
+                                                    <option value="contacted">Contacted</option>
+                                                    <option value="interviewed">Interviewed</option>
+                                                    <option value="qualified">Qualified</option>
+                                                    <option value="enrolled">Enrolled</option>
+                                                    <option value="rejected">Rejected</option>
+                                                </select>
+                                            </div>
                                         </div>
                                     ))
                                 ) : (

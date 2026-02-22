@@ -297,6 +297,27 @@ class Bookmark(models.Model):
         unique_together = ('user', 'college')
 
 
+class LeadStatus(models.Model):
+    STATUS_CHOICES = [
+        ('new', 'New'),
+        ('contacted', 'Contacted'),
+        ('interviewed', 'Interviewed'),
+        ('qualified', 'Qualified'),
+        ('enrolled', 'Enrolled'),
+        ('rejected', 'Rejected'),
+    ]
+    college = models.ForeignKey(College, on_delete=models.CASCADE, related_name='leads')
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='lead_statuses')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new')
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('college', 'student')
+
+    def __str__(self):
+        return f"{self.student.username} - {self.college.name} ({self.status})"
+
+
 class Notification(models.Model):
     NOTIFICATION_TYPES = [
         ('like', 'Like'),

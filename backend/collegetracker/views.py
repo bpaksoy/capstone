@@ -3,10 +3,10 @@ import json
 import jwt
 import difflib
 from goose3 import Goose
-from .models import User, College, Comment, Post, Bookmark, Reply, Like, Friendship, SmartCollege, CollegeProgram, Article, Notification, ChatMessage, DirectMessage
+from .models import User, College, Comment, Post, Bookmark, Reply, Like, Friendship, SmartCollege, CollegeProgram, Article, Notification, ChatMessage, DirectMessage, LeadStatus
 from django.http import JsonResponse, Http404
 from django.db import IntegrityError
-from .serializers import CollegeSerializer, UserSerializer, UploadFileSerializer, LoginSerializer, CommentSerializer, PostSerializer, BookmarkSerializer, ReplySerializer, LikeSerializer, FriendshipSerializer, SmartCollegeSerializer, CollegeProgramSerializer, ArticleSerializer, NotificationSerializer, ChatMessageSerializer
+from .serializers import CollegeSerializer, UserSerializer, UploadFileSerializer, LoginSerializer, CommentSerializer, PostSerializer, BookmarkSerializer, ReplySerializer, LikeSerializer, FriendshipSerializer, SmartCollegeSerializer, CollegeProgramSerializer, ArticleSerializer, NotificationSerializer, ChatMessageSerializer, LeadStatusSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -477,7 +477,7 @@ class ProgramSearchListView(generics.ListAPIView):
             raise ValidationError("The 'search' query parameter is required.")
 
         page = int(self.request.query_params.get('page', 1))
-        page_size = int(self.request.query_params.get('page_size', 9))
+        page_size = int(self.request.query_params.get('page_size', 12))
 
         queryset = College.objects.filter(
             programs__cipdesc__icontains=search_query
@@ -523,7 +523,7 @@ class DetailedSearchListView(generics.ListAPIView):
         min_admission_param = self.request.query_params.get('min_admission', None)
         max_admission_param = self.request.query_params.get('max_admission', None)
         page = int(self.request.query_params.get('page', 1))
-        page_size = int(self.request.query_params.get('page_size', 9))
+        page_size = int(self.request.query_params.get('page_size', 12))
 
         if state_param:
             queryset = queryset.filter(state__iexact=state_param)
@@ -667,7 +667,7 @@ api_view(['GET', 'POST'])
 
 @permission_classes([IsAuthenticatedOrReadOnly])
 def search(request, name):
-    data = College.objects.filter(name__icontains=name)
+    data = College.objects.filter(name__icontains=name)[:12]
     suggestion = None
     
     if not data.exists():
@@ -1093,6 +1093,10 @@ def get_interested_students(request, pk):
 
     # Students who bookmarked this college
     bookmarks = Bookmark.objects.filter(college=college).select_related('user')
+    
+    # Get all lead statuses for this college to optimize lookup
+    lead_status_map = {ls.student_id: ls.status for ls in LeadStatus.objects.filter(college=college)}
+    
     students = []
     for b in bookmarks:
         s = b.user
@@ -1103,10 +1107,38 @@ def get_interested_students(request, pk):
             "major": s.major,
             "gpa": s.gpa,
             "sat_score": s.sat_score,
-            "image": s.image.url if s.image else None
+            "image": s.image.url if s.image else None,
+            "status": lead_status_map.get(s.id, 'new')
         })
 
     return Response(students)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def update_lead_status(request):
+    college_id = request.data.get('college_id')
+    student_id = request.data.get('student_id')
+    new_status = request.data.get('status')
+
+    if not all([college_id, student_id, new_status]):
+        return Response({"error": "Missing required fields"}, status=status.HTTP_400_BAD_REQUEST)
+
+    user = request.user
+    if user.role != 'college_staff' or user.associated_college_id != int(college_id):
+        return Response({"error": "You do not have permission to update this college's data"}, status=status.HTTP_403_FORBIDDEN)
+
+    lead_status, created = LeadStatus.objects.get_or_create(
+        college_id=college_id,
+        student_id=student_id,
+        defaults={'status': new_status}
+    )
+
+    if not created:
+        lead_status.status = new_status
+        lead_status.save()
+
+    return Response({"message": "Lead status updated"}, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

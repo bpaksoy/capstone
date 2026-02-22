@@ -126,6 +126,8 @@ function SearchResults() {
                 uniqueResults = Array.from(new Set(combinedResults.map((college) => college.id))).map((id) => {
                     return combinedResults.find((college) => college.id === id);
                 });
+                // Cap the first page to 12 results (a perfect multiple for 2, 3, or 4 columns)
+                uniqueResults = uniqueResults.slice(0, 12);
             }
             setSearchResult(uniqueResults);
         } catch (error) {

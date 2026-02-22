@@ -171,8 +171,8 @@ const DirectMessageModal = ({ isOpen, onClose, student, collegeName }) => {
                             return (
                                 <div key={m.id || idx} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
                                     <div className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm shadow-sm ${isMine
-                                            ? 'bg-primary text-white rounded-tr-none'
-                                            : 'bg-white text-gray-800 border border-gray-100 rounded-tl-none'
+                                        ? 'bg-primary text-white rounded-tr-none'
+                                        : 'bg-white text-gray-800 border border-gray-100 rounded-tl-none'
                                         }`}>
                                         {m.content && <p className="leading-relaxed whitespace-pre-wrap">{m.content}</p>}
                                         {renderAttachment(m)}
@@ -201,6 +201,59 @@ const DirectMessageModal = ({ isOpen, onClose, student, collegeName }) => {
                 )}
 
                 {/* Input Area */}
+                <div className="px-6 py-2 bg-gray-50/50 border-t border-gray-100">
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Message Templates</span>
+                        {newMessage.trim() && (
+                            <button
+                                onClick={() => {
+                                    const name = prompt("Enter a label for this template:");
+                                    if (name) {
+                                        const custom = JSON.parse(localStorage.getItem('custom_templates') || '[]');
+                                        localStorage.setItem('custom_templates', JSON.stringify([...custom, { label: `⭐ ${name}`, text: newMessage }]));
+                                        setNewMessage(''); // Clear after saving
+                                    }
+                                }}
+                                className="text-[10px] font-bold text-primary hover:text-teal-700 uppercase tracking-widest transition-colors flex items-center gap-1"
+                            >
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
+                                Save as Template
+                            </button>
+                        )}
+                    </div>
+                    <div className="overflow-x-auto no-scrollbar flex gap-2 pb-1">
+                        {[
+                            { label: '👋 Welcome', text: `Hi ${student.username}, thanks for your interest in ${collegeName}! We'd love to tell you more about our campus life and programs.` },
+                            { label: '📅 Info Session', text: `Hello ${student.username}! We're hosting a virtual info session for ${collegeName} soon. Would you like to join?` },
+                            { label: '✍️ Apply Now', text: `Hi ${student.username}, our application deadline for ${collegeName} is approaching! Do you have any questions about the process?` },
+                            { label: '🎯 Interview', text: `Hi ${student.username}, we're impressed by your profile! Would you be available for a brief chat with an admissions officer?` },
+                            ...JSON.parse(localStorage.getItem('custom_templates') || '[]')
+                        ].map((template, i) => (
+                            <div key={i} className="relative group/tag shrink-0">
+                                <button
+                                    type="button"
+                                    onClick={() => setNewMessage(template.text)}
+                                    className="whitespace-nowrap px-3 py-1.5 bg-white border border-gray-200 rounded-full text-[11px] font-bold text-gray-600 hover:border-primary hover:text-primary transition-all shadow-sm"
+                                >
+                                    {template.label}
+                                </button>
+                                {template.label.startsWith('⭐') && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            const custom = JSON.parse(localStorage.getItem('custom_templates') || '[]');
+                                            localStorage.setItem('custom_templates', JSON.stringify(custom.filter((_, idx) => idx !== (i - 4))));
+                                            window.location.reload(); // Simple way to refresh local storage state in this component
+                                        }}
+                                        className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover/tag:opacity-100 transition-opacity"
+                                    >
+                                        <XMarkIcon className="w-2.5 h-2.5" />
+                                    </button>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
                 <form onSubmit={handleSend} className="p-6 bg-white border-t border-gray-100 flex gap-3 items-center">
                     <button
                         type="button"
