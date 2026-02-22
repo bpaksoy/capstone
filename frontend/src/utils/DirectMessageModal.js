@@ -203,25 +203,28 @@ const DirectMessageModal = ({ isOpen, onClose, student, collegeName }) => {
                 {/* Input Area */}
                 <div className="px-6 py-2 bg-gray-50/50 border-t border-gray-100">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Message Templates</span>
-                        {newMessage.trim() && (
-                            <button
-                                onClick={() => {
-                                    const name = prompt("Enter a label for this template:");
-                                    if (name) {
-                                        const custom = JSON.parse(localStorage.getItem('custom_templates') || '[]');
-                                        localStorage.setItem('custom_templates', JSON.stringify([...custom, { label: `⭐ ${name}`, text: newMessage }]));
-                                        setNewMessage(''); // Clear after saving
-                                    }
-                                }}
-                                className="text-[10px] font-bold text-primary hover:text-teal-700 uppercase tracking-widest transition-colors flex items-center gap-1"
-                            >
-                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
-                                Save as Template
-                            </button>
-                        )}
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Quick Templates</span>
                     </div>
                     <div className="overflow-x-auto no-scrollbar flex gap-2 pb-1">
+                        {/* Permanent Add Button */}
+                        <button
+                            onClick={() => {
+                                const name = prompt("Enter a label for this template (e.g., 👋 Welcome):");
+                                if (name) {
+                                    const text = prompt("Enter the template message text:");
+                                    if (text) {
+                                        const custom = JSON.parse(localStorage.getItem('custom_templates') || '[]');
+                                        localStorage.setItem('custom_templates', JSON.stringify([...custom, { label: `⭐ ${name}`, text: text }]));
+                                        window.location.reload();
+                                    }
+                                }
+                            }}
+                            className="whitespace-nowrap px-3 py-1.5 bg-primary/5 border border-primary/20 rounded-full text-[11px] font-bold text-primary hover:bg-primary hover:text-white transition-all shadow-sm shrink-0 flex items-center gap-1"
+                        >
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
+                            Add
+                        </button>
+
                         {[
                             { label: '👋 Welcome', text: `Hi ${student.username}, thanks for your interest in ${collegeName}! We'd love to tell you more about our campus life and programs.` },
                             { label: '📅 Info Session', text: `Hello ${student.username}! We're hosting a virtual info session for ${collegeName} soon. Would you like to join?` },
@@ -242,8 +245,9 @@ const DirectMessageModal = ({ isOpen, onClose, student, collegeName }) => {
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             const custom = JSON.parse(localStorage.getItem('custom_templates') || '[]');
+                                            // The index in custom_templates is (i - 4) because there are 4 default templates
                                             localStorage.setItem('custom_templates', JSON.stringify(custom.filter((_, idx) => idx !== (i - 4))));
-                                            window.location.reload(); // Simple way to refresh local storage state in this component
+                                            window.location.reload();
                                         }}
                                         className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover/tag:opacity-100 transition-opacity"
                                     >
@@ -258,7 +262,7 @@ const DirectMessageModal = ({ isOpen, onClose, student, collegeName }) => {
                     <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="p-3 bg-gray-100 text-gray-500 rounded-2xl hover:bg-gray-200 transition-all active:scale-95"
+                        className="p-3 bg-gray-50 text-gray-500 rounded-2xl border border-gray-200/50 hover:bg-gray-100 transition-all active:scale-95"
                     >
                         <PaperClipIcon className="w-5 h-5" />
                     </button>
@@ -273,7 +277,7 @@ const DirectMessageModal = ({ isOpen, onClose, student, collegeName }) => {
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         placeholder={`Message ${student.username}...`}
-                        className="flex-1 bg-gray-100 border-none rounded-2xl px-5 py-3.5 text-sm focus:ring-2 focus:ring-primary/20 transition-all outline-none font-medium text-gray-700"
+                        className="flex-1 bg-gray-50 border border-gray-200/50 rounded-2xl px-5 py-3.5 text-sm focus:ring-2 focus:ring-primary/20 focus:bg-white focus:border-primary/30 transition-all outline-none font-medium text-gray-700"
                     />
                     <button
                         type="submit"
