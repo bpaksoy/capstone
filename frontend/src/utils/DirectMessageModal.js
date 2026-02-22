@@ -11,6 +11,19 @@ const DirectMessageModal = ({ isOpen, onClose, student, collegeName }) => {
     const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef(null);
     const fileInputRef = useRef(null);
+    const [customTemplates, setCustomTemplates] = useState([]);
+    const [isAddingTemplate, setIsAddingTemplate] = useState(false);
+    const [isSavingAsTemplate, setIsSavingAsTemplate] = useState(false);
+    const [newTemplateLabel, setNewTemplateLabel] = useState('');
+    const [newTemplateText, setNewTemplateText] = useState('');
+    const [saveTemplateLabel, setSaveTemplateLabel] = useState('');
+
+    useEffect(() => {
+        if (isOpen) {
+            const custom = JSON.parse(localStorage.getItem('custom_templates') || '[]');
+            setCustomTemplates(custom);
+        }
+    }, [isOpen]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -204,33 +217,128 @@ const DirectMessageModal = ({ isOpen, onClose, student, collegeName }) => {
                 <div className="px-6 py-2 bg-gray-50/50 border-t border-gray-100">
                     <div className="flex items-center justify-between mb-2">
                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Quick Templates</span>
+                        {newMessage.trim() && (
+                            !isSavingAsTemplate ? (
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        setIsSavingAsTemplate(true);
+                                    }}
+                                    className="text-[10px] font-bold text-primary hover:text-teal-700 uppercase tracking-widest transition-colors flex items-center gap-1"
+                                >
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
+                                    Save as Template
+                                </button>
+                            ) : (
+                                <div className="flex items-center gap-2 animate-fadeIn">
+                                    <input
+                                        autoFocus
+                                        placeholder="Template Label..."
+                                        className="bg-white border border-primary/20 rounded-full px-3 py-0.5 text-[9px] font-bold outline-none ring-1 ring-primary/5 w-32"
+                                        value={saveTemplateLabel}
+                                        onChange={(e) => setSaveTemplateLabel(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                if (saveTemplateLabel) {
+                                                    const custom = JSON.parse(localStorage.getItem('custom_templates') || '[]');
+                                                    const updated = [...custom, { label: `⭐ ${saveTemplateLabel}`, text: newMessage }];
+                                                    localStorage.setItem('custom_templates', JSON.stringify(updated));
+                                                    setCustomTemplates(updated);
+                                                    setSaveTemplateLabel('');
+                                                    setIsSavingAsTemplate(false);
+                                                }
+                                            }
+                                        }}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsSavingAsTemplate(false)}
+                                        className="text-gray-400 hover:text-gray-600"
+                                    >
+                                        <XMarkIcon className="w-3 h-3" />
+                                    </button>
+                                </div>
+                            )
+                        )}
                     </div>
-                    <div className="overflow-x-auto no-scrollbar flex gap-2 pb-1">
+                    <div className="overflow-x-auto no-scrollbar flex gap-2 pb-1 relative">
                         {/* Permanent Add Button */}
-                        <button
-                            onClick={() => {
-                                const name = prompt("Enter a label for this template (e.g., 👋 Welcome):");
-                                if (name) {
-                                    const text = prompt("Enter the template message text:");
-                                    if (text) {
-                                        const custom = JSON.parse(localStorage.getItem('custom_templates') || '[]');
-                                        localStorage.setItem('custom_templates', JSON.stringify([...custom, { label: `⭐ ${name}`, text: text }]));
-                                        window.location.reload();
-                                    }
-                                }
-                            }}
-                            className="whitespace-nowrap px-3 py-1.5 bg-primary/5 border border-primary/20 rounded-full text-[11px] font-bold text-primary hover:bg-primary hover:text-white transition-all shadow-sm shrink-0 flex items-center gap-1"
-                        >
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
-                            Add
-                        </button>
+                        {!isAddingTemplate ? (
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setIsAddingTemplate(true);
+                                }}
+                                className="whitespace-nowrap px-3 py-1.5 bg-primary/5 border border-primary/20 rounded-full text-[11px] font-bold text-primary hover:bg-primary hover:text-white transition-all shadow-sm shrink-0 flex items-center gap-1"
+                            >
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
+                                Add
+                            </button>
+                        ) : (
+                            <div className="flex items-center gap-2 bg-primary/5 p-1 rounded-full border border-primary/20 animate-fadeIn shrink-0">
+                                <input
+                                    autoFocus
+                                    placeholder="Label (e.g. 👋 Welcome)"
+                                    className="bg-white border-none rounded-full px-3 py-1 text-[10px] font-bold outline-none ring-1 ring-primary/10 w-32"
+                                    value={newTemplateLabel}
+                                    onChange={(e) => setNewTemplateLabel(e.target.value)}
+                                />
+                                <input
+                                    placeholder="Message text..."
+                                    className="bg-white border-none rounded-full px-3 py-1 text-[10px] font-medium outline-none ring-1 ring-primary/10 w-48"
+                                    value={newTemplateText}
+                                    onChange={(e) => setNewTemplateText(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            if (newTemplateLabel && newTemplateText) {
+                                                const custom = JSON.parse(localStorage.getItem('custom_templates') || '[]');
+                                                const updated = [...custom, { label: `⭐ ${newTemplateLabel}`, text: newTemplateText }];
+                                                localStorage.setItem('custom_templates', JSON.stringify(updated));
+                                                setCustomTemplates(updated);
+                                                setNewTemplateLabel('');
+                                                setNewTemplateText('');
+                                                setIsAddingTemplate(false);
+                                            }
+                                        }
+                                    }}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        if (newTemplateLabel && newTemplateText) {
+                                            const custom = JSON.parse(localStorage.getItem('custom_templates') || '[]');
+                                            const updated = [...custom, { label: `⭐ ${newTemplateLabel}`, text: newTemplateText }];
+                                            localStorage.setItem('custom_templates', JSON.stringify(updated));
+                                            setCustomTemplates(updated);
+                                            setNewTemplateLabel('');
+                                            setNewTemplateText('');
+                                            setIsAddingTemplate(false);
+                                        }
+                                    }}
+                                    className="p-1 bg-primary text-white rounded-full hover:bg-teal-700 transition-all"
+                                >
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" /></svg>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsAddingTemplate(false)}
+                                    className="p-1 bg-gray-200 text-gray-500 rounded-full hover:bg-gray-300 transition-all"
+                                >
+                                    <XMarkIcon className="w-3 h-3" />
+                                </button>
+                            </div>
+                        )}
 
                         {[
                             { label: '👋 Welcome', text: `Hi ${student.username}, thanks for your interest in ${collegeName}! We'd love to tell you more about our campus life and programs.` },
                             { label: '📅 Info Session', text: `Hello ${student.username}! We're hosting a virtual info session for ${collegeName} soon. Would you like to join?` },
                             { label: '✍️ Apply Now', text: `Hi ${student.username}, our application deadline for ${collegeName} is approaching! Do you have any questions about the process?` },
                             { label: '🎯 Interview', text: `Hi ${student.username}, we're impressed by your profile! Would you be available for a brief chat with an admissions officer?` },
-                            ...JSON.parse(localStorage.getItem('custom_templates') || '[]')
+                            ...customTemplates
                         ].map((template, i) => (
                             <div key={i} className="relative group/tag shrink-0">
                                 <button
@@ -244,10 +352,9 @@ const DirectMessageModal = ({ isOpen, onClose, student, collegeName }) => {
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            const custom = JSON.parse(localStorage.getItem('custom_templates') || '[]');
-                                            // The index in custom_templates is (i - 4) because there are 4 default templates
-                                            localStorage.setItem('custom_templates', JSON.stringify(custom.filter((_, idx) => idx !== (i - 4))));
-                                            window.location.reload();
+                                            const updated = customTemplates.filter((_, idx) => idx !== (i - 4));
+                                            localStorage.setItem('custom_templates', JSON.stringify(updated));
+                                            setCustomTemplates(updated); // Instant UI update
                                         }}
                                         className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover/tag:opacity-100 transition-opacity"
                                     >
