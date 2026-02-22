@@ -22,7 +22,10 @@ const AIAgent = () => {
     const [message, setMessage] = useState('');
     const location = useLocation();
     const navigate = useNavigate();
-    const [activeTargetUser, setActiveTargetUser] = useState(null);
+    const [activeTargetUser, setActiveTargetUser] = useState(() => {
+        const stored = sessionStorage.getItem('activeTargetUser');
+        return stored ? JSON.parse(stored) : null;
+    });
 
     const [chatHistory, setChatHistory] = useState([
         {
@@ -71,10 +74,12 @@ const AIAgent = () => {
                         sessionStorage.setItem('notifiedMatches', JSON.stringify(Array.from(notifiedMatchesRef.current)));
 
                         // Save the last pinged user as the active target for any drafted messages
-                        setActiveTargetUser({
+                        const targetUserObj = {
                             id: newMatches[newMatches.length - 1].user_id,
                             name: newMatches[newMatches.length - 1].name
-                        });
+                        };
+                        setActiveTargetUser(targetUserObj);
+                        sessionStorage.setItem('activeTargetUser', JSON.stringify(targetUserObj));
 
                         const aiMessages = newMatches.map(m => {
                             if (user?.role === 'college_staff') {
@@ -316,9 +321,22 @@ const AIAgent = () => {
                                     }`}>
                                     {chat.content.split('---').map((block, blockIndex) => {
                                         const isDraft = blockIndex % 2 !== 0;
+                                        let draftContent = block;
+                                        let extractedTarget = null;
+
+                                        if (isDraft) {
+                                            const targetMatch = draftContent.match(/\[TARGET_ID:\s*(\d+)\|([^\]]+)\]/);
+                                            if (targetMatch) {
+                                                extractedTarget = { id: parseInt(targetMatch[1]), name: targetMatch[2].trim() };
+                                                draftContent = draftContent.replace(targetMatch[0], '').trim();
+                                            } else {
+                                                extractedTarget = activeTargetUser;
+                                            }
+                                        }
+
                                         return (
                                             <div key={blockIndex} className={isDraft ? "my-3 p-3 bg-purple-50/50 border border-purple-200/60 rounded-xl relative" : ""}>
-                                                {block.split('\n').map((line, i) => (
+                                                {draftContent.split('\n').map((line, i) => (
                                                     <React.Fragment key={i}>
                                                         {line.split(/(\*\*.*?\*\*)/g).map((part, j) => {
                                                             if (part.startsWith('**') && part.endsWith('**')) {
@@ -326,7 +344,7 @@ const AIAgent = () => {
                                                             }
                                                             return <span key={j}>{part}</span>;
                                                         })}
-                                                        {i < block.split('\n').length - 1 && <br />}
+                                                        {i < draftContent.split('\n').length - 1 && <br />}
                                                     </React.Fragment>
                                                 ))}
                                                 {isDraft && (
@@ -335,10 +353,10 @@ const AIAgent = () => {
                                                             setIsOpen(false);
                                                             navigate('/messages', {
                                                                 state: {
-                                                                    draftText: block.trim(),
-                                                                    ...(activeTargetUser ? {
-                                                                        openChatWithUserId: activeTargetUser.id,
-                                                                        openChatWithUserName: activeTargetUser.name
+                                                                    draftText: draftContent.trim(),
+                                                                    ...(extractedTarget ? {
+                                                                        openChatWithUserId: extractedTarget.id,
+                                                                        openChatWithUserName: extractedTarget.name
                                                                     } : {})
                                                                 }
                                                             });

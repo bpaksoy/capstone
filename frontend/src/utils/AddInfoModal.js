@@ -4,25 +4,25 @@ import { baseUrl } from '../shared';
 import { icons } from '../constants';
 
 const AddInfoModal = ({ initialValues = {}, fetchUser }) => {
-    const [city, setCity] = useState(initialValues.city || '');
-    const [state, setState] = useState(initialValues.state || '');
-    const [country, setCountry] = useState(initialValues.country || '');
-    const [major, setMajor] = useState(initialValues.major || '');
-    const [education, setEducation] = useState(initialValues.education || '');
-    const [gpa, setGpa] = useState(initialValues.gpa || '');
-    const [satScore, setSatScore] = useState(initialValues.sat_score || '');
+    const [city, setCity] = useState(initialValues?.city || '');
+    const [state, setState] = useState(initialValues?.state || '');
+    const [country, setCountry] = useState(initialValues?.country || '');
+    const [major, setMajor] = useState(initialValues?.major || '');
+    const [education, setEducation] = useState(initialValues?.education || '');
+    const [gpa, setGpa] = useState(initialValues?.gpa || '');
+    const [satScore, setSatScore] = useState(initialValues?.sat_score || '');
     const [isOpen, setIsOpen] = useState(false);
     const [error, setError] = useState(null);
 
     const handleOpenModal = () => {
         // Reset state to current initialValues when opening
-        setCity(initialValues.city || '');
-        setState(initialValues.state || '');
-        setCountry(initialValues.country || '');
-        setMajor(initialValues.major || '');
-        setEducation(initialValues.education || '');
-        setGpa(initialValues.gpa || '');
-        setSatScore(initialValues.sat_score || '');
+        setCity(initialValues?.city || '');
+        setState(initialValues?.state || '');
+        setCountry(initialValues?.country || '');
+        setMajor(initialValues?.major || '');
+        setEducation(initialValues?.education || '');
+        setGpa(initialValues?.gpa || '');
+        setSatScore(initialValues?.sat_score || '');
         setIsOpen(true);
         setError(null)
     };

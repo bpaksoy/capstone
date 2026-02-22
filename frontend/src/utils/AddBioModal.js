@@ -4,12 +4,12 @@ import { baseUrl } from '../shared';
 import { images } from '../constants';
 
 const AddBioModal = ({ initialValues = {}, fetchUser }) => {
-    const [bio, setBio] = useState(initialValues.bio || '');
+    const [bio, setBio] = useState(initialValues?.bio || '');
     const [isOpen, setIsOpen] = useState(false);
     const [error, setError] = useState(null);
 
     const handleOpenModal = () => {
-        setBio(initialValues.bio || '');
+        setBio(initialValues?.bio || '');
         setIsOpen(true);
         setError(null);
     };

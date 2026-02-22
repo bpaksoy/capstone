@@ -2683,8 +2683,8 @@ class AIChatView(APIView):
                     match_query = Q(role='student') & (Q(major=college.top_major) | Q(sat_score__gte=college.sat_score or 1200))
                     matches = User.objects.filter(match_query).exclude(id__in=[f.id for f in fans]).distinct()[:5]
                     
-                    fan_names = [f"{f.first_name or f.username} (Major: {f.major or 'Undecided'}, SAT: {f.sat_score or 'N/A'})" for f in fans]
-                    match_names = [f"{m.first_name or m.username} (Major: {m.major or 'Undecided'}, SAT: {m.sat_score or 'N/A'})" for m in matches]
+                    fan_names = [f"{f.first_name or f.username} (DATABASE_ID: {f.id}) [Major: {f.major or 'Undecided'}]" for f in fans]
+                    match_names = [f"{m.first_name or m.username} (DATABASE_ID: {m.id}) [Major: {m.major or 'Undecided'}]" for m in matches]
                     
                     user_memory = f"""
                     - YOU ARE ACTING AS: A Recruitment Consultant/Advisor for {college.name}.
@@ -2761,6 +2761,12 @@ class AIChatView(APIView):
         3. Be concise but warm. Use emojis occasionally (👋, 🎓, ✨).
         4. If the user asks about a specific college not in your context, say you can look it up if they provide the full name.
         5. Format important stats (tuition, rates) in **bold**.
+        6. CRITICAL DRAFTING RULE: If you suggest an outreach message for a student, you MUST wrap it in three dashes '---' and include the student's ID tag at the very top of the draft exactly like this:
+           ---
+           [TARGET_ID: student_id|student_name]
+           Hi student_name, ...
+           ---
+           Always use the exact [ID: number] found in the USER PROFILE list.
         
         User Query: {user_message}
         """

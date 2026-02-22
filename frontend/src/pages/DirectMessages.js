@@ -17,36 +17,65 @@ const DirectMessages = () => {
     const lastTotalUnread = useRef(0);
     const messagesEndRef = useRef(null);
     const fileInputRef = useRef(null);
+    const textareaRef = useRef(null);
     const location = useLocation();
 
-    // Track the last handled notification ID so we only open it once
-    const lastHandledNavRef = useRef(null);
+    // Track the last handled navigation key
+    const lastProcessedKeyRef = useRef(null);
+    const initiallySelectedFromStateRef = useRef(false);
 
     useEffect(() => {
-        if (location.state?.openChatWithUserId && conversations.length > 0) {
-            const targetId = location.state.openChatWithUserId;
+        const state = location.state;
+        if (!state) return;
 
-            // Only process this specific notification navigation once
-            if (lastHandledNavRef.current !== targetId) {
-                lastHandledNavRef.current = targetId;
+        // 1. Handle User Selection
+        let targetId = state.openChatWithUserId ? String(state.openChatWithUserId) : null;
 
-                const conv = conversations.find(c => c.user.id === targetId);
+        // Auto-select fallback if only one convo exists and we arrived from Wormie
+        if (!targetId && !selectedUser && state.draftText && conversations.length === 1) {
+            targetId = String(conversations[0].user.id);
+        }
+
+        if (targetId) {
+            const currentSelectedId = selectedUser ? String(selectedUser.id) : null;
+            const conv = conversations.find(c => String(c.user.id) === targetId);
+
+            if (currentSelectedId !== targetId) {
                 if (conv) {
                     setSelectedUser(conv.user);
                 } else {
+                    // Prevent flashes by checking if we already have this fallback
                     setSelectedUser({
                         id: targetId,
-                        username: location.state.openChatWithUserName || 'Loading...'
+                        username: state.openChatWithUserName || 'Student'
                     });
                 }
+            } else if (conv && selectedUser !== conv.user) {
+                // Perform the object upgrade if we found the full conversation object later
+                setSelectedUser(conv.user);
             }
         }
-        if (location.state?.draftText) {
-            setNewMessage(location.state.draftText);
-            // Clear the draft from history so a refresh doesn't paste it again
-            window.history.replaceState({}, document.title);
+
+        // 2. Handle Message Draft
+        if (state.draftText && location.key !== lastProcessedKeyRef.current) {
+            setNewMessage(state.draftText);
+            lastProcessedKeyRef.current = location.key;
+            // Focus and resize after setting text
+            setTimeout(() => adjustHeight(), 0);
         }
-    }, [location.state?.openChatWithUserId, location.state?.draftText, conversations]);
+    }, [location.key, conversations, selectedUser]);
+
+    const adjustHeight = () => {
+        const textarea = textareaRef.current;
+        if (textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
+        }
+    };
+
+    useEffect(() => {
+        adjustHeight();
+    }, [newMessage]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -335,12 +364,26 @@ const DirectMessages = () => {
                                     onChange={handleFileChange}
                                     className="hidden"
                                 />
-                                <input
-                                    type="text"
+                                <textarea
+                                    ref={textareaRef}
+                                    rows="1"
                                     value={newMessage}
                                     onChange={(e) => setNewMessage(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            if (e.shiftKey) {
+                                                // Allow default behavior (new line)
+                                                return;
+                                            }
+                                            // Regular Enter: Send if not empty
+                                            e.preventDefault();
+                                            if (newMessage.trim() || selectedFile) {
+                                                handleSend(e);
+                                            }
+                                        }
+                                    }}
                                     placeholder="Type a message..."
-                                    className="flex-1 bg-gray-50 border-none rounded-2xl px-5 py-3.5 text-sm focus:ring-2 focus:ring-primary/20 transition-all outline-none font-medium text-gray-700"
+                                    className="flex-1 bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 pr-10 text-sm focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all outline-none font-medium text-gray-700 resize-none min-h-[56px] max-h-[200px] custom-scrollbar overflow-y-auto"
                                 />
                                 <button
                                     type="submit"
