@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { XMarkIcon, PaperAirplaneIcon, ChatBubbleLeftRightIcon, PaperClipIcon, ArrowDownTrayIcon, DocumentIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, PaperAirplaneIcon, ChatBubbleLeftRightIcon, PaperClipIcon, ArrowDownTrayIcon, DocumentIcon, PencilIcon } from '@heroicons/react/24/outline';
 import axios from 'axios';
 import { baseUrl } from '../shared';
 import { images } from '../constants';
+import { useCurrentUser } from '../UserProvider/UserProvider';
 
 const DirectMessageModal = ({ isOpen, onClose, student, collegeName }) => {
+    const { user } = useCurrentUser();
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [selectedFile, setSelectedFile] = useState(null);
@@ -17,6 +19,23 @@ const DirectMessageModal = ({ isOpen, onClose, student, collegeName }) => {
     const [newTemplateLabel, setNewTemplateLabel] = useState('');
     const [newTemplateText, setNewTemplateText] = useState('');
     const [saveTemplateLabel, setSaveTemplateLabel] = useState('');
+    const [sendError, setSendError] = useState(null);
+    const [editingMessageId, setEditingMessageId] = useState(null);
+    const [editContent, setEditContent] = useState('');
+    const editTextareaRef = useRef(null);
+    const textareaRef = useRef(null);
+
+    const adjustHeight = () => {
+        const textarea = textareaRef.current;
+        if (textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
+        }
+    };
+
+    useEffect(() => {
+        adjustHeight();
+    }, [newMessage]);
 
     useEffect(() => {
         if (isOpen) {
@@ -36,10 +55,11 @@ const DirectMessageModal = ({ isOpen, onClose, student, collegeName }) => {
             const response = await axios.get(`${baseUrl}api/messages/?other_user_id=${student.id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
+            console.log("Modal fetched messages count:", response.data.length, "Target Student:", student.id);
             setMessages(response.data);
             scrollToBottom();
         } catch (err) {
-            console.error("Error fetching messages:", err);
+            console.error("Error fetching messages in modal:", err);
         }
     };
 
@@ -61,29 +81,80 @@ const DirectMessageModal = ({ isOpen, onClose, student, collegeName }) => {
         }
     };
 
+    const handleEditSubmit = async (e, messageId) => {
+        if (e) e.preventDefault();
+        if (!editContent.trim()) return;
+
+        try {
+            const token = localStorage.getItem('access');
+            await axios.put(`${baseUrl}api/messages/${messageId}/edit/`, {
+                content: editContent
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setEditingMessageId(null);
+            setEditContent('');
+            fetchMessages();
+        } catch (err) {
+            console.error("Error editing message in modal:", err);
+        }
+    };
+
+    const handleCancelEdit = () => {
+        setEditingMessageId(null);
+        setEditContent('');
+    };
+
+    const adjustEditHeight = () => {
+        const textarea = editTextareaRef.current;
+        if (textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = `${textarea.scrollHeight}px`;
+        }
+    };
+
+    useEffect(() => {
+        if (editingMessageId) {
+            adjustEditHeight();
+        }
+    }, [editContent, editingMessageId]);
+
     const handleSend = async (e) => {
-        e.preventDefault();
-        if ((!newMessage.trim() && !selectedFile) || !student) return;
+        if (e) e.preventDefault();
+        console.log("Modal handleSend called. Loading:", isLoading, "Student Target:", student?.id);
+
+        if (isLoading) return;
+        if ((!newMessage.trim() && !selectedFile) || !student) {
+            console.log("Modal handleSend aborted: requirements not met");
+            return;
+        }
 
         setIsLoading(true);
+        setSendError(null);
         const formData = new FormData();
         formData.append('recipient_id', student.id);
         if (newMessage.trim()) formData.append('content', newMessage);
         if (selectedFile) formData.append('attachment', selectedFile);
 
         try {
+            console.log("Modal send attempt. Recipient:", student.id);
             const token = localStorage.getItem('access');
-            await axios.post(`${baseUrl}api/messages/send/`, formData, {
+            const res = await axios.post(`${baseUrl}api/messages/send/`, formData, {
                 headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'multipart/form-data'
+                    Authorization: `Bearer ${token}`
+                    // Removed Content-Type: multipart/form-data to let axios handle the boundary automatically
                 }
             });
+            console.log("Modal send success");
             setNewMessage('');
             setSelectedFile(null);
             fetchMessages();
         } catch (err) {
-            console.error("Error sending message:", err);
+            const serverData = err.response?.data;
+            const errorMsg = serverData?.traceback || serverData?.error || err.message;
+            console.error("Modal send error:", serverData || err.message);
+            setSendError(errorMsg);
+            alert("SERVER ERROR (500):\n" + (typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg)));
         } finally {
             setIsLoading(false);
         }
@@ -180,18 +251,38 @@ const DirectMessageModal = ({ isOpen, onClose, student, collegeName }) => {
                         </div>
                     ) : (
                         messages.map((m, idx) => {
-                            const isMine = m.sender_id !== student.id;
+                            const isMine = String(m.sender_id) === String(user?.id);
                             return (
-                                <div key={m.id || idx} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
-                                    <div className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm shadow-sm ${isMine
+                                <div key={m.id || idx} className={`flex ${isMine ? 'justify-end' : 'justify-start'} group`}>
+                                    <div className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm shadow-sm relative ${isMine
                                         ? 'bg-primary text-white rounded-tr-none'
                                         : 'bg-white text-gray-800 border border-gray-100 rounded-tl-none'
                                         }`}>
-                                        {m.content && <p className="leading-relaxed whitespace-pre-wrap">{m.content}</p>}
-                                        {renderAttachment(m)}
-                                        <p className={`text-[9px] mt-1.5 font-bold uppercase tracking-widest ${isMine ? 'text-white/60' : 'text-gray-400'}`}>
-                                            {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                        </p>
+                                        {editingMessageId === m.id ? (
+                                            <div className="flex flex-col gap-2 min-w-[200px]">
+                                                <textarea
+                                                    ref={editTextareaRef}
+                                                    value={editContent}
+                                                    onChange={(e) => setEditContent(e.target.value)}
+                                                    className="w-full bg-white/10 border border-white/20 rounded-lg p-2 text-white outline-none resize-none overflow-hidden"
+                                                    autoFocus
+                                                />
+                                                <div className="flex justify-end gap-2 text-[10px] font-bold uppercase">
+                                                    <button onClick={handleCancelEdit} className="text-white/70 hover:text-white">Cancel</button>
+                                                    <button onClick={(e) => handleEditSubmit(e, m.id)} className="bg-white text-primary px-2 py-1 rounded">Save</button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                {m.content && <p className="leading-relaxed whitespace-pre-wrap">{m.content}</p>}
+                                                {renderAttachment(m)}
+                                                <div className="flex items-center gap-2 mt-1.5">
+                                                    <p className={`text-[9px] font-bold uppercase tracking-widest ${isMine ? 'text-white/60' : 'text-gray-400'}`}>
+                                                        {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                    </p>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             );
@@ -365,6 +456,14 @@ const DirectMessageModal = ({ isOpen, onClose, student, collegeName }) => {
                         ))}
                     </div>
                 </div>
+                {sendError && (
+                    <div className="px-6 py-2 bg-red-50 border-t border-red-100 flex items-center justify-between animate-fadeIn">
+                        <span className="text-[10px] font-bold text-red-600 uppercase">Error: {JSON.stringify(sendError)}</span>
+                        <button onClick={() => setSendError(null)} className="text-red-400 p-1">
+                            <XMarkIcon className="w-3 h-3" />
+                        </button>
+                    </div>
+                )}
                 <form onSubmit={handleSend} className="p-6 bg-white border-t border-gray-100 flex gap-3 items-center">
                     <button
                         type="button"
@@ -379,15 +478,29 @@ const DirectMessageModal = ({ isOpen, onClose, student, collegeName }) => {
                         onChange={handleFileChange}
                         className="hidden"
                     />
-                    <input
-                        type="text"
+                    <textarea
+                        ref={textareaRef}
+                        rows="1"
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                if (e.shiftKey) return;
+                                e.preventDefault();
+                                if (newMessage.trim() || selectedFile) {
+                                    handleSend(e);
+                                }
+                            }
+                        }}
                         placeholder={`Message ${student.username}...`}
-                        className="flex-1 bg-gray-50 border border-gray-200/50 rounded-2xl px-5 py-3.5 text-sm focus:ring-2 focus:ring-primary/20 focus:bg-white focus:border-primary/30 transition-all outline-none font-medium text-gray-700"
+                        className="flex-1 bg-gray-50 border border-gray-200/50 rounded-2xl px-5 py-3.5 text-sm focus:ring-2 focus:ring-primary/20 focus:bg-white focus:border-primary/30 transition-all outline-none font-medium text-gray-700 resize-none max-h-[150px] custom-scrollbar overflow-y-auto"
                     />
                     <button
                         type="submit"
+                        onClick={(e) => {
+                            console.log("Button clicked!");
+                            handleSend(e);
+                        }}
                         disabled={(!newMessage.trim() && !selectedFile) || isLoading}
                         className="p-3.5 bg-primary text-white rounded-2xl hover:bg-teal-700 active:scale-95 transition-all shadow-lg shadow-teal-700/20 disabled:opacity-50"
                     >

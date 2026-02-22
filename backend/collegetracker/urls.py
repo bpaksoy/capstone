@@ -69,6 +69,7 @@ urlpatterns = [
     path('api/admin/pending-staff/', views.list_unverified_staff, name='pending-staff'),
     path('api/admin/verify-staff/', views.verify_staff, name='verify-staff'),
     path('api/messages/', views.get_messages, name='get-messages'),
+    path('api/messages/<int:pk>/edit/', views.edit_direct_message, name='edit-direct-message'),
     path('api/colleges/', CollegeListView.as_view()),
     path('api/colleges/<int:college_id>/', views.CollegeDetailView.as_view()),
     path('api/colleges/featured/', views.FeaturedCollegesView.as_view(), name='featured-colleges'),

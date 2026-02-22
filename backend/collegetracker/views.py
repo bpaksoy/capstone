@@ -7,7 +7,7 @@ from .models import User, College, Comment, Post, Bookmark, Reply, Like, Friends
 from django.http import JsonResponse, Http404
 from django.db import IntegrityError
 from .serializers import CollegeSerializer, UserSerializer, UploadFileSerializer, LoginSerializer, CommentSerializer, PostSerializer, BookmarkSerializer, ReplySerializer, LikeSerializer, FriendshipSerializer, SmartCollegeSerializer, CollegeProgramSerializer, ArticleSerializer, NotificationSerializer, ChatMessageSerializer, LeadStatusSerializer
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status, generics, serializers
@@ -1299,8 +1299,11 @@ def verify_staff(request):
     else:
         return Response({"error": "Invalid action"}, status=400)
 
+from rest_framework.parsers import MultiPartParser, FormParser
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser])
 def send_direct_message(request):
     recipient_id = request.data.get('recipient_id')
     content = request.data.get('content')
@@ -1317,69 +1320,97 @@ def send_direct_message(request):
     except User.DoesNotExist:
         return Response({"error": "Recipient not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    message = DirectMessage.objects.create(
-        sender=request.user,
-        recipient=recipient,
-        content=content,
-        attachment=attachment
-    )
+    try:
+        message = DirectMessage.objects.create(
+            sender=request.user,
+            recipient=recipient,
+            content=content,
+            attachment=attachment
+        )
 
-    # Create notification for recipient
-    from django.contrib.contenttypes.models import ContentType
-    Notification.objects.create(
-        recipient=recipient,
-        sender=request.user,
-        notification_type='direct_message',
-        content_type=ContentType.objects.get_for_model(DirectMessage),
-        object_id=message.id
-    )
+        # Create notification for recipient
+        from django.contrib.contenttypes.models import ContentType
+        try:
+            Notification.objects.create(
+                recipient=recipient,
+                sender=request.user,
+                notification_type='direct_message',
+                content_type=ContentType.objects.get_for_model(DirectMessage),
+                object_id=message.id
+            )
+        except Exception as noti_err:
+            print(f"Notification error: {noti_err}")
 
-    return Response({
-        "message": "Message sent successfully", 
-        "id": message.id,
-        "attachment_url": message.attachment.url if message.attachment else None
-    })
+        return Response({
+            "message": "Message sent successfully", 
+            "id": message.id,
+            "attachment_url": message.attachment.url if message.attachment else None
+        })
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_messages(request):
-    other_user_id = request.query_params.get('other_user_id')
-    
-    if other_user_id:
-        messages = DirectMessage.objects.filter(
-            (Q(sender=request.user) & Q(recipient_id=other_user_id)) |
-            (Q(sender_id=other_user_id) & Q(recipient=request.user))
-        ).order_by('created_at')
-        # Mark incoming messages as read
-        messages.filter(recipient=request.user, is_read=False).update(is_read=True)
-    else:
-        messages = DirectMessage.objects.filter(
-            Q(sender=request.user) | Q(recipient=request.user)
-        ).order_by('created_at')
-    
-    # We might need a serializer for this or just manual mapping
-    data = []
-    for m in messages:
-        attachment_url = None
-        if m.attachment:
-            attachment_url = request.build_absolute_uri(m.attachment.url)
-            
-        data.append({
-            "id": m.id,
-            "sender_id": m.sender.id,
-            "sender_name": m.sender.username,
-            "recipient_id": m.recipient.id,
-            "recipient_name": m.recipient.username,
-            "content": m.content,
-            "attachment_url": attachment_url,
-            "created_at": m.created_at,
-            "is_read": m.is_read
-        })
-    return Response(data)
+    try:
+        other_user_id = request.query_params.get('other_user_id')
+        
+        if other_user_id:
+            messages = DirectMessage.objects.filter(
+                (Q(sender=request.user) & Q(recipient_id=other_user_id)) |
+                (Q(sender_id=other_user_id) & Q(recipient=request.user))
+            ).order_by('created_at')
+            # Mark incoming messages as read
+            messages.filter(recipient=request.user, is_read=False).update(is_read=True)
+        else:
+            messages = DirectMessage.objects.filter(
+                Q(sender=request.user) | Q(recipient=request.user)
+            ).order_by('created_at')
+        
+        # We might need a serializer for this or just manual mapping
+        data = []
+        for m in messages:
+            attachment_url = None
+            if m.attachment:
+                attachment_url = request.build_absolute_uri(m.attachment.url)
+                
+            data.append({
+                "id": m.id,
+                "sender_id": m.sender.id,
+                "sender_name": m.sender.username,
+                "recipient_id": m.recipient.id,
+                "recipient_name": m.recipient.username,
+                "content": m.content,
+                "attachment_url": attachment_url,
+                "created_at": m.created_at,
+                "is_read": m.is_read
+            })
+        return Response(data)
+    except Exception as e:
+        import traceback
+        return Response({"error": str(e), "traceback": traceback.format_exc()}, status=500)
 
 
 
-@api_view(['GET', 'POST'])
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def edit_direct_message(request, pk):
+    try:
+        message = DirectMessage.objects.get(pk=pk, sender=request.user)
+    except DirectMessage.DoesNotExist:
+        return Response({"error": "Message not found or you don't have permission"}, status=status.HTTP_404_NOT_FOUND)
+
+    content = request.data.get('content')
+    if not content:
+        return Response({"error": "Content cannot be empty"}, status=status.HTTP_400_BAD_REQUEST)
+
+    message.content = content
+    message.save()
+
+    return Response({
+        "message": "Message updated successfully",
+        "content": message.content
+    })
 @permission_classes([IsAuthenticated])
 def post_list(request):
     if request.method == 'GET':
