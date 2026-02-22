@@ -40,6 +40,57 @@ const AIAgent = () => {
         scrollToBottom();
     }, [chatHistory, isThinking]);
 
+    const [notifiedMatches, setNotifiedMatches] = useState(new Set());
+
+    useEffect(() => {
+        if (!loggedIn) return;
+
+        const pingOnlineStatus = async () => {
+            try {
+                const token = localStorage.getItem('access');
+                if (!token) return;
+
+                const response = await axios.post(`${baseUrl}api/ping-online/`, {}, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.data && response.data.matches) {
+                    const newMatches = response.data.matches.filter(m => !notifiedMatches.has(m.user_id));
+
+                    if (newMatches.length > 0) {
+                        setNotifiedMatches(prev => {
+                            const updated = new Set(prev);
+                            newMatches.forEach(m => updated.add(m.user_id));
+                            return updated;
+                        });
+
+                        const aiMessages = newMatches.map(m => {
+                            if (user?.role === 'college_staff') {
+                                return `Hi! A prospective student, **${m.name}**, who bookmarked your college is currently online. Would you like me to draft a message for them?`;
+                            } else {
+                                return `Hello! I noticed that a representative from **${m.college_name}** (which you bookmarked) is online! Their name is ${m.name}. Exploring your options is important, would you like to start a chat with them?`;
+                            }
+                        });
+
+                        setChatHistory(prev => [
+                            ...prev,
+                            ...aiMessages.map(msg => ({ role: 'assistant', content: msg }))
+                        ]);
+                        setIsOpen(true); // Open the Wormie tab automatically
+                    }
+                }
+            } catch (error) {
+                console.error("Error pinging online status:", error);
+            }
+        };
+
+        // Ping immediately on mount/login, then every 30 seconds
+        pingOnlineStatus();
+        const intervalId = setInterval(pingOnlineStatus, 30000);
+
+        return () => clearInterval(intervalId);
+    }, [loggedIn, user?.role, notifiedMatches]);
+
     // Load chat history on mount/login
     useEffect(() => {
         if (loggedIn) {
@@ -76,7 +127,7 @@ const AIAgent = () => {
                 }
             ]);
         }
-    }, [loggedIn]); // Re-trigger when login state changes
+    }, [loggedIn, user?.role]); // Re-trigger when login state changes
 
     const handleVisualClear = () => {
         setChatHistory([

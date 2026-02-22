@@ -208,6 +208,17 @@ const Header = (props) => {
                                                             markAsRead(notif.id);
                                                             if (notif.notification_type === 'friend_request') {
                                                                 navigate('/profile');
+                                                            } else if (notif.notification_type === 'accepted_request') {
+                                                                navigate(`/profile/${notif.sender?.id || ''}`);
+                                                            } else if (notif.notification_type === 'direct_message') {
+                                                                navigate('/messages', {
+                                                                    state: {
+                                                                        openChatWithUserId: notif.sender.id,
+                                                                        openChatWithUserName: notif.sender.username
+                                                                    }
+                                                                });
+                                                            } else if (notif.notification_type === 'like' || notif.notification_type === 'comment') {
+                                                                navigate('/trending');
                                                             }
                                                         }}
                                                         className={`flex items-start gap-3 px-4 py-3 rounded-xl transition-all hover:bg-gray-50 cursor-pointer ${!notif.is_read ? 'bg-teal-50/30 border-l-2 border-primary' : ''}`}

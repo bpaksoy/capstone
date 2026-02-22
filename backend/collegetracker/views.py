@@ -22,6 +22,7 @@ from datetime import datetime
 # from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate
+from django.utils import timezone
 from rest_framework_simplejwt.tokens import AccessToken
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db.models import Count, Sum, Avg
@@ -288,9 +289,55 @@ class NotificationCountView(APIView):
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+class OnlinePingView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, format=None):
+        user = request.user
+        user.last_active = timezone.now()
+        user.save()
+
+        # Check for strong matches
+        online_matches = []
+        recent_threshold = timezone.now() - timedelta(minutes=5)
+
+        if user.role == 'student':
+            bookmarked_college_ids = Bookmark.objects.filter(user=user).values_list('college_id', flat=True)
+            if bookmarked_college_ids:
+                online_staff = User.objects.filter(
+                    role='college_staff',
+                    associated_college_id__in=bookmarked_college_ids,
+                    last_active__gte=recent_threshold
+                ).select_related('associated_college')
+                
+                for staff in online_staff:
+                    online_matches.append({
+                        'user_id': staff.id,
+                        'name': f"{staff.first_name} {staff.last_name} ({staff.associated_college.name} Rep)",
+                        'college_id': staff.associated_college.id,
+                        'college_name': staff.associated_college.name,
+                    })
+        elif user.role == 'college_staff' and user.associated_college:
+            college = user.associated_college
+            interested_student_ids = Bookmark.objects.filter(college=college).values_list('user_id', flat=True)
+            if interested_student_ids:
+                online_students = User.objects.filter(
+                    id__in=interested_student_ids,
+                    last_active__gte=recent_threshold
+                )
+                
+                for student in online_students:
+                    online_matches.append({
+                        'user_id': student.id,
+                        'name': f"{student.first_name} {student.last_name}",
+                        'college_id': college.id,
+                        'college_name': college.name,
+                    })
+
+        return Response({'matches': online_matches}, status=status.HTTP_200_OK)
+
+
 api_view(['GET', 'POST'])
-
-
 @permission_classes([IsAuthenticatedOrReadOnly])
 def colleges(request):
     data = College.objects.all()

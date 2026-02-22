@@ -21,13 +21,14 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from graphene_django.views import GraphQLView
 from django.views.decorators.csrf import csrf_exempt
 from .views import UploadApiView
-from .views import RegisterView, LoginView, CollegeListView, CommentListView, CommentDetailView, PostDetailView, CurrentUserView, PostListView, BookmarkToggleView, BookmarkedCollegesView, ReplyCreateView, ReplyListView, CommentCountView, PostCommentCountsView, UserUpdateView, UserCommentsView, UserPostsView
+from .views import RegisterView, LoginView, CollegeListView, CommentListView, CommentDetailView, PostDetailView, CurrentUserView, PostListView, BookmarkToggleView, BookmarkedCollegesView, ReplyCreateView, ReplyListView, CommentCountView, PostCommentCountsView, UserUpdateView, UserCommentsView, UserPostsView, OnlinePingView
 from django.conf.urls.static import static
 from django.conf import settings
 
 urlpatterns = [
     path("api/user/", CurrentUserView.as_view(), name="user"),
     path("api/user/update/", UserUpdateView.as_view(), name="user-update"),
+    path("api/ping-online/", OnlinePingView.as_view(), name="ping-online"),
     path('api/users/<int:user_id>/',
          views.UserDetailView.as_view(), name='user-detail'),
     path('api/users/pending-requests/',

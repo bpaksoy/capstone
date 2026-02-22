@@ -3,7 +3,7 @@ import axios from 'axios';
 import { baseUrl } from '../shared';
 import { useCurrentUser } from '../UserProvider/UserProvider';
 import { ChatBubbleLeftRightIcon, PaperAirplaneIcon, UsersIcon, PaperClipIcon, ArrowDownTrayIcon, DocumentIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 const DirectMessages = () => {
     const { user, loggedIn } = useCurrentUser();
@@ -14,9 +14,34 @@ const DirectMessages = () => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [showSideBadge, setShowSideBadge] = useState(true);
-    const [lastTotalUnread, setLastTotalUnread] = useState(0);
+    const lastTotalUnread = useRef(0);
     const messagesEndRef = useRef(null);
     const fileInputRef = useRef(null);
+    const location = useLocation();
+
+    // Track the last handled notification ID so we only open it once
+    const lastHandledNavRef = useRef(null);
+
+    useEffect(() => {
+        if (location.state?.openChatWithUserId && conversations.length > 0) {
+            const targetId = location.state.openChatWithUserId;
+
+            // Only process this specific notification navigation once
+            if (lastHandledNavRef.current !== targetId) {
+                lastHandledNavRef.current = targetId;
+
+                const conv = conversations.find(c => c.user.id === targetId);
+                if (conv) {
+                    setSelectedUser(conv.user);
+                } else {
+                    setSelectedUser({
+                        id: targetId,
+                        username: location.state.openChatWithUserName || 'Loading...'
+                    });
+                }
+            }
+        }
+    }, [location.state?.openChatWithUserId, conversations]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -65,10 +90,10 @@ const DirectMessages = () => {
                 currentTotalUnread += g.unreadCount;
             });
 
-            if (currentTotalUnread > lastTotalUnread) {
+            if (currentTotalUnread > lastTotalUnread.current) {
                 setShowSideBadge(true);
             }
-            setLastTotalUnread(currentTotalUnread);
+            lastTotalUnread.current = currentTotalUnread;
 
             const sortedConversations = Object.values(groups).sort((a, b) =>
                 new Date(b.lastMessage.created_at) - new Date(a.lastMessage.created_at)

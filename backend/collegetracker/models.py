@@ -35,6 +35,7 @@ class User(AbstractUser):
     gpa = models.FloatField(blank=True, null=True)
     sat_score = models.IntegerField(blank=True, null=True)
     is_private = models.BooleanField(default=False)
+    last_active = models.DateTimeField(null=True, blank=True)
 
     # Friendships - Many-to-many relationship, symmetrical (friend = mutual)
     friends = models.ManyToManyField(
