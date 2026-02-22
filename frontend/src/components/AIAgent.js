@@ -13,7 +13,7 @@ import { useCurrentUser } from '../UserProvider/UserProvider';
 import axios from 'axios';
 import { baseUrl } from '../shared';
 
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const AIAgent = () => {
     const { user, loggedIn } = useCurrentUser();
@@ -21,6 +21,8 @@ const AIAgent = () => {
     const [unreadWormieMessage, setUnreadWormieMessage] = useState(null);
     const [message, setMessage] = useState('');
     const location = useLocation();
+    const navigate = useNavigate();
+    const [activeTargetUser, setActiveTargetUser] = useState(null);
 
     const [chatHistory, setChatHistory] = useState([
         {
@@ -67,6 +69,12 @@ const AIAgent = () => {
                     if (newMatches.length > 0) {
                         newMatches.forEach(m => notifiedMatchesRef.current.add(m.user_id));
                         sessionStorage.setItem('notifiedMatches', JSON.stringify(Array.from(notifiedMatchesRef.current)));
+
+                        // Save the last pinged user as the active target for any drafted messages
+                        setActiveTargetUser({
+                            id: newMatches[newMatches.length - 1].user_id,
+                            name: newMatches[newMatches.length - 1].name
+                        });
 
                         const aiMessages = newMatches.map(m => {
                             if (user?.role === 'college_staff') {
@@ -306,17 +314,44 @@ const AIAgent = () => {
                                     ? 'bg-[#A855F7] text-white rounded-tr-none shadow-lg shadow-purple-500/20'
                                     : 'bg-white text-gray-800 rounded-tl-none border border-gray-200 shadow-sm'
                                     }`}>
-                                    {chat.content.split('\n').map((line, i) => (
-                                        <React.Fragment key={i}>
-                                            {line.split(/(\*\*.*?\*\*)/g).map((part, j) => {
-                                                if (part.startsWith('**') && part.endsWith('**')) {
-                                                    return <strong key={j} className="font-bold">{part.slice(2, -2)}</strong>;
-                                                }
-                                                return <span key={j}>{part}</span>;
-                                            })}
-                                            {i < chat.content.split('\n').length - 1 && <br />}
-                                        </React.Fragment>
-                                    ))}
+                                    {chat.content.split('---').map((block, blockIndex) => {
+                                        const isDraft = blockIndex % 2 !== 0;
+                                        return (
+                                            <div key={blockIndex} className={isDraft ? "my-3 p-3 bg-purple-50/50 border border-purple-200/60 rounded-xl relative" : ""}>
+                                                {block.split('\n').map((line, i) => (
+                                                    <React.Fragment key={i}>
+                                                        {line.split(/(\*\*.*?\*\*)/g).map((part, j) => {
+                                                            if (part.startsWith('**') && part.endsWith('**')) {
+                                                                return <strong key={j} className="font-bold">{part.slice(2, -2)}</strong>;
+                                                            }
+                                                            return <span key={j}>{part}</span>;
+                                                        })}
+                                                        {i < block.split('\n').length - 1 && <br />}
+                                                    </React.Fragment>
+                                                ))}
+                                                {isDraft && (
+                                                    <button
+                                                        onClick={() => {
+                                                            setIsOpen(false);
+                                                            navigate('/messages', {
+                                                                state: {
+                                                                    draftText: block.trim(),
+                                                                    ...(activeTargetUser ? {
+                                                                        openChatWithUserId: activeTargetUser.id,
+                                                                        openChatWithUserName: activeTargetUser.name
+                                                                    } : {})
+                                                                }
+                                                            });
+                                                        }}
+                                                        className="mt-3 w-full bg-[#A855F7] hover:bg-purple-600 text-white font-bold py-2 rounded-lg text-xs shadow-md transition-all flex items-center justify-center gap-2"
+                                                    >
+                                                        <ChatBubbleLeftRightIcon className="w-4 h-4" />
+                                                        Open in Direct Messages
+                                                    </button>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         ))}

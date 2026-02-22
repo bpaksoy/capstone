@@ -41,7 +41,12 @@ const DirectMessages = () => {
                 }
             }
         }
-    }, [location.state?.openChatWithUserId, conversations]);
+        if (location.state?.draftText) {
+            setNewMessage(location.state.draftText);
+            // Clear the draft from history so a refresh doesn't paste it again
+            window.history.replaceState({}, document.title);
+        }
+    }, [location.state?.openChatWithUserId, location.state?.draftText, conversations]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
