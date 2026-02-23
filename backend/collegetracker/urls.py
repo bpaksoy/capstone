@@ -47,6 +47,8 @@ urlpatterns = [
          views.FriendsView.as_view(), name='friends'),
     path('api/users/friends/',
          views.MyFriendsView.as_view(), name='my-friends'),
+    path('api/users/search/',
+         views.UserSearchView.as_view(), name='user-search'),
     path('api/friend-request-count/',
          views.FriendRequestCountView.as_view(), name='friend-request-count'),
     path('api/friend-requests/', views.FriendRequestsView.as_view(),

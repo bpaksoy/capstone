@@ -1,11 +1,12 @@
 import { useContext, useEffect, useState } from 'react';
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
-import { Bars3Icon, BellIcon, XMarkIcon, UserIcon, Cog6ToothIcon, ArrowRightOnRectangleIcon, ArrowLeftOnRectangleIcon, AcademicCapIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon, BellIcon, XMarkIcon, UserIcon, Cog6ToothIcon, ArrowRightOnRectangleIcon, ArrowLeftOnRectangleIcon, AcademicCapIcon, ShieldCheckIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { images } from "../constants";
 import { useCurrentUser } from '../UserProvider/UserProvider';
 import { baseUrl } from '../shared';
 import axios from 'axios';
+import SearchProfilesModal from './SearchProfilesModal';
 
 const navigation = [
     { name: 'Home', href: '/', current: true },
@@ -26,6 +27,7 @@ const Header = (props) => {
     const navigate = useNavigate();
     const { user, handleLogout, loading, loggedIn, forceFetchFriendRequests } = useCurrentUser();
     const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+    const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [showBadge, setShowBadge] = useState(false);
@@ -166,6 +168,15 @@ const Header = (props) => {
                             </div>
                         </div>
                         <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+
+                            {/* Profile Search Button */}
+                            <button
+                                onClick={() => setIsSearchModalOpen(true)}
+                                className="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 mr-3"
+                            >
+                                <span className="sr-only">Search profiles</span>
+                                <MagnifyingGlassIcon aria-hidden="true" className="h-6 w-6" />
+                            </button>
 
                             {/* Unified Notifications Menu */}
                             <Menu as="div" className="relative">
@@ -425,6 +436,12 @@ const Header = (props) => {
                     </div>
                 </div>
             )}
+
+            {/* Profile Search Modal */}
+            <SearchProfilesModal
+                isOpen={isSearchModalOpen}
+                onClose={() => setIsSearchModalOpen(false)}
+            />
         </>
 
     )

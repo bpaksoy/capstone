@@ -1411,6 +1411,45 @@ def edit_direct_message(request, pk):
         "message": "Message updated successfully",
         "content": message.content
     })
+
+class UserSearchView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        query = request.query_params.get('q', '')
+        if not query:
+            return Response([])
+
+        users = User.objects.filter(
+            Q(username__icontains=query) | Q(email__icontains=query)
+        ).exclude(id=request.user.id)[:20]
+
+        data = []
+        for u in users:
+            friendship = Friendship.objects.filter(
+                (Q(user1=request.user) & Q(user2=u)) |
+                (Q(user1=u) & Q(user2=request.user))
+            ).first()
+            
+            status_val = 'none'
+            if friendship:
+                if friendship.status == 'accepted':
+                    status_val = 'accepted'
+                elif friendship.status == 'pending':
+                    status_val = 'pending'
+
+            data.append({
+                "id": u.id,
+                "username": u.username,
+                "email": u.email,
+                "image": request.build_absolute_uri(u.image.url) if bool(u.image) else None,
+                "is_private": u.is_private,
+                "friendship_status": status_val,
+                "role": getattr(u, 'role', 'student')
+            })
+
+        return Response(data)
+
 @permission_classes([IsAuthenticated])
 def post_list(request):
     if request.method == 'GET':
