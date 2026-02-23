@@ -725,6 +725,11 @@ def college(request, id):
     serializer = CollegeSerializer(data)
     return JsonResponse({"college": serializer.data})
 
+@api_view(['GET'])
+def college_announcements(request, college_id):
+    announcements = Post.objects.filter(is_announcement=True, college_id=college_id).order_by('-created_at')
+    serializer = PostSerializer(announcements, many=True)
+    return Response(serializer.data)
 
 api_view(['GET', 'POST'])
 
@@ -1536,10 +1541,10 @@ class PostListView(APIView):
                     Q(author=user) |
                     Q(author__friendship_user1__user2=user, author__friendship_user1__status='accepted') |
                     Q(author__friendship_user2__user1=user, author__friendship_user2__status='accepted')
-                ).distinct()
+                ).filter(is_announcement=False).distinct()
             else:
                 # Unauthenticated users only see posts from non-private profiles
-                posts = Post.objects.filter(author__is_private=False)
+                posts = Post.objects.filter(author__is_private=False, is_announcement=False)
 
             serializer = PostSerializer(posts, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -1635,7 +1640,7 @@ class UserPostsView(APIView):
         if target_user.is_private and not (is_own_profile or is_friend):
             return Response({'error': 'This profile is private'}, status=status.HTTP_403_FORBIDDEN)
 
-        posts = Post.objects.filter(author_id=user_id)
+        posts = Post.objects.filter(author_id=user_id, is_announcement=False)
         serializer = PostSerializer(posts, many=True)
         return Response(serializer.data)
 

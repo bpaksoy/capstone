@@ -12,10 +12,13 @@ import {
     GlobeAltIcon,
     AcademicCapIcon,
     PhotoIcon,
-    SparklesIcon
+    SparklesIcon,
+    CalendarIcon,
+    ClockIcon,
+    Bars3CenterLeftIcon
 } from '@heroicons/react/24/outline';
 import DirectMessageModal from '../utils/DirectMessageModal';
-
+import AnnouncementManager from '../components/AnnouncementManager';
 const CollegePortal = () => {
     const { user, loggedIn, fetchUserData } = useCurrentUser();
     const [college, setCollege] = useState(null);
@@ -284,13 +287,15 @@ const CollegePortal = () => {
                                 </div>
                             </div>
                         </div>
-                        <Link
-                            to={`/colleges/${college.id}/details`}
-                            className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white font-bold px-6 py-3 rounded-xl transition-all flex items-center gap-2"
-                        >
-                            <GlobeAltIcon className="w-5 h-5" />
-                            View Public Page
-                        </Link>
+                        <div className="flex flex-col sm:flex-row items-center gap-3">
+                            <Link
+                                to={`/colleges/${college.id}/details`}
+                                className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white font-bold px-6 py-3 rounded-xl transition-all flex items-center gap-2"
+                            >
+                                <GlobeAltIcon className="w-5 h-5" />
+                                View Public Page
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -494,6 +499,12 @@ const CollegePortal = () => {
                         </div>
                     </div>
                 </div>
+
+                {/* Official Announcements Manager placed outside the form container, or below */}
+                <div className="mt-8">
+                    {college && <AnnouncementManager college={college} />}
+                </div>
+
                 {college && (
                     <DirectMessageModal
                         isOpen={isMessageModalOpen}

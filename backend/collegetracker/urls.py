@@ -69,6 +69,7 @@ urlpatterns = [
     path('api/colleges/<int:pk>/staff-update/', views.staff_update_college, name='staff-update-college'),
     path('api/colleges/<int:pk>/interested-students/', views.get_interested_students, name='get-interested-students'),
     path('api/colleges/update-lead-status/', views.update_lead_status, name='update-lead-status'),
+    path('api/colleges/<int:college_id>/announcements/', views.college_announcements, name='college-announcements'),
     path('api/messages/send/', views.send_direct_message, name='send-direct-message'),
     path('api/admin/pending-staff/', views.list_unverified_staff, name='pending-staff'),
     path('api/admin/verify-staff/', views.verify_staff, name='verify-staff'),

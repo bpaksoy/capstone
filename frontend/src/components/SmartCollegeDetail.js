@@ -15,6 +15,7 @@ const SmartCollegeDetail = () => {
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [programs, setPrograms] = useState([]);
+    const [announcements, setAnnouncements] = useState([]);
     console.log("programs", programs);
 
 
@@ -71,8 +72,24 @@ const SmartCollegeDetail = () => {
             }
         }
 
+        const fetchAnnouncements = async () => {
+            try {
+                const token = localStorage.getItem('access');
+                const response = await fetch(`${baseUrl}api/colleges/${collegeId}/announcements/`, {
+                    headers: token ? { Authorization: `Bearer ${token}` } : {}
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    setAnnouncements(data);
+                }
+            } catch (err) {
+                console.error("Error fetching announcements:", err);
+            }
+        };
+
         fetchCollegeDetails();
         fetchCollegePrograms();
+        fetchAnnouncements();
         window.scrollTo(0, 0);
     }, [collegeId]);
 
@@ -152,6 +169,38 @@ const SmartCollegeDetail = () => {
                                         </div>
                                     )}
                                 </div>
+
+                                {announcements && announcements.length > 0 && (
+                                    <div className="mt-8 pt-8 border-t border-gray-100">
+                                        <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                                            <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2.25m0 2.25h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                                </svg>
+                                            </div>
+                                            Official Announcements
+                                        </h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {announcements.map(announcement => (
+                                                <div key={announcement.id} className="bg-gradient-to-br from-purple-50/50 to-white border border-purple-100 rounded-2xl p-5 shadow-sm relative overflow-hidden flex flex-col justify-between h-full">
+                                                    <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-purple-200/50 to-purple-100/50 opacity-20 transform rotate-45 translate-x-8 -translate-y-8 rounded-full"></div>
+                                                    <div>
+                                                        <div className="flex justify-between items-start mb-2">
+                                                            <h4 className="font-bold text-gray-900 line-clamp-2">{announcement.title}</h4>
+                                                        </div>
+                                                        <p className="text-gray-700 text-sm mb-4 line-clamp-3 leading-relaxed">
+                                                            {announcement.content}
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex items-center justify-between text-[10px] uppercase font-bold text-gray-400 mt-auto pt-4 border-t border-purple-100/50">
+                                                        <span>Posted by {announcement.author?.first_name || announcement.author?.username}</span>
+                                                        <span>{new Date(announcement.created_at).toLocaleDateString()}</span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
 
                                 {programs && programs.length > 0 && (
                                     <div className="mt-4">

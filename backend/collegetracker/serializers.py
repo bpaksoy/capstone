@@ -95,7 +95,7 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = ('id', 'author', 'title', 'content', 'created_at',
-                  'updated_at', 'comments_count', 'likes_count', 'image')
+                  'updated_at', 'comments_count', 'likes_count', 'image', 'is_announcement', 'college')
         depth = 1
 
     def get_comments_count(self, obj):
@@ -106,6 +106,11 @@ class PostSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context['request'].user
+        
+        # If it's an announcement, associate it with the user's college automatically
+        if validated_data.get('is_announcement', False) and getattr(user, 'associated_college', None):
+            validated_data['college'] = user.associated_college
+
         if 'image' in validated_data:
             image = validated_data.pop('image')
             post = Post.objects.create(author=user, **validated_data)

@@ -232,6 +232,8 @@ class Post(models.Model):
     likes = GenericRelation('Like', related_query_name='posts')
     image = models.ImageField(upload_to='post_images/', blank=True, null=True,
                               validators=[FileExtensionValidator(['png', 'jpg', 'jpeg'])])
+    is_announcement = models.BooleanField(default=False)
+    college = models.ForeignKey('College', null=True, blank=True, on_delete=models.CASCADE, related_name='announcements')
 
     # @cached_property
     # def author_username(self):

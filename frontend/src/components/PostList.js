@@ -204,8 +204,10 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
                     }
 
                     const post = item;
+
                     return (
                         <div key={post.id} className="bg-white rounded-xl shadow-sm border border-gray-200 max-w-2xl w-full mb-6 relative overflow-visible">
+
                             {/* Header */}
                             <div className="p-6 flex items-center justify-between">
                                 <div className="flex items-center space-x-3 cursor-pointer" onClick={() => {
