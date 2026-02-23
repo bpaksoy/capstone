@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useCallback } from 'react';
+import React, { useState, useEffect, useContext, useCallback, useRef } from 'react';
 import axios from 'axios';
 import AddInfoModal from '../utils/AddInfoModal';
 import AddBioModal from '../utils/AddBioModal';
@@ -22,6 +22,7 @@ const Profile = () => {
     const otherUser = location.state?.otherUser;
     const [pendingRequests, setPendingRequests] = useState([]);
     const [activeTab, setActiveTab] = useState('about');
+    const tabsRef = useRef(null);
 
 
     useEffect(() => {
@@ -179,13 +180,13 @@ const Profile = () => {
                                             </span>
                                             <span className="text-sm">Friends</span>
                                         </div>
-                                        <div onClick={() => setActiveTab('posts')} className="mr-8 p-3 text-center cursor-pointer hover:text-primary transition-colors">
+                                        <div onClick={() => { setActiveTab('posts'); tabsRef.current?.scrollIntoView({ behavior: 'smooth' }); }} className="mr-8 p-3 text-center cursor-pointer hover:text-primary transition-colors">
                                             <span className="text-xl font-bold block uppercase tracking-wide text-gray-800">
                                                 {postsLoading ? "..." : postsData?.length || 0}
                                             </span>
                                             <span className="text-sm">Posts</span>
                                         </div>
-                                        <div onClick={() => setActiveTab('comments')} className="lg:mr-4 p-3 text-center cursor-pointer hover:text-primary transition-colors">
+                                        <div onClick={() => { setActiveTab('comments'); tabsRef.current?.scrollIntoView({ behavior: 'smooth' }); }} className="lg:mr-4 p-3 text-center cursor-pointer hover:text-primary transition-colors">
                                             <span className="text-xl font-bold block uppercase tracking-wide text-gray-800">
                                                 {commentsLoading ? "..." : commentsData?.length || 0}
                                             </span>
@@ -330,7 +331,7 @@ const Profile = () => {
                             </div>
 
                             {/* Tabs Navigation */}
-                            <div className="mt-8 pt-4 border-t border-gray-100 flex justify-center gap-4 sm:gap-8">
+                            <div ref={tabsRef} className="mt-8 pt-4 border-t border-gray-100 flex justify-center gap-4 sm:gap-8">
                                 <button
                                     className={`pb-4 font-bold text-xs sm:text-sm uppercase tracking-wider transition-colors border-b-2 ${activeTab === 'about' ? 'border-primary text-gray-900' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
                                     onClick={() => setActiveTab('about')}
