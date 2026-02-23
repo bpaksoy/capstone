@@ -8,6 +8,7 @@ import { baseUrl } from '../shared';
 import useFetch from '../hooks/FetchData';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CheckBadgeIcon } from '@heroicons/react/24/solid';
+import PostList from '../components/PostList';
 
 const Profile = () => {
 
@@ -20,7 +21,7 @@ const Profile = () => {
     const [isFriend, setIsFriend] = useState(false);
     const otherUser = location.state?.otherUser;
     const [pendingRequests, setPendingRequests] = useState([]);
-    // console.log("pendingRequests", pendingRequests);
+    const [activeTab, setActiveTab] = useState('about');
 
 
     useEffect(() => {
@@ -178,13 +179,13 @@ const Profile = () => {
                                             </span>
                                             <span className="text-sm">Friends</span>
                                         </div>
-                                        <div className="mr-8 p-3 text-center cursor-pointer hover:text-primary transition-colors">
+                                        <div onClick={() => setActiveTab('posts')} className="mr-8 p-3 text-center cursor-pointer hover:text-primary transition-colors">
                                             <span className="text-xl font-bold block uppercase tracking-wide text-gray-800">
                                                 {postsLoading ? "..." : postsData?.length || 0}
                                             </span>
                                             <span className="text-sm">Posts</span>
                                         </div>
-                                        <div className="lg:mr-4 p-3 text-center cursor-pointer hover:text-primary transition-colors">
+                                        <div onClick={() => setActiveTab('comments')} className="lg:mr-4 p-3 text-center cursor-pointer hover:text-primary transition-colors">
                                             <span className="text-xl font-bold block uppercase tracking-wide text-gray-800">
                                                 {commentsLoading ? "..." : commentsData?.length || 0}
                                             </span>
@@ -328,15 +329,75 @@ const Profile = () => {
                                 </div>
                             </div>
 
-                            <div className="mt-10 py-10 border-t border-gray-200 text-center">
-                                <div className="flex flex-wrap justify-center">
-                                    <div className="w-full lg:w-9/12 px-4">
+                            {/* Tabs Navigation */}
+                            <div className="mt-8 pt-4 border-t border-gray-100 flex justify-center gap-4 sm:gap-8">
+                                <button
+                                    className={`pb-4 font-bold text-xs sm:text-sm uppercase tracking-wider transition-colors border-b-2 ${activeTab === 'about' ? 'border-primary text-gray-900' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+                                    onClick={() => setActiveTab('about')}
+                                >
+                                    About
+                                </button>
+                                <button
+                                    className={`pb-4 font-bold text-xs sm:text-sm uppercase tracking-wider transition-colors border-b-2 ${activeTab === 'posts' ? 'border-primary text-gray-900' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+                                    onClick={() => setActiveTab('posts')}
+                                >
+                                    My Posts
+                                </button>
+                                <button
+                                    className={`pb-4 font-bold text-xs sm:text-sm uppercase tracking-wider transition-colors border-b-2 ${activeTab === 'comments' ? 'border-primary text-gray-900' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+                                    onClick={() => setActiveTab('comments')}
+                                >
+                                    My Comments
+                                </button>
+                            </div>
+
+                            <div className="mt-8 pb-10 min-h-[300px]">
+                                {activeTab === 'about' && (
+                                    <div className="w-full lg:w-9/12 mx-auto text-center animate-in fade-in duration-300">
                                         <p className="mb-4 text-lg leading-relaxed text-gray-700">
                                             {user?.bio ? user.bio : <span className="text-gray-400 italic">No bio added yet.</span>}
                                         </p>
                                         <AddBioModal initialValues={user} fetchUser={fetchUser} />
                                     </div>
-                                </div>
+                                )}
+
+                                {activeTab === 'posts' && (
+                                    <div className="w-full max-w-2xl mx-auto -mx-4 sm:mx-auto animate-in fade-in duration-300">
+                                        {postsLoading ? (
+                                            <div className="flex justify-center p-8"><div className="w-8 h-8 rounded-full border-4 border-primary border-t-transparent animate-spin"></div></div>
+                                        ) : postsData && postsData.length > 0 ? (
+                                            <PostList posts={postsData} onAddPost={() => {
+                                                const url = baseUrl + `api/users/${user.id}/posts/`;
+                                                fetchPostsData(url, 'get');
+                                            }} />
+                                        ) : (
+                                            <div className="text-center py-12 text-gray-400 italic bg-gray-50 rounded-2xl mx-4 sm:mx-0">
+                                                You haven't made any posts yet.
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {activeTab === 'comments' && (
+                                    <div className="w-full max-w-2xl mx-auto space-y-4 animate-in fade-in duration-300">
+                                        {commentsLoading ? (
+                                            <div className="flex justify-center p-8"><div className="w-8 h-8 rounded-full border-4 border-primary border-t-transparent animate-spin"></div></div>
+                                        ) : commentsData && commentsData.length > 0 ? (
+                                            commentsData.map(comment => (
+                                                <div key={comment.id} className="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all text-left">
+                                                    <p className="text-gray-700 text-sm mb-3">"{comment.content}"</p>
+                                                    <div className="text-[10px] text-gray-400 flex items-center gap-2 uppercase font-bold tracking-widest bg-gray-50 inline-block px-2 py-1 rounded-md">
+                                                        <span>{new Date(comment.created_at).toLocaleDateString()} at {new Date(comment.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="text-center py-12 text-gray-400 italic bg-gray-50 rounded-2xl">
+                                                You haven't commented on anything yet.
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
