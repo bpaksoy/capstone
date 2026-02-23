@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { baseUrl } from '../shared';
 import { useCurrentUser } from '../UserProvider/UserProvider';
-import { ChatBubbleLeftRightIcon, PaperAirplaneIcon, UsersIcon, PaperClipIcon, ArrowDownTrayIcon, DocumentIcon, XMarkIcon, PencilIcon } from '@heroicons/react/24/outline';
+import { ChatBubbleLeftRightIcon, PaperAirplaneIcon, UsersIcon, PaperClipIcon, ArrowDownTrayIcon, DocumentIcon, XMarkIcon, PencilIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { Link, useLocation } from 'react-router-dom';
+import NewStudentMessageModal from '../components/NewStudentMessageModal';
 
 const DirectMessages = () => {
     const { user, loggedIn } = useCurrentUser();
@@ -22,6 +23,7 @@ const DirectMessages = () => {
     const [editingMessageId, setEditingMessageId] = useState(null);
     const [editContent, setEditContent] = useState('');
     const [sendError, setSendError] = useState(null);
+    const [isNewStudentModalOpen, setIsNewStudentModalOpen] = useState(false);
     const editTextareaRef = useRef(null);
 
     // Track the last handled navigation key
@@ -360,8 +362,17 @@ const DirectMessages = () => {
             <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden flex flex-col md:flex-row flex-1">
                 {/* Conversations List */}
                 <div className="w-80 border-r border-gray-100 flex flex-col bg-gray-50/30">
-                    <div className="p-6 border-b border-gray-100 bg-white">
+                    <div className="p-6 border-b border-gray-100 bg-white flex justify-between items-center">
                         <h2 className="text-xl font-bold text-gray-900">Messages</h2>
+                        {user?.role === 'college_staff' && (
+                            <button
+                                onClick={() => setIsNewStudentModalOpen(true)}
+                                title="Message New Public Students"
+                                className="p-2 -mr-2 bg-gray-50 text-gray-600 hover:text-primary hover:bg-teal-50 rounded-full transition-colors"
+                            >
+                                <PlusIcon className="w-5 h-5" />
+                            </button>
+                        )}
                     </div>
                     <div className="flex-1 overflow-y-auto p-2 space-y-1">
                         {conversations.length > 0 ? (
@@ -553,6 +564,14 @@ const DirectMessages = () => {
                     )}
                 </div>
             </div>
+
+            <NewStudentMessageModal
+                isOpen={isNewStudentModalOpen}
+                onClose={() => setIsNewStudentModalOpen(false)}
+                onStartChat={(student) => {
+                    setSelectedUser(student);
+                }}
+            />
         </div>
     );
 };

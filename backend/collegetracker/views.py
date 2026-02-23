@@ -1450,6 +1450,30 @@ class UserSearchView(APIView):
 
         return Response(data)
 
+class PublicStudentListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if getattr(request.user, 'role', '') != 'college_staff':
+            return Response({"error": "Unauthorized"}, status=403)
+            
+        students = User.objects.filter(
+            role='student', 
+            is_private=False
+        ).exclude(id=request.user.id).order_by('-id')[:50]
+        
+        data = []
+        for u in students:
+            data.append({
+                "id": u.id,
+                "username": u.username,
+                "email": u.email,
+                "image": request.build_absolute_uri(u.image.url) if bool(u.image) else None,
+                "role": u.role
+            })
+            
+        return Response(data)
+
 @permission_classes([IsAuthenticated])
 def post_list(request):
     if request.method == 'GET':
