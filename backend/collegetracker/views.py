@@ -1553,21 +1553,26 @@ class PostListView(APIView):
             college_id = request.query_params.get('college_id')
             
             # Base visibility logic:
-            # 1. Author is NOT private
-            # 2. OR Author is the current user
-            # 3. OR Accepted friend
             visibility_query = Q(author__is_private=False)
             if user.is_authenticated:
                 visibility_query |= Q(author=user) | \
                                    Q(author__friendship_user1__user2=user, author__friendship_user1__status='accepted') | \
                                    Q(author__friendship_user2__user1=user, author__friendship_user2__status='accepted')
 
+            # Special case for hubs: Official announcements should ALWAYS be visible
+            if college_id:
+                visibility_query |= Q(college_id=college_id, is_announcement=True)
+
             posts = Post.objects.filter(visibility_query)
 
             if college_id:
                 posts = posts.filter(college_id=college_id)
             
-            posts = posts.distinct()
+            # Pin announcements to the top if in a hub, otherwise sort by newest
+            if college_id:
+                posts = posts.order_by('-is_announcement', '-created_at').distinct()
+            else:
+                posts = posts.order_by('-created_at').distinct()
 
             serializer = PostSerializer(posts, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)

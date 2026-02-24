@@ -292,8 +292,8 @@ function AddPostModal({ onAddPost, isOpen: externalIsOpen, onClose: externalOnCl
                                         )}
                                     </div>
 
-                                    {/* Announcement Toggle */}
-                                    {user?.role === 'college_staff' && (
+                                    {/* Announcement Toggle - Only if staff is at THEIR college hub */}
+                                    {user?.role === 'college_staff' && (!collegeId || parseInt(collegeId) === user.associated_college?.id) && (
                                         <div className="flex items-center gap-3 mt-4 pt-4 border-t border-gray-100">
                                             <label className="relative inline-flex items-center cursor-pointer">
                                                 <input
