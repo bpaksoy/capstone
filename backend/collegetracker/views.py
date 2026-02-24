@@ -595,7 +595,10 @@ class DetailedSearchListView(generics.ListAPIView):
                 ]
                 queryset = queryset.filter(name__in=ivy_list)
             else:
-                queryset = queryset.filter(name__icontains=name_param)
+                queryset = queryset.filter(
+                    Q(name__icontains=name_param) |
+                    Q(programs__cipdesc__icontains=name_param)
+                ).distinct()
 
         if control_param:
             queryset = queryset.filter(control=control_param)
@@ -703,8 +706,9 @@ class DetailedSearchListView(generics.ListAPIView):
             
             if scored_matches and scored_matches[0][0] > 0.4:
                 suggestion = scored_matches[0][1]
-                suggested_colleges = College.objects.filter(name=suggestion)
-                data = self.get_serializer(suggested_colleges, many=True).data
+                # We do NOT overwrite data with the suggested college here 
+                # because the suggested college likely doesn't match the user's active filters.
+                # The suggestion string is returned separately and handled by the UI.
 
         return Response({
             'colleges': data,
@@ -754,7 +758,10 @@ def search(request, name):
         ]
         data = College.objects.filter(name__in=ivy_list).order_by('name')[:12]
     else:
-        data = College.objects.filter(name__icontains=name)[:12]
+        data = College.objects.filter(
+            Q(name__icontains=name) |
+            Q(programs__cipdesc__icontains=name)
+        ).distinct()[:12]
         
     if not data.exists() and name_lower not in ['hbcu', 'ivy', 'ivy league']:
         # Intelligent fuzzy match
