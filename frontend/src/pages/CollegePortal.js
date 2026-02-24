@@ -31,6 +31,7 @@ const CollegePortal = () => {
     const [logoError, setLogoError] = useState(false);
     const [bgError, setBgError] = useState(false);
     const [interestedStudents, setInterestedStudents] = useState([]);
+    const [pendingAmbassadors, setPendingAmbassadors] = useState([]);
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
     const [statsModalType, setStatsModalType] = useState(null);
@@ -79,6 +80,12 @@ const CollegePortal = () => {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setInterestedStudents(studentsRes.data);
+
+            // Fetch pending ambassadors
+            const ambassadorRes = await axios.get(`${baseUrl}api/colleges/${user.associated_college}/pending-ambassadors/`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setPendingAmbassadors(ambassadorRes.data);
         } catch (err) {
             console.error("Error fetching college portal data", err);
         } finally {
@@ -109,6 +116,24 @@ const CollegePortal = () => {
             console.error("Error updating lead status", err);
         }
     };
+
+    const handleVerifyAmbassador = async (studentId) => {
+        try {
+            const token = localStorage.getItem('access');
+            await axios.post(`${baseUrl}api/ambassador/verify/`, {
+                student_id: studentId
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setPendingAmbassadors(prev => prev.filter(s => s.id !== studentId));
+            setUpdateMessage({ text: "Ambassador verified!", type: "success" });
+            setTimeout(() => setUpdateMessage({ text: "", type: "" }), 3000);
+        } catch (err) {
+            console.error("Error verifying ambassador", err);
+        }
+    };
+
+    const [updateMessage, setUpdateMessage] = useState({ text: "", type: "" });
 
     const handleSave = async () => {
         setSaveStatus('saving');
@@ -436,6 +461,68 @@ const CollegePortal = () => {
                                 )}
                             </div>
                         </div>
+                        {/* Pending Ambassador Requests */}
+                        <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100 mt-8">
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                                    <CheckBadgeIcon className="w-5 h-5 text-primary" />
+                                    Ambassador Requests
+                                </h3>
+                                {pendingAmbassadors.length > 0 && (
+                                    <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse">
+                                        {pendingAmbassadors.length} NEW
+                                    </span>
+                                )}
+                            </div>
+                            <div className="space-y-4">
+                                {pendingAmbassadors.length > 0 ? (
+                                    pendingAmbassadors.map(student => (
+                                        <div
+                                            key={student.id}
+                                            className="p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:bg-white hover:shadow-md transition-all group"
+                                        >
+                                            <div className="flex items-center gap-3 mb-4">
+                                                {student.image ? (
+                                                    <img src={student.image.startsWith('http') ? student.image : (baseUrl + student.image.replace(/^\//, ''))} alt="Avatar" className="w-10 h-10 rounded-full object-cover" />
+                                                ) : (
+                                                    <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center border border-gray-200">
+                                                        <UsersIcon className="w-5 h-5 text-gray-400" />
+                                                    </div>
+                                                )}
+                                                <div>
+                                                    <p className="font-bold text-gray-900 text-sm">{student.username}</p>
+                                                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">{student.major || 'Current Student'}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => handleVerifyAmbassador(student.id)}
+                                                    className="flex-1 bg-primary text-white text-[10px] font-bold py-2 rounded-xl hover:bg-teal-700 transition-all shadow-sm shadow-teal-700/10"
+                                                >
+                                                    Verify as Ambassador
+                                                </button>
+                                                <button
+                                                    onClick={() => navigate(`/profile/${student.id}`)}
+                                                    className="px-3 py-2 bg-white text-gray-500 border border-gray-200 rounded-xl hover:bg-gray-50 transition-all"
+                                                >
+                                                    <UsersIcon className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="text-center py-8 opacity-40">
+                                        <CheckBadgeIcon className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                                        <p className="text-xs font-bold uppercase tracking-widest text-gray-400">No requests</p>
+                                    </div>
+                                )}
+                            </div>
+                            {updateMessage.text && (
+                                <div className={`mt-4 p-3 rounded-xl text-xs font-bold text-center ${updateMessage.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                                    {updateMessage.text}
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     {/* Right Column: Editor */}
@@ -517,12 +604,12 @@ const CollegePortal = () => {
                                 </div>
                             )}
                         </div>
-                    </div>
-                </div>
 
-                {/* Official Announcements Manager placed outside the form container, or below */}
-                <div id="announcement-manager" className="mt-8 pt-8 border-t border-gray-100">
-                    {college && <AnnouncementManager college={college} />}
+                        {/* Official Announcements Manager — same column as Profile Manager */}
+                        <div id="announcement-manager">
+                            {college && <AnnouncementManager college={college} />}
+                        </div>
+                    </div>
                 </div>
 
                 {college && (

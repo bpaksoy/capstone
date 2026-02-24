@@ -1454,6 +1454,75 @@ def get_college_ambassadors(request, college_id):
     except Exception as e:
         return Response({"error": str(e)}, status=500)
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def apply_as_ambassador(request):
+    try:
+        user = request.user
+        college_id = request.data.get('college_id')
+        
+        if user.role != 'student':
+            return Response({"error": "Only students can apply as ambassadors"}, status=400)
+            
+        if not college_id:
+            return Response({"error": "College ID is required"}, status=400)
+            
+        college = College.objects.get(id=college_id)
+        user.associated_college = college
+        user.is_verified = False # Reset verification until staff approves
+        user.save()
+        
+        return Response({"message": "Application submitted! Wait for institutional verification."})
+    except College.DoesNotExist:
+        return Response({"error": "College not found"}, status=404)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_pending_ambassadors(request, college_id):
+    try:
+        user = request.user
+        # Must be staff of this college
+        if user.role != 'college_staff' or user.associated_college_id != int(college_id):
+            return Response({"error": "Unauthorized"}, status=403)
+            
+        pending = User.objects.filter(
+            role='student',
+            associated_college_id=college_id,
+            is_verified=False
+        )
+        serializer = UserSerializer(pending, many=True)
+        return Response(serializer.data)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def verify_ambassador(request):
+    try:
+        user = request.user
+        student_id = request.data.get('student_id')
+        
+        # Must be staff
+        if user.role != 'college_staff':
+            return Response({"error": "Unauthorized"}, status=403)
+            
+        student = User.objects.get(id=student_id)
+        
+        # Must be for the same college
+        if student.associated_college_id != user.associated_college_id:
+            return Response({"error": "Cannot verify student from another institution"}, status=403)
+            
+        student.is_verified = True
+        student.save()
+        
+        return Response({"message": f"Successfully verified {student.username} as an Ambassador."})
+    except User.DoesNotExist:
+        return Response({"error": "Student not found"}, status=404)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
 class UserSearchView(APIView):
     permission_classes = [IsAuthenticated]
 
