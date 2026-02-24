@@ -37,18 +37,24 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
         }
     }, [website, logoUrl]);
 
-    // Dynamic Campus Image - Hardened query to avoid sneakers/lifestyle shots
-    const dynamicImageUrl = `https://images.unsplash.com/featured/?university,campus,architecture,building,${encodeURIComponent(name)}`;
+    // Dynamic Campus Image - Removed as primary fallback due to risk of incorrect logos/mismatches
+    // const dynamicImageUrl = `https://images.unsplash.com/featured/?university,campus,architecture,building,${encodeURIComponent(name)}`;
 
     const [isBookmarked, setIsBookmarked] = useState(false);
     const [logoError, setLogoError] = useState(false);
     const [bgError, setBgError] = useState(false);
 
     // Get a unique stable index for fallbacks using the expanded gallery
+    // This provides a high-quality, professional 'Vibe' that is much safer than random search results
     const getStableImage = () => {
-        const idInt = parseInt(collegeId) || 0;
-        const salt = name ? name.length : 0;
-        const index = (idInt + salt) % images.collegeImages.length;
+        // Use a simple hash of the name to ensure each college consistently gets the same 'vibe' image
+        let hash = 0;
+        const str = name || "";
+        for (let i = 0; i < str.length; i++) {
+            hash = ((hash << 5) - hash) + str.charCodeAt(i);
+            hash |= 0; // Convert to 32bit integer
+        }
+        const index = Math.abs(hash) % images.collegeImages.length;
         return images.collegeImages[index];
     };
 
@@ -110,15 +116,11 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
                     <img
                         src={(image || img)
                             ? ((image || img).startsWith('http') ? (image || img) : `${baseUrl}${(image || img).replace(/^\//, '')}`)
-                            : (!bgError ? dynamicImageUrl : getStableImage())
+                            : getStableImage()
                         }
                         onError={(e) => {
-                            if (!bgError && !(image || img)) {
-                                setBgError(true);
-                            } else {
-                                e.target.onerror = null;
-                                e.target.src = images.collegeImg;
-                            }
+                            e.target.onerror = null;
+                            e.target.src = images.collegeImg;
                         }}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                         alt={`${name} campus`}
