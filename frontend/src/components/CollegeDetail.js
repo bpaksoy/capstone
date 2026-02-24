@@ -214,14 +214,14 @@ const CollegeDetail = () => {
                                 <div className="flex flex-wrap gap-2 mb-6">
                                     {/* Control (Public/Private) */}
                                     {college.control && (
-                                        <span className={`px-3 py-1 rounded-full text-sm font-semibold ${college.control === 1 ? 'bg-green-100 text-green-800' : 'bg-violet-100 text-violet-800'}`}>
+                                        <span className="px-3 py-1 rounded-full text-sm font-semibold bg-primary/10 text-primary border border-primary/20">
                                             {college.control === 1 ? 'Public' : college.control === 2 ? 'Private Non-profit' : 'Private For-profit'}
                                         </span>
                                     )}
 
                                     {/* Locale */}
                                     {college.locale && (
-                                        <span className="px-3 py-1 rounded-full text-sm font-semibold bg-gray-100 text-gray-800">
+                                        <span className="px-3 py-1 rounded-full text-sm font-semibold bg-primary/10 text-primary border border-primary/20">
                                             {(() => {
                                                 const l = college.locale;
                                                 if (l >= 11 && l <= 13) return 'City';
@@ -234,64 +234,64 @@ const CollegeDetail = () => {
                                     )}
 
                                     {/* Special Missions */}
-                                    {college.hbcu && <span className="px-3 py-1 rounded-full text-sm font-semibold bg-yellow-100 text-yellow-800">HBCU</span>}
-                                    {college.hsi && <span className="px-3 py-1 rounded-full text-sm font-semibold bg-orange-100 text-orange-800">HSI</span>}
-                                    {college.women_only && <span className="px-3 py-1 rounded-full text-sm font-semibold bg-pink-100 text-pink-800">Women's College</span>}
-                                    {college.men_only && <span className="px-3 py-1 rounded-full text-sm font-semibold bg-blue-200 text-blue-800">Men's College</span>}
-                                    {college.relaffil && college.relaffil > 0 && <span className="px-3 py-1 rounded-full text-sm font-semibold bg-indigo-100 text-indigo-800">Religious Affiliation</span>}
+                                    {college.hbcu && <span className="px-3 py-1 rounded-full text-sm font-semibold bg-primary/10 text-primary border border-primary/20">HBCU</span>}
+                                    {college.hsi && <span className="px-3 py-1 rounded-full text-sm font-semibold bg-primary/10 text-primary border border-primary/20">HSI</span>}
+                                    {college.women_only && <span className="px-3 py-1 rounded-full text-sm font-semibold bg-primary/10 text-primary border border-primary/20">Women's College</span>}
+                                    {college.men_only && <span className="px-3 py-1 rounded-full text-sm font-semibold bg-primary/10 text-primary border border-primary/20">Men's College</span>}
+                                    {college.relaffil && college.relaffil > 0 && <span className="px-3 py-1 rounded-full text-sm font-semibold bg-primary/10 text-primary border border-primary/20">Religious Affiliation</span>}
 
                                     {/* NEW: Open Admissions & Distance Ed */}
-                                    {college.is_open_admission && <span className="px-3 py-1 rounded-full text-sm font-semibold bg-green-50 text-green-700 border border-green-200">Open Admissions</span>}
-                                    {college.is_distance_education && <span className="px-3 py-1 rounded-full text-sm font-semibold bg-cyan-50 text-cyan-700 border border-cyan-200">Online Only</span>}
+                                    {college.is_open_admission && <span className="px-3 py-1 rounded-full text-sm font-semibold bg-primary/10 text-primary border border-primary/20">Open Admissions</span>}
+                                    {college.is_distance_education && <span className="px-3 py-1 rounded-full text-sm font-semibold bg-primary/10 text-primary border border-primary/20">Online Only</span>}
 
                                     {/* NEW: Carnegie Classification */}
                                     {college.carnegie_classification_display && college.carnegie_classification_display !== "Not classified" && (
-                                        <span className="px-3 py-1 rounded-full text-sm font-semibold bg-violet-50 text-violet-700 border border-violet-200">
+                                        <span className="px-3 py-1 rounded-full text-sm font-semibold bg-primary/10 text-primary border border-primary/20">
                                             {college.carnegie_classification_display}
                                         </span>
                                     )}
                                 </div>
 
                                 <div className="flex flex-wrap gap-4 mb-4">
-                                    <div className="bg-blue-100 p-3 rounded-lg flex items-center gap-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
+                                    <div className="bg-white border border-primary/10 border-l-4 border-l-primary shadow-sm p-3 rounded-lg flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6 text-primary">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
                                         </svg>
                                         <p className="font-medium">Acceptance Rate: {(college.admission_rate * 100).toFixed(2)}%</p>
                                     </div>
-                                    <div className="bg-blue-100 p-3 rounded-lg flex items-center gap-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
+                                    <div className="bg-white border border-primary/10 border-l-4 border-l-primary shadow-sm p-3 rounded-lg flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6 text-primary">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5" />
                                         </svg>
                                         <p className="font-medium">Average SAT: {college.sat_score}</p>
                                     </div>
-                                    <div className="bg-blue-100 p-3 rounded-lg flex items-center gap-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
+                                    <div className="bg-white border border-primary/10 border-l-4 border-l-primary shadow-sm p-3 rounded-lg flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6 text-primary">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                         </svg>
                                         <p className="font-medium">Cost: {formatter.format(college.cost_of_attendance).replace(/(\.|,)00$/g, '')}</p>
                                     </div>
-                                    <div className="bg-blue-100 p-3 rounded-lg flex items-center gap-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
+                                    <div className="bg-white border border-primary/10 border-l-4 border-l-primary shadow-sm p-3 rounded-lg flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6 text-primary">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                         </svg>
                                         <p className="font-medium">Tuition in state: {formatter.format(college.tuition_in_state).replace(/(\.|,)00$/g, '')}</p>
                                     </div>
-                                    <div className="bg-blue-100 p-3 rounded-lg flex items-center gap-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
+                                    <div className="bg-white border border-primary/10 border-l-4 border-l-primary shadow-sm p-3 rounded-lg flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6 text-primary">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                         </svg>
                                         <p className="font-medium">Tuition out of state: {formatter.format(college.tuition_out_state).replace(/(\.|,)00$/g, '')}</p>
                                     </div>
-                                    <div className="bg-blue-100 p-3 rounded-lg flex items-center gap-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6 text-blue-600">
+                                    <div className="bg-white border border-primary/10 border-l-4 border-l-primary shadow-sm p-3 rounded-lg flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6 text-primary">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a5.97 5.97 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
                                         </svg>
                                         <p className="font-medium">Student-to-Faculty: {college.student_faculty_ratio ? `${college.student_faculty_ratio}:1` : 'N/A'}</p>
                                     </div>
                                     {college.top_major && (
-                                        <div className="bg-indigo-100 p-3 rounded-lg flex items-center gap-2">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6 text-indigo-600">
+                                        <div className="bg-white border border-primary/10 border-l-4 border-l-primary shadow-sm p-3 rounded-lg flex items-center gap-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6 text-primary">
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75Z" />
                                             </svg>
                                             <p className="font-medium font-semibold">Top Major: {college.top_major}</p>
