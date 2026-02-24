@@ -33,6 +33,7 @@ const CollegePortal = () => {
     const [interestedStudents, setInterestedStudents] = useState([]);
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
+    const [statsModalType, setStatsModalType] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -322,8 +323,11 @@ const CollegePortal = () => {
                                 <ChartBarIcon className="w-5 h-5 text-primary" />
                                 Performance Overview
                             </h3>
-                            <div className="space-y-6">
-                                <div className="flex items-center justify-between">
+                            <div className="space-y-2">
+                                <div
+                                    onClick={() => setStatsModalType('bookmarks')}
+                                    className="flex items-center justify-between p-3 rounded-2xl hover:bg-gray-50 cursor-pointer transition-colors"
+                                >
                                     <div className="flex items-center gap-3">
                                         <div className="p-2 bg-teal-50 rounded-lg text-primary">
                                             <UsersIcon className="w-5 h-5" />
@@ -332,7 +336,10 @@ const CollegePortal = () => {
                                     </div>
                                     <span className="text-xl font-bold text-gray-900">{stats.bookmarks}</span>
                                 </div>
-                                <div className="flex items-center justify-between">
+                                <div
+                                    onClick={() => setStatsModalType('recent_bookmarks')}
+                                    className="flex items-center justify-between p-3 rounded-2xl hover:bg-gray-50 cursor-pointer transition-colors"
+                                >
                                     <div className="flex items-center gap-3">
                                         <div className="p-2 bg-red-50 rounded-lg text-red-600">
                                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" /></svg>
@@ -341,7 +348,10 @@ const CollegePortal = () => {
                                     </div>
                                     <span className="text-xl font-bold text-gray-900">{stats.recent_bookmarks}</span>
                                 </div>
-                                <div className="flex items-center justify-between">
+                                <div
+                                    onClick={() => setStatsModalType('followers')}
+                                    className="flex items-center justify-between p-3 rounded-2xl hover:bg-gray-50 cursor-pointer transition-colors"
+                                >
                                     <div className="flex items-center gap-3">
                                         <div className="p-2 bg-teal-50 rounded-lg text-teal-600">
                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
@@ -369,7 +379,7 @@ const CollegePortal = () => {
                                     interestedStudents.map(student => (
                                         <div
                                             key={student.id}
-                                            onClick={() => handleContact(student)}
+                                            onClick={() => navigate(`/profile/${student.id}`)}
                                             className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-2xl transition-all cursor-pointer group"
                                         >
                                             {student.image ? (
@@ -523,6 +533,72 @@ const CollegePortal = () => {
                         collegeName={college.name}
                     />
                 )}
+
+                {/* Stats Modals */}
+                {statsModalType && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm" style={{ zIndex: 9999 }}>
+                        <div className="bg-white rounded-3xl p-6 shadow-xl max-w-lg w-full max-h-[80vh] flex flex-col">
+                            <div className="flex justify-between items-center mb-6">
+                                <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                                    {statsModalType === 'bookmarks' && <><UsersIcon className="w-6 h-6 text-primary" /> Total Bookmarks</>}
+                                    {statsModalType === 'followers' && <><svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg> Active Followers</>}
+                                    {statsModalType === 'recent_bookmarks' && <><svg className="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" /></svg> Recent Bookmarks</>}
+                                </h3>
+                                <button onClick={() => setStatsModalType(null)} className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-50 rounded-full">
+                                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                </button>
+                            </div>
+                            <div className="flex-1 overflow-y-auto pr-2 space-y-3">
+                                {(() => {
+                                    const filteredStudents = interestedStudents.filter(s => {
+                                        if (statsModalType === 'bookmarks' || statsModalType === 'recent_bookmarks') return s.has_bookmarked;
+                                        if (statsModalType === 'followers') return s.is_following;
+                                        return false;
+                                    });
+
+                                    if (filteredStudents.length === 0) {
+                                        return (
+                                            <div className="text-center py-8">
+                                                <p className="text-gray-400 text-sm">No students found matching this criteria.</p>
+                                            </div>
+                                        );
+                                    }
+
+                                    return filteredStudents.map(student => (
+                                        <div
+                                            key={student.id}
+                                            onClick={() => navigate(`/profile/${student.id}`)}
+                                            className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-2xl transition-all cursor-pointer border border-gray-100/50 hover:border-gray-200 group"
+                                        >
+                                            {student.image ? (
+                                                <img src={student.image.startsWith('http') ? student.image : (baseUrl + student.image.replace(/^\//, ''))} alt="Avatar" className="w-10 h-10 rounded-full object-cover shadow-sm" />
+                                            ) : (
+                                                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-gray-100 to-gray-50 flex items-center justify-center border border-gray-100 shadow-sm group-hover:scale-105 transition-transform duration-300">
+                                                    <UsersIcon className="w-5 h-5 text-gray-400" />
+                                                </div>
+                                            )}
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-2">
+                                                    <p className="text-sm font-bold text-gray-900">{student.first_name || student.username}</p>
+                                                </div>
+                                                <p className="text-xs text-gray-500 font-medium opacity-80">
+                                                    {student.major || 'Undecided'}
+                                                </p>
+                                            </div>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); setStatsModalType(null); handleContact(student); }}
+                                                className="text-primary hover:text-white hover:bg-primary text-xs font-bold px-4 py-1.5 bg-teal-50 rounded-lg transition-all shadow-sm"
+                                            >
+                                                Message
+                                            </button>
+                                        </div>
+                                    ));
+                                })()}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
             </div>
         </div>
     );

@@ -1176,15 +1176,24 @@ def get_interested_students(request, pk):
     if user.role != 'college_staff' or user.associated_college_id != college.id:
         return Response({"error": "You do not have permission to view this college's data"}, status=status.HTTP_403_FORBIDDEN)
 
-    # Students who bookmarked this college
-    bookmarks = Bookmark.objects.filter(college=college).select_related('user')
+    from django.db.models import Q
+
+    # Students who bookmarked OR follow this college and have public profiles
+    bookmark_user_ids = Bookmark.objects.filter(college=college).values_list('user_id', flat=True)
+    
+    interested_users = User.objects.filter(
+        Q(id__in=bookmark_user_ids) | Q(following_colleges=college)
+    ).filter(is_private=False).distinct()
     
     # Get all lead statuses for this college to optimize lookup
     lead_status_map = {ls.student_id: ls.status for ls in LeadStatus.objects.filter(college=college)}
     
+    # Pre-fetch follower user IDs for the college
+    follower_user_ids = set(college.user_set.filter(is_private=False).values_list('id', flat=True))
+    bookmark_user_ids_set = set(bookmark_user_ids)
+    
     students = []
-    for b in bookmarks:
-        s = b.user
+    for s in interested_users:
         students.append({
             "id": s.id,
             "username": s.username,
@@ -1193,7 +1202,9 @@ def get_interested_students(request, pk):
             "gpa": s.gpa,
             "sat_score": s.sat_score,
             "image": s.image.url if s.image else None,
-            "status": lead_status_map.get(s.id, 'new')
+            "status": lead_status_map.get(s.id, 'new'),
+            "has_bookmarked": s.id in bookmark_user_ids_set,
+            "is_following": s.id in follower_user_ids
         })
 
     return Response(students)
