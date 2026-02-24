@@ -1437,6 +1437,23 @@ def edit_direct_message(request, pk):
         "content": message.content
     })
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticatedOrReadOnly])
+def get_college_ambassadors(request, college_id):
+    try:
+        # Fetch users who are students and associated with this college
+        # In this system, 'Verified' students act as Ambassadors
+        ambassadors = User.objects.filter(
+            role='student',
+            associated_college_id=college_id,
+            is_verified=True
+        ).order_by('?')[:10] # Randomized small selection for diversity
+        
+        serializer = UserSerializer(ambassadors, many=True)
+        return Response(serializer.data)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
 class UserSearchView(APIView):
     permission_classes = [IsAuthenticated]
 

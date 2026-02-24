@@ -12,6 +12,7 @@ import ScrollToTop from './ScrollToTop';
 import { ShieldCheckIcon, PaperAirplaneIcon, SparklesIcon, ChevronDownIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { SparklesIcon as SparklesIconSolid, BookmarkIcon as BookmarkIconSolid, InformationCircleIcon } from '@heroicons/react/24/solid';
 import CollegeHub from './CollegeHub';
+import StudentAmbassadors from './StudentAmbassadors';
 
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -563,6 +564,7 @@ const CollegeDetail = () => {
                                         </div>
                                     )}
 
+                                    <StudentAmbassadors collegeId={collegeId} collegeName={college.name} />
 
                                     <a href={college.website} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">{college.website}</a>
                                     {college.latitude && college.longitude && (
