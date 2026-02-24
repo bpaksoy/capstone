@@ -1550,21 +1550,24 @@ class PostListView(APIView):
         try:
             from django.db.models import Q
             user = request.user
+            college_id = request.query_params.get('college_id')
             
+            # Base visibility logic:
+            # 1. Author is NOT private
+            # 2. OR Author is the current user
+            # 3. OR Accepted friend
+            visibility_query = Q(author__is_private=False)
             if user.is_authenticated:
-                # Visibility logic:
-                # 1. Author is NOT private
-                # 2. OR Author is the current user themselves
-                # 3. OR Author is private but current user is an accepted friend
-                posts = Post.objects.filter(
-                    Q(author__is_private=False) |
-                    Q(author=user) |
-                    Q(author__friendship_user1__user2=user, author__friendship_user1__status='accepted') |
-                    Q(author__friendship_user2__user1=user, author__friendship_user2__status='accepted')
-                ).distinct()
-            else:
-                # Unauthenticated users only see posts from non-private profiles
-                posts = Post.objects.filter(author__is_private=False)
+                visibility_query |= Q(author=user) | \
+                                   Q(author__friendship_user1__user2=user, author__friendship_user1__status='accepted') | \
+                                   Q(author__friendship_user2__user1=user, author__friendship_user2__status='accepted')
+
+            posts = Post.objects.filter(visibility_query)
+
+            if college_id:
+                posts = posts.filter(college_id=college_id)
+            
+            posts = posts.distinct()
 
             serializer = PostSerializer(posts, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -1575,11 +1578,17 @@ class PostListView(APIView):
 
     def post(self, request, format=None):
         try:
-            # print("request.data", request.data)
             serializer = PostSerializer(
                 data=request.data, context={'request': request})
             serializer.is_valid(raise_exception=True)
-            serializer.save()
+            
+            # Explicitly set college if provided in request data (for Hub posts)
+            college_id = request.data.get('college')
+            if college_id:
+                serializer.save(college_id=college_id)
+            else:
+                serializer.save()
+                
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         except ValidationError as e:
             return Response({'error': e.detail}, status=status.HTTP_400_BAD_REQUEST)

@@ -6,7 +6,7 @@ import { baseUrl } from '../shared';
 import { useCurrentUser } from '../UserProvider/UserProvider';
 import { images } from "../constants";
 
-function AddPostModal({ onAddPost, isOpen: externalIsOpen, onClose: externalOnClose, initialContent, triggerOpen }) {
+function AddPostModal({ onAddPost, isOpen: externalIsOpen, onClose: externalOnClose, initialContent, triggerOpen, collegeId }) {
     const { user } = useCurrentUser();
     const [internalIsOpen, setInternalIsOpen] = useState(false);
     const [title, setTitle] = useState('');
@@ -72,6 +72,9 @@ function AddPostModal({ onAddPost, isOpen: externalIsOpen, onClose: externalOnCl
             }
             if (isAnnouncement && user?.role === 'college_staff') {
                 formData.append('is_announcement', 'True');
+            }
+            if (collegeId) {
+                formData.append('college', collegeId);
             }
 
             const response = await axios.post(`${baseUrl}api/posts/`, formData, { // Send FormData
