@@ -148,9 +148,19 @@ const CollegeDetail = () => {
             </div>)
     }
     if (error) return <p>Error: {error.message}</p>;
-    if (!college) return <p>College not found</p>;
+    // Get a unique stable index for fallbacks using the expanded gallery
+    const getStableImage = () => {
+        let hash = 0;
+        const str = college.name || "";
+        for (let i = 0; i < str.length; i++) {
+            hash = ((hash << 5) - hash) + str.charCodeAt(i);
+            hash |= 0;
+        }
+        const index = Math.abs(hash) % images.collegeImages.length;
+        return images.collegeImages[index];
+    };
 
-    const mapCenter = [college.latitude, college.longitude];
+    const mapCenter = college.latitude && college.longitude ? [college.latitude, college.longitude] : null;
 
     return (
         <>
@@ -162,15 +172,11 @@ const CollegeDetail = () => {
                             <img
                                 src={college.image
                                     ? (college.image.startsWith('http') ? college.image : baseUrl + college.image.replace(/^\//, ''))
-                                    : (bgError ? images.collegeImages[(parseInt(collegeId) || 0) % images.collegeImages.length] : `https://images.unsplash.com/featured/?university,campus,${encodeURIComponent(college.name)}`)
+                                    : getStableImage()
                                 }
                                 onError={(e) => {
-                                    if (!bgError && !college.image) {
-                                        setBgError(true);
-                                    } else {
-                                        e.target.onerror = null;
-                                        e.target.src = images.collegeImg;
-                                    }
+                                    e.target.onerror = null;
+                                    e.target.src = images.collegeImg;
                                 }}
                                 alt={`${college.name} campus`}
                                 className="w-64 h-64 rounded-lg object-cover shadow-md md:w-auto md:max-w-[300px]"

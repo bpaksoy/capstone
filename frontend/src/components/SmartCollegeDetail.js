@@ -129,13 +129,36 @@ const SmartCollegeDetail = () => {
     if (error) return <p>Error: {error.message}</p>;
     if (!college) return <p>College not found</p>;
 
+    // Get a unique stable index for fallbacks using the expanded gallery
+    const getStableImage = () => {
+        let hash = 0;
+        const str = college.name || "";
+        for (let i = 0; i < str.length; i++) {
+            hash = ((hash << 5) - hash) + str.charCodeAt(i);
+            hash |= 0;
+        }
+        const index = Math.abs(hash) % images.collegeImages.length;
+        return images.collegeImages[index];
+    };
+
     return (
         <>
             <div className="bg-primary min-h-screen">
                 <div className="container mx-auto px-4 py-8">
                     <div className="bg-white rounded-lg shadow-md p-6">
                         <div className="flex flex-col md:flex-row items-center gap-8">
-                            <img src={images.collegeImg} alt={college.name} className="w-64 h-64 rounded-lg object-cover shadow-md md:w-auto md:max-w-[300px]" />
+                            <img
+                                src={college.image
+                                    ? (college.image.startsWith('http') ? college.image : baseUrl + college.image.replace(/^\//, ''))
+                                    : getStableImage()
+                                }
+                                onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = images.collegeImg;
+                                }}
+                                alt={college.name}
+                                className="w-64 h-64 rounded-lg object-cover shadow-md md:w-auto md:max-w-[300px]"
+                            />
                             <div>
                                 <h1 className="text-3xl font-bold mb-2">{college.name}</h1>
                                 <p className="text-gray-600 text-lg mb-4">{college.city}, {college.state}</p>
