@@ -37,13 +37,24 @@ function SearchResults() {
                 control: '',
                 max_cost: '',
                 max_admission: '',
-                min_admission: ''
+                min_admission: '',
+                query: query
             });
+        } else if (name === 'query') {
+            if (value === '') {
+                navigate('/search/all');
+            } else {
+                navigate(`/search/${value}`);
+            }
         } else {
             setFilters(prev => ({ ...prev, [name]: value }));
         }
         setPage(1); // Reset page on filter change
     };
+
+    useEffect(() => {
+        setFilters(prev => ({ ...prev, query: query }));
+    }, [query]);
 
     async function fetchData() {
         setLoading(true);
@@ -188,7 +199,9 @@ function SearchResults() {
                         <h2 className="text-2xl font-bold text-white tracking-tight">
                             Found {searchResult.length} {searchResult.length === 1 ? 'College' : 'Colleges'}
                         </h2>
-                        <p className="text-white/40 text-sm mt-1">Discovering matches for "<span className="text-teal-300 font-bold">{query}</span>"</p>
+                        {query !== 'all' && (
+                            <p className="text-white/40 text-sm mt-1">Discovering matches for "<span className="text-teal-300 font-bold">{query}</span>"</p>
+                        )}
                     </div>
                 </div>
             )}
@@ -201,9 +214,9 @@ function SearchResults() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                         </div>
-                        <h2 className="text-2xl font-bold text-white mb-3">No results found</h2>
+                        <h2 className="text-2xl font-bold text-white mb-3">No matching colleges</h2>
                         <p className="text-white/40 text-base max-w-sm mx-auto leading-relaxed">
-                            We couldn't find any colleges matching your search. Try different keywords or check out our recommended schools.
+                            We couldn't find any colleges matching "<span className="text-teal-300 font-bold">{query}</span>" with your current filters.
                         </p>
                         <Link to="/" className="inline-block mt-8 px-8 py-2.5 bg-white/10 hover:bg-white/20 border border-white/10 text-white font-medium rounded-full transition-all text-sm backdrop-blur-md shadow-lg shadow-black/5">
                             Return to Search

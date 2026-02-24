@@ -1,11 +1,18 @@
-import '../index.css';
-import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 
 
 function Search() {
-    const [query, setQuery] = useState("");
+    const { query: urlQuery } = useParams();
+    const [query, setQuery] = useState(urlQuery || "");
     const [searchWarning, setSearchWarning] = useState('');
+
+    useEffect(() => {
+        if (urlQuery) {
+            setQuery(urlQuery);
+        }
+    }, [urlQuery]);
+
     console.log("query", query);
     const navigate = useNavigate();
 

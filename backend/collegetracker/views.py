@@ -578,7 +578,7 @@ class DetailedSearchListView(generics.ListAPIView):
         if city_param:
             queryset = queryset.filter(city__iexact=city_param)
         
-        if name_param:
+        if name_param and name_param.lower() != 'all':
             name_lower = name_param.lower()
             if name_lower == 'hbcu':
                 queryset = queryset.filter(hbcu=True)
@@ -743,7 +743,9 @@ def search(request, name):
     name_lower = name.lower()
     suggestion = None
     
-    if name_lower == 'hbcu':
+    if name_lower == 'all':
+        data = College.objects.all().order_by('name')[:12]
+    elif name_lower == 'hbcu':
         data = College.objects.filter(hbcu=True).order_by('name')[:12]
     elif name_lower in ['ivy', 'ivy league']:
         ivy_list = [

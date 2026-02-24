@@ -63,6 +63,12 @@ const SearchFilterBar = ({ onFilterChange, activeFilters }) => {
 
                         {/* Summary of active filters */}
                         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar max-w-md">
+                            {activeFilters.query && (
+                                <span className="flex items-center gap-1.5 px-3 py-1 bg-white/20 text-white rounded-lg text-xs font-bold whitespace-nowrap border border-white/10">
+                                    Search: "{activeFilters.query}"
+                                    <XMarkIcon className="w-3 h-3 cursor-pointer" onClick={() => onFilterChange('query', '')} />
+                                </span>
+                            )}
                             {activeFilters.state && (
                                 <span className="flex items-center gap-1.5 px-3 py-1 bg-teal-500/20 text-teal-300 rounded-lg text-xs font-bold whitespace-nowrap border border-teal-500/30">
                                     {activeFilters.state}
