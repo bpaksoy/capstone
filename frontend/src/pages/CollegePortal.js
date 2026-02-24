@@ -32,6 +32,7 @@ const CollegePortal = () => {
     const [bgError, setBgError] = useState(false);
     const [interestedStudents, setInterestedStudents] = useState([]);
     const [pendingAmbassadors, setPendingAmbassadors] = useState([]);
+    const [verifiedAmbassadors, setVerifiedAmbassadors] = useState([]);
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
     const [statsModalType, setStatsModalType] = useState(null);
@@ -86,6 +87,12 @@ const CollegePortal = () => {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setPendingAmbassadors(ambassadorRes.data);
+
+            // Fetch verified ambassadors
+            const verifiedRes = await axios.get(`${baseUrl}api/colleges/${user.associated_college}/ambassadors/`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setVerifiedAmbassadors(verifiedRes.data);
         } catch (err) {
             console.error("Error fetching college portal data", err);
         } finally {
@@ -522,6 +529,50 @@ const CollegePortal = () => {
                                     {updateMessage.text}
                                 </div>
                             )}
+                        </div>
+
+                        {/* Current Verified Ambassadors */}
+                        <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100 mt-8">
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                                    <CheckBadgeIcon className="w-5 h-5 text-violet-500" />
+                                    Current Ambassadors
+                                </h3>
+                                {verifiedAmbassadors.length > 0 && (
+                                    <span className="bg-violet-100 text-violet-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                        {verifiedAmbassadors.length} ACTIVE
+                                    </span>
+                                )}
+                            </div>
+                            <div className="space-y-3">
+                                {verifiedAmbassadors.length > 0 ? (
+                                    verifiedAmbassadors.map(amb => (
+                                        <div
+                                            key={amb.id}
+                                            onClick={() => navigate(`/profile/${amb.id}`)}
+                                            className="p-3 bg-violet-50/50 rounded-2xl border border-violet-100 hover:bg-violet-50 hover:shadow-sm transition-all cursor-pointer flex items-center gap-3 group"
+                                        >
+                                            {amb.image ? (
+                                                <img src={amb.image.startsWith('http') ? amb.image : (baseUrl + amb.image.replace(/^\//, ''))} alt="Avatar" className="w-9 h-9 rounded-full object-cover ring-2 ring-violet-200" />
+                                            ) : (
+                                                <div className="w-9 h-9 rounded-full bg-violet-100 flex items-center justify-center ring-2 ring-violet-200">
+                                                    <UsersIcon className="w-4 h-4 text-violet-400" />
+                                                </div>
+                                            )}
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-bold text-gray-900 text-sm truncate">{amb.first_name || amb.username}</p>
+                                                <p className="text-[10px] text-violet-500 font-bold uppercase tracking-wider">{amb.major || 'Student'}</p>
+                                            </div>
+                                            <CheckBadgeIcon className="w-4 h-4 text-violet-400 flex-shrink-0" />
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="text-center py-6 opacity-40">
+                                        <UsersIcon className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                                        <p className="text-xs font-bold uppercase tracking-widest text-gray-400">No ambassadors yet</p>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
 
