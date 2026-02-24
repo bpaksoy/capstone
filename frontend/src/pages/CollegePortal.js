@@ -373,7 +373,7 @@ const CollegePortal = () => {
                                     className="flex items-center justify-between p-3 rounded-2xl hover:bg-gray-50 cursor-pointer transition-colors"
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-red-50 rounded-lg text-red-600">
+                                        <div className="p-2 bg-violet-50 rounded-lg text-violet-600">
                                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" /></svg>
                                         </div>
                                         <span className="text-sm font-medium text-gray-500">Recent Bookmarks</span>
@@ -680,7 +680,7 @@ const CollegePortal = () => {
                                 <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                                     {statsModalType === 'bookmarks' && <><UsersIcon className="w-6 h-6 text-primary" /> Total Bookmarks</>}
                                     {statsModalType === 'followers' && <><svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg> Active Followers</>}
-                                    {statsModalType === 'recent_bookmarks' && <><svg className="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" /></svg> Recent Bookmarks</>}
+                                    {statsModalType === 'recent_bookmarks' && <><svg className="w-6 h-6 text-violet-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" /></svg> Recent Bookmarks</>}
                                 </h3>
                                 <button onClick={() => setStatsModalType(null)} className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-50 rounded-full">
                                     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
