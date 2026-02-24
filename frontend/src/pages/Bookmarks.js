@@ -234,7 +234,7 @@ const Bookmarks = () => {
                 admission_rate={college.admission_rate}
                 sat_score={college.sat_score}
                 cost_of_attendance={college.cost_of_attendance}
-                img={images.college}
+                img={images.collegeImg}
               />
             </div>
           ))}
