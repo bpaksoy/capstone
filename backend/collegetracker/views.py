@@ -1437,6 +1437,32 @@ def edit_direct_message(request, pk):
         "content": message.content
     })
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def toggle_follow_college(request, college_id):
+    try:
+        college = College.objects.get(id=college_id)
+        user = request.user
+        if user.following_colleges.filter(id=college_id).exists():
+            user.following_colleges.remove(college)
+            return Response({"following": False, "message": "Unfollowed"})
+        else:
+            user.following_colleges.add(college)
+            return Response({"following": True, "message": "Following"})
+    except College.DoesNotExist:
+        return Response({"error": "College not found"}, status=404)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def check_follow_college(request, college_id):
+    try:
+        is_following = request.user.following_colleges.filter(id=college_id).exists()
+        return Response({"following": is_following})
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticatedOrReadOnly])
 def get_college_ambassadors(request, college_id):

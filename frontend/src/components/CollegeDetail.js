@@ -3,14 +3,15 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useCurrentUser } from '../UserProvider/UserProvider';
 import { baseUrl } from '../shared';
 import { images } from '../constants';
+import axios from 'axios';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import ScrollToTop from './ScrollToTop';
-import { ShieldCheckIcon, PaperAirplaneIcon, SparklesIcon, ChevronDownIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { SparklesIcon as SparklesIconSolid, BookmarkIcon as BookmarkIconSolid, InformationCircleIcon } from '@heroicons/react/24/solid';
+import { ShieldCheckIcon, PaperAirplaneIcon, SparklesIcon, ChevronDownIcon, TrashIcon, HeartIcon } from '@heroicons/react/24/outline';
+import { SparklesIcon as SparklesIconSolid, BookmarkIcon as BookmarkIconSolid, InformationCircleIcon, HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import CollegeHub from './CollegeHub';
 import StudentAmbassadors from './StudentAmbassadors';
 
@@ -47,6 +48,8 @@ const CollegeDetail = () => {
     const navigate = useNavigate();
     const PROGRAMS_LIMIT = 10;
     const [activeTab, setActiveTab] = useState('details'); // 'details' or 'community'
+    const [isFollowing, setIsFollowing] = useState(false);
+    const [followLoading, setFollowLoading] = useState(false);
 
 
     useEffect(() => {
@@ -119,6 +122,21 @@ const CollegeDetail = () => {
         fetchCollegePrograms();
         fetchAnnouncements();
         window.scrollTo(0, 0);
+
+        // Check follow status
+        const checkFollow = async () => {
+            const token = localStorage.getItem('access');
+            if (!token) return;
+            try {
+                const res = await axios.get(`${baseUrl}api/colleges/${collegeId}/follow/check/`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setIsFollowing(res.data.following);
+            } catch (err) {
+                // Not logged in or error — ignore
+            }
+        };
+        checkFollow();
     }, [collegeId]);
 
     const handleDeleteAnnouncement = async (announcementId) => {
@@ -141,6 +159,25 @@ const CollegeDetail = () => {
         } catch (error) {
             console.error("Error deleting announcement:", error);
             alert("Error deleting announcement.");
+        }
+    };
+
+    const handleToggleFollow = async () => {
+        if (!loggedIn) {
+            navigate('/login');
+            return;
+        }
+        setFollowLoading(true);
+        try {
+            const token = localStorage.getItem('access');
+            const res = await axios.post(`${baseUrl}api/colleges/${collegeId}/follow/`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setIsFollowing(res.data.following);
+        } catch (err) {
+            console.error("Follow toggle error:", err);
+        } finally {
+            setFollowLoading(false);
         }
     };
 
@@ -236,6 +273,30 @@ const CollegeDetail = () => {
                                             <h1 className="text-3xl font-bold">{college.name}</h1>
                                             <p className="text-gray-600 text-lg">{college.city}, {college.state}</p>
                                         </div>
+                                    </div>
+
+                                    {/* Follow Button */}
+                                    <div className="mb-4">
+                                        <button
+                                            onClick={handleToggleFollow}
+                                            disabled={followLoading}
+                                            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm active:scale-95 ${isFollowing
+                                                    ? 'bg-violet-50 text-violet-600 border border-violet-200 hover:bg-violet-100'
+                                                    : 'bg-primary text-white hover:bg-teal-700 shadow-teal-700/20'
+                                                }`}
+                                        >
+                                            {isFollowing ? (
+                                                <>
+                                                    <HeartIconSolid className="w-5 h-5 text-violet-500" />
+                                                    Following
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <HeartIcon className="w-5 h-5" />
+                                                    Follow
+                                                </>
+                                            )}
+                                        </button>
                                     </div>
 
                                     {/* New Metadata Badges */}
