@@ -103,9 +103,9 @@ const AnnouncementManager = ({ college }) => {
 
     return (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-8">
-            <div className="bg-purple-50 px-8 py-5 border-b border-purple-100/50 flex items-center justify-between">
+            <div className="bg-violet-50 px-8 py-5 border-b border-violet-100/50 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <div className="bg-white p-2 rounded-xl text-purple-600 shadow-sm">
+                    <div className="bg-white p-2 rounded-xl text-violet-600 shadow-sm">
                         <MegaphoneIcon className="w-6 h-6" />
                     </div>
                     <div>
@@ -121,25 +121,25 @@ const AnnouncementManager = ({ college }) => {
                     <div className="flex flex-wrap gap-3">
                         <button
                             onClick={() => handleTemplateSelect('info_session')}
-                            className={`px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all flex items-center gap-2 ${activeTemplate === 'info_session' ? 'bg-blue-50 border-blue-200 text-blue-700 shadow-sm' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                            className={`px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all flex items-center gap-2 ${activeTemplate === 'info_session' ? 'bg-violet-600 border-violet-600 text-white shadow-md' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
                         >
                             <Bars3CenterLeftIcon className="w-4 h-4" /> Info Session
                         </button>
                         <button
                             onClick={() => handleTemplateSelect('deadline')}
-                            className={`px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all flex items-center gap-2 ${activeTemplate === 'deadline' ? 'bg-red-50 border-red-200 text-red-700 shadow-sm' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                            className={`px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all flex items-center gap-2 ${activeTemplate === 'deadline' ? 'bg-violet-600 border-violet-600 text-white shadow-md' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
                         >
                             <ClockIcon className="w-4 h-4" /> Upcoming Deadline
                         </button>
                         <button
                             onClick={() => handleTemplateSelect('event')}
-                            className={`px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all flex items-center gap-2 ${activeTemplate === 'event' ? 'bg-green-50 border-green-200 text-green-700 shadow-sm' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                            className={`px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all flex items-center gap-2 ${activeTemplate === 'event' ? 'bg-violet-600 border-violet-600 text-white shadow-md' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
                         >
                             <CalendarIcon className="w-4 h-4" /> Event Invite
                         </button>
                         <button
                             onClick={() => handleTemplateSelect('custom')}
-                            className={`px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all flex items-center gap-2 ${activeTemplate === 'custom' ? 'bg-gray-800 border-gray-800 text-white shadow-sm' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                            className={`px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all flex items-center gap-2 ${activeTemplate === 'custom' ? 'bg-violet-600 border-violet-600 text-white shadow-md' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
                         >
                             Custom
                         </button>
@@ -153,7 +153,7 @@ const AnnouncementManager = ({ college }) => {
                                     type="date"
                                     value={eventDate}
                                     onChange={handleDateChange}
-                                    className="w-full border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none"
+                                    className="w-full bg-white text-gray-900 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none"
                                 />
                             </div>
                             <div>
@@ -162,7 +162,7 @@ const AnnouncementManager = ({ college }) => {
                                     type="time"
                                     value={eventTime}
                                     onChange={handleTimeChange}
-                                    className="w-full border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none"
+                                    className="w-full bg-white text-gray-900 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none"
                                 />
                             </div>
                             <div>
@@ -172,7 +172,7 @@ const AnnouncementManager = ({ college }) => {
                                     placeholder="Zoom link or Room 101"
                                     value={eventLinkOrLocation}
                                     onChange={handleLocChange}
-                                    className="w-full border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none placeholder:text-gray-300"
+                                    className="w-full bg-white text-gray-900 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none placeholder:text-gray-400"
                                 />
                             </div>
                             <div className="md:col-span-3">
@@ -191,7 +191,7 @@ const AnnouncementManager = ({ college }) => {
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             placeholder="Announcement Title"
-                            className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-purple-400 focus:ring-4 focus:ring-purple-50 rounded-xl px-4 py-3 outline-none transition-all font-semibold text-gray-900 placeholder:text-gray-400 placeholder:font-normal"
+                            className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-violet-400 focus:ring-4 focus:ring-violet-50 rounded-xl px-4 py-3 outline-none transition-all font-semibold text-gray-900 placeholder:text-gray-400 placeholder:font-normal"
                         />
                     </div>
                     <div>
@@ -200,7 +200,7 @@ const AnnouncementManager = ({ college }) => {
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                             placeholder="Write your announcement details here..."
-                            className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-purple-400 focus:ring-4 focus:ring-purple-50 rounded-xl px-4 py-4 outline-none transition-all resize-none leading-relaxed text-gray-700"
+                            className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-violet-400 focus:ring-4 focus:ring-violet-50 rounded-xl px-4 py-4 outline-none transition-all resize-none leading-relaxed text-gray-700"
                         />
                     </div>
                 </div>
@@ -224,9 +224,9 @@ const AnnouncementManager = ({ college }) => {
                     <button
                         onClick={handleSubmit}
                         disabled={!title.trim() || !content.trim() || status === 'loading'}
-                        className={`px-8 py-3 rounded-xl font-bold shadow-sm transition-all flex items-center gap-2 ${!title.trim() || !content.trim()
+                        className={`px-8 py-3 rounded-xl font-bold shadow-sm transition-all flex items-center gap-2 ${(!title.trim() || !content.trim() || status === 'loading')
                             ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            : 'bg-purple-500 hover:bg-purple-600 text-white hover:shadow-md'
+                            : 'bg-violet-500 hover:bg-violet-600 text-white hover:shadow-md'
                             }`}
                     >
                         {status === 'loading' ? 'Publishing...' : 'Publish to Students'}

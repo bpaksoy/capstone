@@ -15,7 +15,8 @@ import {
     SparklesIcon,
     CalendarIcon,
     ClockIcon,
-    Bars3CenterLeftIcon
+    Bars3CenterLeftIcon,
+    MegaphoneIcon
 } from '@heroicons/react/24/outline';
 import DirectMessageModal from '../utils/DirectMessageModal';
 import AnnouncementManager from '../components/AnnouncementManager';
@@ -288,6 +289,15 @@ const CollegePortal = () => {
                             </div>
                         </div>
                         <div className="flex flex-col sm:flex-row items-center gap-3">
+                            <button
+                                onClick={() => {
+                                    document.getElementById('announcement-manager').scrollIntoView({ behavior: 'smooth' });
+                                }}
+                                className="bg-[#17717d] hover:bg-[#125a64] text-white font-bold px-6 py-3 rounded-xl transition-all shadow-xl flex items-center gap-2 border border-[#17717d]"
+                            >
+                                <MegaphoneIcon className="w-5 h-5 text-white" />
+                                <span className="text-white">Post Announcement</span>
+                            </button>
                             <Link
                                 to={`/colleges/${college.id}/details`}
                                 className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white font-bold px-6 py-3 rounded-xl transition-all flex items-center gap-2"
@@ -501,7 +511,7 @@ const CollegePortal = () => {
                 </div>
 
                 {/* Official Announcements Manager placed outside the form container, or below */}
-                <div className="mt-8">
+                <div id="announcement-manager" className="mt-8 pt-8 border-t border-gray-100">
                     {college && <AnnouncementManager college={college} />}
                 </div>
 

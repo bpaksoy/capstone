@@ -9,6 +9,9 @@ import L from 'leaflet';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import ScrollToTop from './ScrollToTop';
+import { ShieldCheckIcon, PaperAirplaneIcon, SparklesIcon, ChevronDownIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { SparklesIcon as SparklesIconSolid, BookmarkIcon as BookmarkIconSolid, InformationCircleIcon } from '@heroicons/react/24/solid';
+
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -115,6 +118,28 @@ const CollegeDetail = () => {
         window.scrollTo(0, 0);
     }, [collegeId]);
 
+    const handleDeleteAnnouncement = async (announcementId) => {
+        if (!window.confirm("Are you sure you want to delete this announcement?")) return;
+
+        try {
+            const token = localStorage.getItem('access');
+            const response = await fetch(`${baseUrl}api/posts/${announcementId}/delete/`, {
+                method: 'DELETE',
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                setAnnouncements(prev => prev.filter(a => a.id !== announcementId));
+            } else {
+                alert("Failed to delete announcement.");
+            }
+        } catch (error) {
+            console.error("Error deleting announcement:", error);
+            alert("Error deleting announcement.");
+        }
+    };
 
     if (isLoading) {
         return (
@@ -189,7 +214,7 @@ const CollegeDetail = () => {
                                 <div className="flex flex-wrap gap-2 mb-6">
                                     {/* Control (Public/Private) */}
                                     {college.control && (
-                                        <span className={`px-3 py-1 rounded-full text-sm font-semibold ${college.control === 1 ? 'bg-green-100 text-green-800' : 'bg-purple-100 text-purple-800'}`}>
+                                        <span className={`px-3 py-1 rounded-full text-sm font-semibold ${college.control === 1 ? 'bg-green-100 text-green-800' : 'bg-violet-100 text-violet-800'}`}>
                                             {college.control === 1 ? 'Public' : college.control === 2 ? 'Private Non-profit' : 'Private For-profit'}
                                         </span>
                                     )}
@@ -221,7 +246,7 @@ const CollegeDetail = () => {
 
                                     {/* NEW: Carnegie Classification */}
                                     {college.carnegie_classification_display && college.carnegie_classification_display !== "Not classified" && (
-                                        <span className="px-3 py-1 rounded-full text-sm font-semibold bg-purple-50 text-purple-700 border border-purple-200">
+                                        <span className="px-3 py-1 rounded-full text-sm font-semibold bg-violet-50 text-violet-700 border border-violet-200">
                                             {college.carnegie_classification_display}
                                         </span>
                                     )}
@@ -419,7 +444,7 @@ const CollegeDetail = () => {
                                 {announcements && announcements.length > 0 && (
                                     <div className="mt-8 pt-8 border-t border-gray-100">
                                         <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                                            <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
+                                            <div className="p-2 bg-violet-50 text-violet-600 rounded-lg">
                                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
                                                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2.25m0 2.25h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                                 </svg>
@@ -428,15 +453,24 @@ const CollegeDetail = () => {
                                         </h3>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             {announcements.map(announcement => (
-                                                <div key={announcement.id} className="bg-gradient-to-br from-purple-50/50 to-white border border-purple-100 rounded-2xl p-5 shadow-sm relative overflow-hidden">
-                                                    <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-purple-200/50 to-purple-100/50 opacity-20 transform rotate-45 translate-x-8 -translate-y-8 rounded-full"></div>
+                                                <div key={announcement.id} className="bg-gradient-to-br from-violet-50/50 to-white border border-violet-100 rounded-2xl p-5 shadow-sm relative overflow-hidden">
+                                                    <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-violet-200/50 to-violet-100/50 opacity-20 transform rotate-45 translate-x-8 -translate-y-8 rounded-full"></div>
                                                     <div className="flex justify-between items-start mb-2">
                                                         <h4 className="font-bold text-gray-900 line-clamp-2">{announcement.title}</h4>
+                                                        {loggedIn && user && announcement.author?.id === user.id && (
+                                                            <button
+                                                                onClick={() => handleDeleteAnnouncement(announcement.id)}
+                                                                className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                                                                title="Delete Announcement"
+                                                            >
+                                                                <TrashIcon className="w-5 h-5" />
+                                                            </button>
+                                                        )}
                                                     </div>
                                                     <p className="text-gray-700 text-sm mb-4 line-clamp-3 leading-relaxed">
                                                         {announcement.content}
                                                     </p>
-                                                    <div className="flex items-center justify-between text-[10px] uppercase font-bold text-gray-400 mt-auto pt-4 border-t border-purple-100/50">
+                                                    <div className="flex items-center justify-between text-[10px] uppercase font-bold text-gray-400 mt-auto pt-4 border-t border-violet-100/50">
                                                         <span>Posted by {announcement.author?.first_name || announcement.author?.username}</span>
                                                         <span>{new Date(announcement.created_at).toLocaleDateString()}</span>
                                                     </div>

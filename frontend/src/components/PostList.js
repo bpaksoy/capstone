@@ -11,6 +11,7 @@ import axios from 'axios';
 import EditPostModal from '../utils/EditPostModal';
 import ShareModal from '../utils/ShareModal';
 import { useNavigate } from 'react-router-dom';
+import { SparklesIcon as SparklesIconSolid } from '@heroicons/react/24/solid';
 
 const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
     const { user, fetchUser } = useCurrentUser();
@@ -206,8 +207,18 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
                     const post = item;
 
                     return (
-                        <div key={post.id} className="bg-white rounded-xl shadow-sm border border-gray-200 max-w-2xl w-full mb-6 relative overflow-visible">
-
+                        <div key={post.id} className="bg-white rounded-xl shadow-sm border border-gray-200 max-w-2xl w-full mb-6 relative overflow-hidden">
+                            {post.is_announcement && (
+                                <div className="bg-[#17717d] w-full py-1.5 px-6 flex items-center justify-between shadow-sm z-10 relative">
+                                    <div className="flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-white">
+                                            <path d="M11.25 4.533A9.707 9.707 0 006 3a9.735 9.735 0 00-3.25.555.75.75 0 00-.5.707v14.25a.75.75 0 001 .707A8.237 8.237 0 016 18.75c1.995 0 3.823.707 5.25 1.886V4.533zM12.75 20.636A8.214 8.214 0 0118 18.75c1.66 0 3.223.495 4.525 1.353a.75.75 0 001-.707V4.262a.75.75 0 00-.5-.707A9.735 9.735 0 0018 3a9.707 9.707 0 00-5.25 1.533v16.103z" />
+                                        </svg>
+                                        <span className="text-[10px] font-bold text-white uppercase tracking-wider">Official Announcement</span>
+                                    </div>
+                                    <SparklesIconSolid className="w-3.5 h-3.5 text-teal-200" />
+                                </div>
+                            )}
                             {/* Header */}
                             <div className="p-6 flex items-center justify-between">
                                 <div className="flex items-center space-x-3 cursor-pointer" onClick={() => {
