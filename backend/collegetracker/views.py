@@ -1679,6 +1679,11 @@ class PostListView(APIView):
 
             if college_id:
                 posts = posts.filter(college_id=college_id)
+
+            # Filter by category if provided
+            category = request.query_params.get('category')
+            if category and category != 'all':
+                posts = posts.filter(category=category)
             
             # Pin announcements to the top if in a hub, otherwise sort by newest
             if college_id:

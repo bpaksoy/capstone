@@ -223,6 +223,16 @@ class Article(models.Model):
 
 
 class Post(models.Model):
+    CATEGORY_CHOICES = [
+        ('acceptance', '🎉 Acceptance Stories'),
+        ('essay_help', '✍️ Essay Help'),
+        ('campus_tours', '🏫 Campus Tours'),
+        ('financial_aid', '💰 Financial Aid'),
+        ('test_prep', '📚 Test Prep'),
+        ('advice', '💡 Advice'),
+        ('general', '💬 General'),
+    ]
+
     title = models.CharField(max_length=200)
     content = models.TextField()
     author = models.ForeignKey(
@@ -234,6 +244,7 @@ class Post(models.Model):
                               validators=[FileExtensionValidator(['png', 'jpg', 'jpeg'])])
     is_announcement = models.BooleanField(default=False)
     college = models.ForeignKey('College', null=True, blank=True, on_delete=models.CASCADE, related_name='announcements')
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='general', blank=True)
 
     # @cached_property
     # def author_username(self):

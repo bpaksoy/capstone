@@ -91,12 +91,17 @@ class PostSerializer(serializers.ModelSerializer):
     comments_count = serializers.SerializerMethodField()
     likes_count = serializers.SerializerMethodField()
     image = serializers.ImageField(required=False, allow_null=True)
+    category_display = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
         fields = ('id', 'author', 'title', 'content', 'created_at',
-                  'updated_at', 'comments_count', 'likes_count', 'image', 'is_announcement', 'college')
+                  'updated_at', 'comments_count', 'likes_count', 'image',
+                  'is_announcement', 'college', 'category', 'category_display')
         depth = 1
+
+    def get_category_display(self, obj):
+        return obj.get_category_display() if obj.category else '💬 General'
 
     def get_comments_count(self, obj):
         return obj.comments.count()

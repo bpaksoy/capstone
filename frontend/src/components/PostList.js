@@ -246,6 +246,19 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
                                             )}
                                         </div>
                                         <p className="text-gray-500 text-xs">{timeSince(post.created_at)}</p>
+                                        {post.category && post.category !== 'general' && (
+                                            <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${{
+                                                    acceptance: 'bg-green-50 text-green-600 border border-green-200',
+                                                    essay_help: 'bg-amber-50 text-amber-600 border border-amber-200',
+                                                    campus_tours: 'bg-blue-50 text-blue-600 border border-blue-200',
+                                                    financial_aid: 'bg-emerald-50 text-emerald-600 border border-emerald-200',
+                                                    test_prep: 'bg-violet-50 text-violet-600 border border-violet-200',
+                                                    advice: 'bg-orange-50 text-orange-600 border border-orange-200',
+                                                }[post.category] || 'bg-gray-50 text-gray-500 border border-gray-200'
+                                                }`}>
+                                                {post.category_display || post.category}
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="text-gray-400 cursor-pointer relative">

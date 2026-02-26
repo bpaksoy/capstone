@@ -15,6 +15,17 @@ function AddPostModal({ onAddPost, isOpen: externalIsOpen, onClose: externalOnCl
     const [imageFile, setImageFile] = useState(null);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [isAnnouncement, setIsAnnouncement] = useState(false);
+    const [category, setCategory] = useState('general');
+
+    const JOURNEY_CATEGORIES = [
+        { key: 'acceptance', emoji: '🎉', label: 'Acceptance' },
+        { key: 'essay_help', emoji: '✍️', label: 'Essay Help' },
+        { key: 'campus_tours', emoji: '🏫', label: 'Campus Tours' },
+        { key: 'financial_aid', emoji: '💰', label: 'Financial Aid' },
+        { key: 'test_prep', emoji: '📚', label: 'Test Prep' },
+        { key: 'advice', emoji: '💡', label: 'Advice' },
+        { key: 'general', emoji: '💬', label: 'General' },
+    ];
 
     const popularEmojis = ["😀", "😂", "🥰", "😍", "🤩", "😊", "🤔", "🙌", "✨", "🔥", "💯", "🎓", "🚀", "📚", "🏫", "🎉", "💙", "🌟", "✅", "📝", "🌍", "📍"];
 
@@ -76,6 +87,7 @@ function AddPostModal({ onAddPost, isOpen: externalIsOpen, onClose: externalOnCl
             if (collegeId) {
                 formData.append('college', collegeId);
             }
+            formData.append('category', category);
 
             const response = await axios.post(`${baseUrl}api/posts/`, formData, { // Send FormData
                 headers: {
@@ -213,6 +225,29 @@ function AddPostModal({ onAddPost, isOpen: externalIsOpen, onClose: externalOnCl
                                             />
                                         </div>
                                     </div>
+
+                                    {/* Journey Category Selector */}
+                                    {!collegeId && (
+                                        <div className="mt-2">
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Tag your journey</p>
+                                            <div className="flex flex-wrap gap-2">
+                                                {JOURNEY_CATEGORIES.map(cat => (
+                                                    <button
+                                                        key={cat.key}
+                                                        type="button"
+                                                        onClick={() => setCategory(cat.key)}
+                                                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${category === cat.key
+                                                                ? 'bg-violet-100 border-violet-300 text-violet-700 shadow-sm'
+                                                                : 'bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100'
+                                                            }`}
+                                                    >
+                                                        <span>{cat.emoji}</span>
+                                                        <span>{cat.label}</span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
 
                                     {/* Image Upload & Emoji Area */}
                                     <div className="mt-2">
