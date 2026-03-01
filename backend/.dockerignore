@@ -1,0 +1,53 @@
+# Python
+*.pyc
+__pycache__
+*.pyo
+*.pyd
+.Python
+venv/
+.venv/
+*.egg-info/
+dist/
+build/
+
+# Django
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+*.log
+
+# Environment
+.env
+.env.local
+.env.*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+.dockerignore
+
+# Git
+.git/
+.gitignore
+
+# Node (if any frontend accidentally gets in)
+node_modules/
+frontend/
+
+# Data files
+*.csv
+College_Scorecard_Raw_Data_*/
+build_log_*.txt
+
+# Gemini
+.gemini/
+.agents/

@@ -10,11 +10,13 @@ class Command(BaseCommand):
     help = 'Smart seeds colleges with real campus images (Wikipedia) and logos (Clearbit).'
 
     def add_arguments(self, parser):
-        parser.add_argument('--limit', type=int, default=10, help='Limit the number of colleges to process')
+        parser.add_argument('--limit', type=int, default=50, help='Limit the number of colleges to process')
+        parser.add_argument('--offset', type=int, default=0, help='Skip this many colleges (for batching)')
         parser.add_argument('--all', action='store_true', help='Process all colleges')
         parser.add_argument('--featured', action='store_true', help='Prioritize featured colleges (MA, NY, CA)')
         parser.add_argument('--force', action='store_true', help='Overwrite existing images')
         parser.add_argument('--force-wiki', action='store_true', help='Specifically re-try Wikipedia even if image exists')
+        parser.add_argument('--images-only', action='store_true', help='Only fetch images, skip logo updates')
 
     def get_wikipedia_image(self, college_name):
         headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
@@ -77,8 +79,10 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         limit = options['limit']
+        offset = options['offset']
         force = options['force']
         force_wiki = options['force_wiki']
+        images_only = options['images_only']
         
         if options['featured']:
             # Specifically target colleges that show up in the "Featured" section
@@ -91,18 +95,21 @@ class Command(BaseCommand):
                 colleges = colleges[:limit]
         else:
             # Only process colleges that are missing either a logo OR an image
-            query = College.objects.filter(models.Q(logo_url__isnull=True) | models.Q(image__isnull=True) | models.Q(logo_url=''))
+            query = College.objects.filter(models.Q(image__isnull=True) | models.Q(image=''))
+            if not images_only:
+                query = query | College.objects.filter(models.Q(logo_url__isnull=True) | models.Q(logo_url=''))
+            query = query.distinct()
             if options['all']:
-                colleges = query
+                colleges = query.order_by('id')
             else:
-                colleges = query.order_by('id')[:limit]
+                colleges = query.order_by('id')[offset:offset + limit]
 
         total = colleges.count()
         if total == 0:
             self.stdout.write(self.style.SUCCESS("All colleges already have branding! Nothing to do."))
             return
 
-        self.stdout.write(f"Processing {total} colleges for smart branding...")
+        self.stdout.write(f"Processing {total} colleges for smart branding (offset={offset})...")
 
         import random
         user_agents = [
@@ -112,15 +119,17 @@ class Command(BaseCommand):
         ]
         
         success_count = 0
-        for college in colleges:
-            # Respectful delay for APIs - increased to avoid 429
-            time.sleep(5)
-            self.stdout.write(f"Analyzing {college.name}...")
+        skip_count = 0
+        fail_count = 0
+        for i, college in enumerate(colleges):
+            # Respectful delay for APIs
+            time.sleep(2)
+            self.stdout.write(f"[{i+1}/{total}] Analyzing {college.name}...")
             
             headers = {'User-Agent': random.choice(user_agents)}
 
             # 1. Update Logo via Clearbit (if we have a website)
-            if not college.logo_url or force:
+            if not images_only and (not college.logo_url or force):
                 try:
                     domain = college.website.replace('http://', '').replace('https://', '').split('/')[0]
                     if domain.startswith('www.'): domain = domain[4:]
@@ -178,13 +187,16 @@ class Command(BaseCommand):
                 if new_image_data:
                     file_name, content = new_image_data
                     college.image.save(file_name, ContentFile(content), save=False)
-                    self.stdout.write(self.style.SUCCESS(f"  Successfully updated image to {file_name}"))
+                    self.stdout.write(self.style.SUCCESS(f"  ✅ Updated image: {file_name}"))
+                    success_count += 1
                 else:
-                    self.stdout.write(self.style.WARNING(f"  Could not find a new image for {college.name}"))
+                    self.stdout.write(self.style.WARNING(f"  ⏭️  No image found for {college.name}"))
+                    fail_count += 1
+            else:
+                skip_count += 1
             
             college.save()
-            success_count += 1
-            if success_count % 5 == 0:
-                self.stdout.write(self.style.SUCCESS(f"Progress: {success_count}/{total}"))
+            if (i + 1) % 10 == 0:
+                self.stdout.write(self.style.SUCCESS(f"--- Progress: {i+1}/{total} | ✅ {success_count} new | ⏭️ {fail_count} failed | ⏩ {skip_count} skipped ---"))
 
-        self.stdout.write(self.style.SUCCESS(f"Finished. Successfully processed {success_count} colleges."))
+        self.stdout.write(self.style.SUCCESS(f"\n🎉 Finished! ✅ {success_count} new images | ⏭️ {fail_count} failed | ⏩ {skip_count} skipped"))
