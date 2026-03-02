@@ -92,7 +92,7 @@ const Friends = () => {
                                     <div className="relative inline-block mb-5">
                                         <div className="relative">
                                             <img
-                                                src={friend.image ? baseUrl + friend.image : images.avatar}
+                                                src={friend.image ? (friend.image.startsWith('http') ? friend.image : baseUrl + friend.image) : images.avatar}
                                                 alt={friend.username}
                                                 className="w-28 h-28 rounded-3xl object-cover ring-4 ring-primary/20 group-hover:ring-primary/40 transition-all shadow-lg"
                                             />

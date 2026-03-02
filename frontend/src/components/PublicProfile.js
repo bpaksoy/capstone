@@ -86,7 +86,7 @@ const PublicProfile = () => {
                                     <div className="relative group">
                                         <img
                                             alt="Profile"
-                                            src={otherUserData?.image ? baseUrl + otherUserData.image : images.avatar}
+                                            src={otherUserData?.image ? (otherUserData.image.startsWith('http') ? otherUserData.image : baseUrl + otherUserData.image) : images.avatar}
                                             className="w-32 h-32 sm:w-40 sm:h-40 rounded-full object-cover ring-4 ring-white bg-white shadow-lg"
                                         />
                                         {otherUserData?.is_private && (

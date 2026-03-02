@@ -45,13 +45,14 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
             navigate(`/profile/${otherUser.id}`, { state: { otherUser } });
         }
     }, [otherUser])
-
     const [postLikes, setPostLikes] = useState({}); // State to track likes for each post
+    const [postLikeCounts, setPostLikeCounts] = useState({}); // State to track like counts per post
 
-    const updateLikeStatus = (postId, isLiked) => {
+    const updateLikeStatus = (postId, isLiked, newCount) => {
         setPostLikes((prevPostLikes) => ({ ...prevPostLikes, [postId]: isLiked }));
-        // Note: do NOT call onAddPost here — that triggers a full posts re-fetch
-        // on every like state check (including initial mount), causing a loop.
+        if (newCount !== undefined) {
+            setPostLikeCounts(prev => ({ ...prev, [postId]: newCount }));
+        }
     };
 
     const [modalIsOpen, setModalIsOpen] = useState(null);
@@ -231,7 +232,7 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
                                     }
                                 }}>
                                     <img
-                                        src={post.author.image ? `${baseUrl}${post.author.image.startsWith('/') ? post.author.image.substring(1) : post.author.image}` : images.profile}
+                                        src={post.author.image ? (post.author.image.startsWith('http') ? post.author.image : `${baseUrl}${post.author.image.startsWith('/') ? post.author.image.substring(1) : post.author.image}`) : images.profile}
                                         alt="User Avatar"
                                         className="w-10 h-10 rounded-full object-cover border border-gray-100 shadow-sm"
                                     />
@@ -248,13 +249,13 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
                                         <p className="text-gray-500 text-xs">{timeSince(post.created_at)}</p>
                                         {post.category && post.category !== 'general' && (
                                             <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${{
-                                                    acceptance: 'bg-green-50 text-green-600 border border-green-200',
-                                                    essay_help: 'bg-amber-50 text-amber-600 border border-amber-200',
-                                                    campus_tours: 'bg-blue-50 text-blue-600 border border-blue-200',
-                                                    financial_aid: 'bg-emerald-50 text-emerald-600 border border-emerald-200',
-                                                    test_prep: 'bg-violet-50 text-violet-600 border border-violet-200',
-                                                    advice: 'bg-orange-50 text-orange-600 border border-orange-200',
-                                                }[post.category] || 'bg-gray-50 text-gray-500 border border-gray-200'
+                                                acceptance: 'bg-green-50 text-green-600 border border-green-200',
+                                                essay_help: 'bg-amber-50 text-amber-600 border border-amber-200',
+                                                campus_tours: 'bg-blue-50 text-blue-600 border border-blue-200',
+                                                financial_aid: 'bg-emerald-50 text-emerald-600 border border-emerald-200',
+                                                test_prep: 'bg-violet-50 text-violet-600 border border-violet-200',
+                                                advice: 'bg-orange-50 text-orange-600 border border-orange-200',
+                                            }[post.category] || 'bg-gray-50 text-gray-500 border border-gray-200'
                                                 }`}>
                                                 {post.category_display || post.category}
                                             </span>
@@ -330,12 +331,12 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
                             {/* Stats Row */}
                             <div className="px-6 py-3 flex items-center justify-between text-sm text-gray-500 border-b border-gray-50">
                                 <div className="flex items-center gap-1">
-                                    {post.likes_count > 0 && (
+                                    {(postLikeCounts[post.id] !== undefined ? postLikeCounts[post.id] : post.likes_count) > 0 && (
                                         <>
                                             <div className="p-1 bg-primary rounded-full">
                                                 <svg className="w-3 h-3 fill-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z" /></svg>
                                             </div>
-                                            <span>{post.likes_count}</span>
+                                            <span>{postLikeCounts[post.id] !== undefined ? postLikeCounts[post.id] : post.likes_count}</span>
                                         </>
                                     )}
                                 </div>

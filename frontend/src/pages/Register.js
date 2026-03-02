@@ -33,8 +33,8 @@ export default function Register() {
         try {
             await signUp.authenticateWithRedirect({
                 strategy: "oauth_google",
-                redirectUrl: "/sso-callback",
-                redirectUrlComplete: "/"
+                redirectUrl: window.location.origin + "/sso-callback",
+                redirectUrlComplete: window.location.origin + "/"
             });
         } catch (err) {
             console.error("Google sign up error:", err);

@@ -33,9 +33,11 @@ const SearchProfilesModal = ({ isOpen, onClose }) => {
         setLoading(true);
         try {
             const token = localStorage.getItem('access');
-            const res = await axios.get(`${baseUrl}api/users/search/?q=${encodeURIComponent(searchQuery)}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const config = {};
+            if (token) {
+                config.headers = { Authorization: `Bearer ${token}` };
+            }
+            const res = await axios.get(`${baseUrl}api/users/search/?q=${encodeURIComponent(searchQuery)}`, config);
             setResults(res.data);
         } catch (err) {
             console.error("Error searching profiles:", err);

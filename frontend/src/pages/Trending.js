@@ -36,7 +36,7 @@ function Trending() {
         setPostsLoading(true);
         try {
             const token = localStorage.getItem('access');
-            const headers = token ? { Authorization: `Bearer ${token}` } : {};
+            const headers = (token && token !== 'null') ? { Authorization: `Bearer ${token}` } : {};
             const categoryParam = category && category !== 'all' ? `?category=${category}` : '';
             const response = await axios.get(`${baseUrl}api/posts/${categoryParam}`, { headers });
             setPosts(response.data);
@@ -56,7 +56,7 @@ function Trending() {
             setNewsLoading(true);
             try {
                 const token = localStorage.getItem('access');
-                const headers = token ? { Authorization: `Bearer ${token}` } : {};
+                const headers = (token && token !== 'null') ? { Authorization: `Bearer ${token}` } : {};
                 const response = await axios.get(`${baseUrl}api/news/`, {
                     headers: headers
                 });
@@ -147,8 +147,8 @@ function Trending() {
                             key={cat.key}
                             onClick={() => handleCategoryChange(cat.key)}
                             className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold transition-all whitespace-nowrap ${activeCategory === cat.key
-                                    ? 'bg-white text-gray-900 shadow-lg shadow-white/20 scale-105'
-                                    : 'bg-white/10 text-white/80 hover:bg-white/20 border border-white/10'
+                                ? 'bg-white text-gray-900 shadow-lg shadow-white/20 scale-105'
+                                : 'bg-white/10 text-white/80 hover:bg-white/20 border border-white/10'
                                 }`}
                         >
                             <span className="text-base">{cat.emoji}</span>

@@ -67,7 +67,7 @@ const AddBioModal = ({ initialValues = {}, fetchUser }) => {
                                     <div className="relative mb-6">
                                         <div className="w-20 h-20 rounded-full border-4 border-teal-50 overflow-hidden shadow-md">
                                             <img
-                                                src={initialValues?.image ? baseUrl + initialValues.image : images.avatar}
+                                                src={initialValues?.image ? (initialValues.image.startsWith('http') ? initialValues.image : baseUrl + initialValues.image) : images.avatar}
                                                 alt="User Profile"
                                                 className="w-full h-full object-cover"
                                             />

@@ -202,7 +202,7 @@ const Profile = () => {
                                             <>
                                                 <img
                                                     alt="Profile"
-                                                    src={user.image ? baseUrl + user.image : images.avatar}
+                                                    src={user.image ? (user.image.startsWith('http') ? user.image : baseUrl + user.image) : images.avatar}
                                                     className="shadow-xl rounded-full align-middle border-none absolute -m-16 -ml-20 lg:-ml-16 w-32 h-32 object-cover ring-4 ring-white bg-white max-w-[128px] max-h-[128px]"
                                                 />
                                                 {isUploadingImage && (
@@ -244,7 +244,7 @@ const Profile = () => {
                                                     {pendingRequests.map((request) => (
                                                         <div key={request.id} className="flex flex-col sm:flex-row justify-between items-center gap-2 p-2 bg-gray-50 rounded-lg">
                                                             <div className="flex items-center gap-2">
-                                                                <img src={request.user1.image ? baseUrl + request.user1.image : images.avatar} alt="avatar" className="w-8 h-8 rounded-full object-cover" />
+                                                                <img src={request.user1.image ? (request.user1.image.startsWith('http') ? request.user1.image : baseUrl + request.user1.image) : images.avatar} alt="avatar" className="w-8 h-8 rounded-full object-cover" />
                                                                 <p className="text-sm font-medium text-gray-900 truncate max-w-[100px]">{request.user1.username}</p>
                                                             </div>
                                                             <div className="flex gap-2">

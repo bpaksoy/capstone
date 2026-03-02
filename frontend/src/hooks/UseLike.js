@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { baseUrl as globalBaseUrl } from '../shared';
 import { useCurrentUser } from '../UserProvider/UserProvider';
-
 
 const useLike = (contentType, objectId, token, refetchComments) => {
 
@@ -11,53 +11,53 @@ const useLike = (contentType, objectId, token, refetchComments) => {
     }, [])
 
 
+    const [count, setCount] = useState(0);
     const [isLiked, setIsLiked] = useState(false);
-    //console.log("isLiked", isLiked)
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const baseUrl = 'http://127.0.0.1:8000/api/';
+    const apiBaseUrl = globalBaseUrl + 'api/';
+
+    const checkLike = async () => {
+        if (user?.id) { //Only run if user.id is available
+            try {
+                setLoading(true);
+                const response = await axios.get(`${apiBaseUrl}likes/`, {
+                    params: {
+                        content_type: contentType,
+                        object_id: objectId,
+                        user: user.id,
+                    },
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                setIsLiked(response.data.is_liked);
+                setCount(response.data.count || 0);
+            } catch (err) {
+                setError(err);
+            } finally {
+                setLoading(false);
+            }
+        }
+    };
 
     useEffect(() => {
-        const checkLike = async () => {
-            if (user?.id) { //Only run if user.id is available
-                try {
-                    setLoading(true);
-                    const response = await axios.get(`${baseUrl}likes/`, {
-                        params: {
-                            content_type: contentType,
-                            object_id: objectId,
-                            user: user.id,
-                        },
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    });
-                    setIsLiked(response.data.is_liked);
-                } catch (err) {
-                    setError(err);
-                } finally {
-                    setLoading(false);
-                }
-            }
-        };
         checkLike();
     }, [user?.id, contentType, objectId, token]);
 
     const handleLike = async () => {
-        console.log("contentType", contentType, "objectId", objectId);
         try {
             setLoading(true);
-            await axios.post(`${baseUrl}likes/create/`, { content_type: contentType, object_id: objectId }, {
+            await axios.post(`${apiBaseUrl}likes/create/`, { content_type: contentType, object_id: objectId }, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
             });
             setIsLiked(true);
+            setCount(prev => prev + 1);
             if (contentType === 'comment') { // Only refetch if it's a comment
                 refetchComments(objectId);
             }
-
-
         } catch (error) {
             setError(error);
         } finally {
@@ -68,7 +68,7 @@ const useLike = (contentType, objectId, token, refetchComments) => {
     const handleUnlike = async () => {
         try {
             setLoading(true);
-            const response = await axios.get(`${baseUrl}likes/`, {
+            const response = await axios.get(`${apiBaseUrl}likes/`, {
                 params: {
                     content_type: contentType,
                     object_id: objectId,
@@ -86,12 +86,13 @@ const useLike = (contentType, objectId, token, refetchComments) => {
                 return;
             }
 
-            await axios.delete(`${baseUrl}likes/${likeId}/`, {
+            await axios.delete(`${apiBaseUrl}likes/${likeId}/`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
             });
             setIsLiked(false);
+            setCount(prev => Math.max(0, prev - 1));
             if (contentType === 'comment') { // Only refetch if it's a comment
                 refetchComments(objectId);
             }
@@ -102,7 +103,7 @@ const useLike = (contentType, objectId, token, refetchComments) => {
         }
     };
 
-    return { isLiked, loading, error, handleLike, handleUnlike };
+    return { isLiked, count, loading, error, handleLike, handleUnlike };
 };
 
 

@@ -12,7 +12,15 @@ if (!clerkPubKey) {
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <ClerkProvider publishableKey={clerkPubKey}>
+  <ClerkProvider
+    publishableKey={clerkPubKey}
+    applicationName="Worm" // Added applicationName prop
+    appearance={{
+      variables: {
+        colorPrimary: "#17717d",
+      }
+    }}
+  >
     <App />
   </ClerkProvider>
 );

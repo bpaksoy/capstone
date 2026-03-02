@@ -11,7 +11,7 @@ from rest_framework.decorators import api_view, permission_classes, parser_class
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status, generics, serializers
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework_simplejwt.tokens import RefreshToken
 import pandas as pd
@@ -1550,7 +1550,7 @@ def verify_ambassador(request):
         return Response({"error": str(e)}, status=500)
 
 class UserSearchView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get(self, request):
         query = request.query_params.get('q', '')
@@ -1559,26 +1559,32 @@ class UserSearchView(APIView):
 
         users = User.objects.filter(
             Q(username__icontains=query) | Q(email__icontains=query)
-        ).exclude(id=request.user.id)[:20]
+        )
+        
+        if request.user.is_authenticated:
+            users = users.exclude(id=request.user.id)
+            
+        users = users[:20]
 
         data = []
         for u in users:
-            friendship = Friendship.objects.filter(
-                (Q(user1=request.user) & Q(user2=u)) |
-                (Q(user1=u) & Q(user2=request.user))
-            ).first()
-            
             status_val = 'none'
-            if friendship:
-                if friendship.status == 'accepted':
-                    status_val = 'accepted'
-                elif friendship.status == 'pending':
-                    status_val = 'pending'
+            if request.user.is_authenticated:
+                friendship = Friendship.objects.filter(
+                    (Q(user1=request.user) & Q(user2=u)) |
+                    (Q(user1=u) & Q(user2=request.user))
+                ).first()
+                
+                if friendship:
+                    if friendship.status == 'accepted':
+                        status_val = 'accepted'
+                    elif friendship.status == 'pending':
+                        status_val = 'pending'
 
             data.append({
                 "id": u.id,
                 "username": u.username,
-                "email": u.email,
+                "email": u.email if request.user.is_authenticated else None,
                 "image": request.build_absolute_uri(u.image.url) if bool(u.image) else None,
                 "is_private": u.is_private,
                 "friendship_status": status_val,

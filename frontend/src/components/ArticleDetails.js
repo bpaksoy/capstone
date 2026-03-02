@@ -54,7 +54,7 @@ const ArticleDetails = () => {
                         <img src={images.avatar} alt="User Avatar" className="w-6 h-6 rounded-full" />
                         <p className="text-gray-500 text-sm">{article.author.username}</p>
                     </div>
-                    {article.image && <img src={`${baseUrl}${article.image}`} alt="Article Thumbnail" className="w-full h-auto object-cover rounded-md mb-4" />}
+                    {article.image && <img src={article.image.startsWith('http') ? article.image : `${baseUrl}${article.image.startsWith('/') ? article.image.substring(1) : article.image}`} alt="Article Thumbnail" className="w-full h-auto object-cover rounded-md mb-4" />}
                     {ReactHtmlParser(article.content)}
                 </div>
             ) : (

@@ -63,7 +63,7 @@ const ArticleItem = ({ id, title, content, image, created_at, author, slug }) =>
                 <div key={id} className="bg-white p-4 rounded-lg shadow-md max-w-2xl w-full mb-4 relative">
                     <div className="items-center mb-4">
                         <h2 className="text-xl font-semibold mb-2">{title}</h2>
-                        {image && <img src={`${baseUrl}${image}`} alt="Article Thumbnail" className="w-full h-48 object-cover rounded-md mb-2" />}
+                        {image && <img src={image.startsWith('http') ? image : `${baseUrl}${image.startsWith('/') ? image.substring(1) : image}`} alt="Article Thumbnail" className="w-full h-48 object-cover rounded-md mb-2" />}
                         <p className="text-gray-700 mb-4">
                             {truncateContent(content, 300)}
                             <Link to={`/articles/${slug}`} className="text-blue-500 underline ml-1">Read more</Link>
@@ -72,7 +72,7 @@ const ArticleItem = ({ id, title, content, image, created_at, author, slug }) =>
                             {author &&
                                 (<div className="flex items-center space-x-2">
                                     <img
-                                        src={author.image ? `${baseUrl}${author.image.startsWith('/') ? author.image.substring(1) : author.image}` : images.avatar}
+                                        src={author.image ? (author.image.startsWith('http') ? author.image : `${baseUrl}${author.image.startsWith('/') ? author.image.substring(1) : author.image}`) : images.avatar}
                                         alt="User Avatar"
                                         className="w-6 h-6 rounded-full object-cover"
                                     />
