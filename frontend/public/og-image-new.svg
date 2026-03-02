@@ -1,0 +1,13 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" fill="#0f172a"/>
+  
+  <g transform="translate(600, 315) scale(4) translate(-32, -32)">
+    <!-- Purple circle background -->
+    <circle cx="32" cy="32" r="32" fill="#A855F7"/>
+    <!-- Black W logo - same as Wormie -->
+    <path d="M12 18L20 46L28 26L36 46L44 26L52 46" stroke="black" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  
+  <text x="600" y="520" font-family="sans-serif" font-weight="bold" font-size="48" fill="white" text-anchor="middle">Worm</text>
+  <text x="600" y="570" font-family="sans-serif" font-size="24" fill="#64748b" text-anchor="middle">Find Your Perfect College</text>
+</svg>
