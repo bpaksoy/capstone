@@ -9,6 +9,7 @@ import NewStudentMessageModal from '../components/NewStudentMessageModal';
 const DirectMessages = () => {
     const { user, loggedIn } = useCurrentUser();
     const [conversations, setConversations] = useState([]);
+    const [isConversationsLoading, setIsConversationsLoading] = useState(true);
     const [selectedUser, setSelectedUser] = useState(null);
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
@@ -211,6 +212,8 @@ const DirectMessages = () => {
             setConversations(sortedConversations);
         } catch (err) {
             console.error("Error fetching conversations:", err);
+        } finally {
+            setIsConversationsLoading(false);
         }
     };
 
@@ -375,7 +378,16 @@ const DirectMessages = () => {
                         )}
                     </div>
                     <div className="flex-1 overflow-y-auto p-2 space-y-1">
-                        {conversations.length > 0 ? (
+                        {isConversationsLoading ? (
+                            <div className="flex justify-center items-center py-20 w-full">
+                                <div className="modern-loader !scale-75">
+                                    <div></div>
+                                    <div></div>
+                                    <div></div>
+                                    <div></div>
+                                </div>
+                            </div>
+                        ) : conversations.length > 0 ? (
                             conversations.map(conv => (
                                 <div
                                     key={conv.user.id}
