@@ -177,3 +177,5 @@ node_modules
 College_Scorecard_Raw_Data_*/
 backend/build_log_*.txt
 backend/dump.json
+.my-npm-cache
+
