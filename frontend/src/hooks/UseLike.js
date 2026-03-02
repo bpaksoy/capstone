@@ -11,7 +11,7 @@ const useLike = (contentType, objectId, token, refetchComments) => {
     }, [])
 
 
-    const [count, setCount] = useState(0);
+    const [count, setCount] = useState(undefined);
     const [isLiked, setIsLiked] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -54,7 +54,7 @@ const useLike = (contentType, objectId, token, refetchComments) => {
                 },
             });
             setIsLiked(true);
-            setCount(prev => prev + 1);
+            setCount(prev => (prev !== undefined ? prev + 1 : 1));
             if (contentType === 'comment') { // Only refetch if it's a comment
                 refetchComments(objectId);
             }
@@ -92,7 +92,7 @@ const useLike = (contentType, objectId, token, refetchComments) => {
                 },
             });
             setIsLiked(false);
-            setCount(prev => Math.max(0, prev - 1));
+            setCount(prev => (prev !== undefined ? Math.max(0, prev - 1) : 0));
             if (contentType === 'comment') { // Only refetch if it's a comment
                 refetchComments(objectId);
             }

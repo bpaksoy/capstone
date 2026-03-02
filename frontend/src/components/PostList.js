@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { images } from "../constants";
 import CommentModal from '../utils/CommentModal';
 import Comment from './Comment';
@@ -48,12 +48,12 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
     const [postLikes, setPostLikes] = useState({}); // State to track likes for each post
     const [postLikeCounts, setPostLikeCounts] = useState({}); // State to track like counts per post
 
-    const updateLikeStatus = (postId, isLiked, newCount) => {
+    const updateLikeStatus = useCallback((postId, isLiked, newCount) => {
         setPostLikes((prevPostLikes) => ({ ...prevPostLikes, [postId]: isLiked }));
         if (newCount !== undefined) {
             setPostLikeCounts(prev => ({ ...prev, [postId]: newCount }));
         }
-    };
+    }, []);
 
     const [modalIsOpen, setModalIsOpen] = useState(null);
     const [postIdToDelete, setPostIdToDelete] = useState(null);
