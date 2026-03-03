@@ -39,39 +39,52 @@ const DetailedSearch = () => {
         setIsLoading(true);
         setSearchError('');
         try {
+            const token = localStorage.getItem('access');
+            const headers = (token && token !== 'null') ? { Authorization: `Bearer ${token}` } : {};
             const response = await axios.get(`${baseUrl}api/colleges/detailed/`, {
                 params: {
                     state, city, program, min_sat: minSat, max_sat: maxSat, name,
                     control, locale_category: localeCategory,
                     hbcu: isHbcu ? 'true' : '', hsi: isHsi ? 'true' : ''
                 },
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('access')}`
-                }
+                headers: headers
             })
-            if (response.status === 404) {
-                navigate("/404");
-            } else if (response.status === 401) {
-                updateLoggedInStatus(false);
-                navigate("/login", {
-                    state: {
-                        previousUrl: location.pathname
-                    }
-                });
-            }
             const data = response.data;
             setColleges(data.colleges);
             const searchQuery = {
                 state, city, program, min_sat: minSat, max_sat: maxSat, name,
                 control, locale_category: localeCategory, hbcu: isHbcu, hsi: isHsi
             };
-            navigate(`/search/detailed/`, { state: { colleges: data.colleges, hasMore: data.has_more, searchQuery: searchQuery } });
-        }
-        catch (error) {
-            setSearchError(error.message || "An unexpected error occurred. Please try again.");
-            console.error("Error fetching colleges", error);
-        }
-        finally {
+            navigate(`/search/all`, { state: { colleges: data.colleges, hasMore: data.has_more, searchQuery: searchQuery, isDetailedSearch: true } });
+        } catch (error) {
+            if (error.response && error.response.status === 401) {
+                // Token is expired or invalid. Clear it and retry once without token, or redirect to login.
+                localStorage.removeItem('access');
+                localStorage.removeItem('refresh');
+                updateLoggedInStatus(false);
+                // We'll just softly handle it by showing error or we could try fetching again:
+                try {
+                    const retryResponse = await axios.get(`${baseUrl}api/colleges/detailed/`, {
+                        params: {
+                            state, city, program, min_sat: minSat, max_sat: maxSat, name,
+                            control, locale_category: localeCategory,
+                            hbcu: isHbcu ? 'true' : '', hsi: isHsi ? 'true' : ''
+                        }
+                    });
+                    const retryData = retryResponse.data;
+                    setColleges(retryData.colleges);
+                    navigate(`/search/all`, { state: { colleges: retryData.colleges, hasMore: retryData.has_more, searchQuery: { state, city, program, min_sat: minSat, max_sat: maxSat, name, control, locale_category: localeCategory, hbcu: isHbcu, hsi: isHsi }, isDetailedSearch: true } });
+                    return;
+                } catch (retryError) {
+                    setSearchError("Please log in again or try your search once more.");
+                }
+            } else if (error.response && error.response.status === 404) {
+                navigate("/404");
+            } else {
+                setSearchError(error.message || "An unexpected error occurred. Please try again.");
+                console.error("Error fetching colleges", error);
+            }
+        } finally {
             setIsLoading(false);
         }
     };

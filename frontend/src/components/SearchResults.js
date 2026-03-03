@@ -19,16 +19,27 @@ function SearchResults() {
     const [page, setPage] = useState(1);
     const [suggestion, setSuggestion] = useState(null);
 
-    const [filters, setFilters] = useState({
-        state: '',
-        control: '',
-        max_cost: '',
-        max_admission: '',
-        min_admission: ''
-    });
-
     const navigate = useNavigate();
+
     const location = useLocation();
+
+    // Initialize filters from location.state if it exists, otherwise default
+    const [filters, setFilters] = useState(() => {
+        if (location.state && location.state.searchQuery) {
+            return {
+                ...location.state.searchQuery,
+                query: location.state.searchQuery.name || query
+            };
+        }
+        return {
+            state: '',
+            control: '',
+            max_cost: '',
+            max_admission: '',
+            min_admission: '',
+            query: query
+        };
+    });
 
     const handleFilterChange = (name, value) => {
         if (name === 'clear') {
@@ -68,9 +79,12 @@ function SearchResults() {
 
             if (hasActiveFilters) {
                 // Use detailed search endpoint if filters are active
+                // If the user navigates to /search/all, we don't want to actually search for the string "all"
+                const activeQuery = (query && query.toLowerCase() !== 'all') ? query : filters.query;
+
                 const filterParams = {
                     ...filters,
-                    name: query,
+                    name: (activeQuery && activeQuery.toLowerCase() !== 'all') ? activeQuery : '',
                     page: page
                 };
                 const response = await axios.get(`${baseUrl}api/colleges/detailed/`, {
@@ -83,8 +97,12 @@ function SearchResults() {
                     setHasMore(response.data.has_more);
                     setSuggestion(response.data.suggestion);
                 }
-            } else if (location.state && location.state.colleges && page === 1 && !hasActiveFilters) {
-                // Use data from location state if available and no filters
+            } else if (location.state && location.state.colleges && page === 1 && location.state.isDetailedSearch) {
+                // Use data from location state if coming from detailed search and no additional filters changed yet
+                // However, since we now seed `filters` with location.state.searchQuery in useState,
+                // `hasActiveFilters` will likely be true, causing the above block to trigger instead,
+                // effectively re-fetching but keeping the filters active.
+                // We leave this block as a fallback just in case.
                 collegeData = location.state.colleges;
                 setHasMore(location.state.hasMore);
             } else {

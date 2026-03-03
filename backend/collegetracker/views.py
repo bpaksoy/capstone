@@ -576,7 +576,10 @@ class DetailedSearchListView(generics.ListAPIView):
             queryset = queryset.filter(state__iexact=state_param)
 
         if city_param:
-            queryset = queryset.filter(city__iexact=city_param)
+            if city_param.lower() == 'new york city' or city_param.lower() == 'new york':
+                queryset = queryset.filter(city__iregex=r'^New York(\s+City)?$')
+            else:
+                queryset = queryset.filter(city__iexact=city_param)
         
         if name_param and name_param.lower() != 'all':
             name_lower = name_param.lower()
