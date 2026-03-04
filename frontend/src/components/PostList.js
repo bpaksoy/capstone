@@ -217,7 +217,7 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
                                         </svg>
                                         <span className="text-[10px] font-bold text-white uppercase tracking-wider">Official Announcement</span>
                                     </div>
-                                    <SparklesIconSolid className="w-3.5 h-3.5 text-teal-200" />
+                                    <SparklesIconSolid className="w-3.5 h-3.5 text-[#A855F7]" />
                                 </div>
                             )}
                             {/* Header */}
