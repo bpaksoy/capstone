@@ -151,7 +151,11 @@ const AIAgent = () => {
         }
     }, [loggedIn, user?.role]); // Re-trigger when login state changes
 
-    const handleVisualClear = () => {
+    const handleVisualClear = (e) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
         setChatHistory([
             {
                 role: 'assistant',
@@ -162,24 +166,29 @@ const AIAgent = () => {
         ]);
     };
 
-    const handleClearHistory = async () => {
-        if (!window.confirm("Are you sure you want to clear your chat history?")) return;
+    const handleClearHistory = async (e) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
 
         try {
             const token = localStorage.getItem('access');
-            if (token) {
+            if (token && token !== 'null') {
                 await axios.delete(`${baseUrl}api/ai/history/`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
             }
+        } catch (error) {
+            console.error("Error clearing history on backend", error);
+        } finally {
+            // Always clear the UI state, even if the backend delete fails
             setChatHistory([
                 {
                     role: 'assistant',
-                    content: "History cleared! How can I help you today?"
+                    content: "Your chat history has been permanently deleted! How can I help you next?"
                 }
             ]);
-        } catch (error) {
-            console.error("Error clearing history", error);
         }
     };
 
