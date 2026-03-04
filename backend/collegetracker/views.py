@@ -1785,17 +1785,21 @@ class GlobalCommentListView(generics.ListAPIView):
 
 
 class UserPostsView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request, user_id, format=None):
         target_user = get_object_or_404(User, pk=user_id)
         current_user = request.user
 
-        is_own_profile = (target_user.id == current_user.id)
-        is_friend = Friendship.objects.filter(
-            (Q(user1=target_user, user2=current_user) | Q(user1=current_user, user2=target_user)),
-            status='accepted'
-        ).exists()
+        is_own_profile = False
+        is_friend = False
+
+        if current_user.is_authenticated:
+            is_own_profile = (target_user.id == current_user.id)
+            is_friend = Friendship.objects.filter(
+                (Q(user1=target_user, user2=current_user) | Q(user1=current_user, user2=target_user)),
+                status='accepted'
+            ).exists()
 
         if target_user.is_private and not (is_own_profile or is_friend):
             return Response({'error': 'This profile is private'}, status=status.HTTP_403_FORBIDDEN)
@@ -1886,17 +1890,21 @@ class CommentDetailView(APIView):
 
 
 class UserCommentsView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request, user_id, format=None):
         target_user = get_object_or_404(User, pk=user_id)
         current_user = request.user
 
-        is_own_profile = (target_user.id == current_user.id)
-        is_friend = Friendship.objects.filter(
-            (Q(user1=target_user, user2=current_user) | Q(user1=current_user, user2=target_user)),
-            status='accepted'
-        ).exists()
+        is_own_profile = False
+        is_friend = False
+
+        if current_user.is_authenticated:
+            is_own_profile = (target_user.id == current_user.id)
+            is_friend = Friendship.objects.filter(
+                (Q(user1=target_user, user2=current_user) | Q(user1=current_user, user2=target_user)),
+                status='accepted'
+            ).exists()
 
         if target_user.is_private and not (is_own_profile or is_friend):
             return Response({'error': 'This profile is private'}, status=status.HTTP_403_FORBIDDEN)
@@ -2133,25 +2141,29 @@ class PendingFriendRequestsView(APIView):
 
 
 class FriendsView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request, user_id, format=None):
         try:
             user = get_object_or_404(User, pk=user_id)
             current_user = request.user
             
-            # Check friendship status for privacy and response
-            is_friend = Friendship.objects.filter(
-                (Q(user1=user, user2=current_user) | Q(user1=current_user, user2=user)),
-                status='accepted'
-            ).exists()
+            is_friend = False
+            is_pending = False
+            is_own_profile = False
 
-            is_pending = Friendship.objects.filter(
-                (Q(user1=user, user2=current_user) | Q(user1=current_user, user2=user)),
-                status='pending'
-            ).exists()
+            if current_user.is_authenticated:
+                is_friend = Friendship.objects.filter(
+                    (Q(user1=user, user2=current_user) | Q(user1=current_user, user2=user)),
+                    status='accepted'
+                ).exists()
 
-            is_own_profile = (user.id == current_user.id)
+                is_pending = Friendship.objects.filter(
+                    (Q(user1=user, user2=current_user) | Q(user1=current_user, user2=user)),
+                    status='pending'
+                ).exists()
+
+                is_own_profile = (user.id == current_user.id)
 
             # If profile is private and requester is not friend/self, restricted friends list
             if user.is_private and not (is_friend or is_own_profile):

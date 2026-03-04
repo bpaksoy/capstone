@@ -14,11 +14,14 @@ const useFetch = (options = {}, token) => {
     const fetchData = useCallback(async (url, method, isBackground = false) => {
         try {
             if (!isBackground) setLoading(true);
+            const headers = {};
+            if (tokenRef.current && tokenRef.current !== 'null') {
+                headers.Authorization = `Bearer ${tokenRef.current}`;
+            }
+
             const res = await axios(url, {
                 method,
-                headers: {
-                    Authorization: `Bearer ${tokenRef.current}`,
-                },
+                headers,
             });
             setData(res.data);
         } catch (err) {
