@@ -28,8 +28,6 @@ It also features a built-in social network where students can join "College Hubs
 
 ## 📸 Application Showcase
 
-> *Tip: Be sure to upload a `screenshot.png` of the app's homepage to the root of this repository to display it here!*
-
 ![Worm Dashboard Preview](./screenshot.png)
 
 ---
