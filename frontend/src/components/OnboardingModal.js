@@ -6,28 +6,28 @@ const OnboardingModal = () => {
 
     const steps = [
         {
-            title: "Welcome to HiScholar! 🎓",
+            title: "Welcome to Worm! 🎓",
             description: "Your AI-powered journey to finding the perfect college match starts here. Let's take a quick tour of what you can do.",
             icon: "✨",
-            color: "from-blue-400 to-indigo-500"
+            color: "from-teal-400 to-teal-600"
         },
         {
             title: "Meet Wormie, Your AI Guide 🤖",
             description: "Have a question about tuition, acceptance rates, or campus life? Just ask Wormie! Our smart AI counselor is always ready to help you out in the bottom right corner.",
             icon: "🐛",
-            color: "from-purple-400 to-pink-500"
+            color: "from-cyan-400 to-teal-500"
         },
         {
             title: "Discover & Smart Match 🎯",
             description: "Search out of 7,000+ colleges using advanced filters. Bookmark your favorites, and our recommendation engine will find hidden gems tailored to your stats.",
             icon: "🔍",
-            color: "from-green-400 to-emerald-500"
+            color: "from-emerald-400 to-teal-600"
         },
         {
             title: "Connect in College Hubs 💬",
             description: "Join the conversation! Every college has a dedicated hub where you can post questions, share thoughts, and DM other prospective students or verified staff.",
             icon: "🏫",
-            color: "from-orange-400 to-red-500"
+            color: "from-green-400 to-teal-500"
         }
     ];
 
@@ -79,7 +79,7 @@ const OnboardingModal = () => {
                     {steps.map((_, idx) => (
                         <div
                             key={idx}
-                            className={`h-2 rounded-full transition-all duration-300 ${idx === currentStep ? 'w-8 bg-indigo-600' : 'w-2 bg-gray-200'}`}
+                            className={`h-2 rounded-full transition-all duration-300 ${idx === currentStep ? 'w-8 bg-teal-600' : 'w-2 bg-gray-200'}`}
                         />
                     ))}
                 </div>
@@ -94,7 +94,7 @@ const OnboardingModal = () => {
                     </button>
                     <button
                         onClick={handleNext}
-                        className="px-6 py-2.5 bg-gray-900 hover:bg-indigo-600 text-white font-semibold rounded-xl shadow-md transition-all active:scale-95"
+                        className="px-6 py-2.5 bg-gray-900 hover:bg-teal-600 text-white font-semibold rounded-xl shadow-md transition-all active:scale-95"
                     >
                         {currentStep === steps.length - 1 ? "Get Started" : "Next"}
                     </button>

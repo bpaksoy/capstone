@@ -1,6 +1,6 @@
 <div align="center">
   <img src="https://hischolar-49a2a.web.app/wormie-logo.svg" alt="Wormie Logo" width="100"/>
-  <h1>HiScholar (Worm)</h1>
+  <h1>Worm</h1>
   <p><strong>Find your perfect college match with AI-driven insights and real student community.</strong></p>
 </div>
 
@@ -8,9 +8,9 @@
 
 ## 🚀 What the App Does
 
-**HiScholar** is a comprehensive, AI-powered higher education discovery platform designed to help prospective students and institutional representatives navigate the college admissions process. 
+**Worm** is a comprehensive, AI-powered higher education discovery platform designed to help prospective students and institutional representatives navigate the college admissions process. 
 
-Instead of dealing with fragmented data across dozens of university websites, HiScholar aggregates official IPEDS (College Board) data into a single, beautifully designed dashboard. Users can discover colleges, apply advanced filters, bookmark their favorites, and interact dynamically with **Wormie**, a personalized AI Admissions Assistant running on Google's Gemini model.
+Instead of dealing with fragmented data across dozens of university websites, Worm aggregates official IPEDS (College Board) data into a single, beautifully designed dashboard. Users can discover colleges, apply advanced filters, bookmark their favorites, and interact dynamically with **Wormie**, a personalized AI Admissions Assistant running on Google's Gemini model.
 
 It also features a built-in social network where students can join "College Hubs," ask questions, direct message peers, and even connect with verified admission officers.
 
@@ -30,7 +30,7 @@ It also features a built-in social network where students can join "College Hubs
 
 > *Tip: Be sure to upload a `screenshot.png` of the app's homepage to the root of this repository to display it here!*
 
-![HiScholar Dashboard Preview](./screenshot.png)
+![Worm Dashboard Preview](./screenshot.png)
 
 ---
 
