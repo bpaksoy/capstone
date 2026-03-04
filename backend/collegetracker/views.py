@@ -2870,7 +2870,7 @@ class AIChatView(APIView):
         }
 
         expanded_words = []
-        for w in meaningful_words:
+        for w in meaningful_words[:5]:  # Limit to 5 words to prevent huge SQL OR queries on long chat messages
             upper_w = w.upper()
             if upper_w in ACRONYM_MAP:
                 # Add the full name parts to the search
@@ -2884,14 +2884,10 @@ class AIChatView(APIView):
         if expanded_words:
             query = Q()
             for w in expanded_words:
-                # If it looks like a full name (has spaces), use icontains
-                if ' ' in w:
-                     query |= Q(name__icontains=w)
-                else:
-                    # Use word-boundary regex so 'UCLA' doesn't match 'Paul Mitchell'
-                    query |= Q(name__iregex=rf'\b{re.escape(w)}\b')
+                query |= Q(name__icontains=w)
 
-            matches = College.objects.filter(query).distinct()
+            # Limit to 50 results to prevent massive slowdowns on generic words (e.g. "career")
+            matches = list(College.objects.filter(query).distinct()[:50])
 
             # Score: count how many meaningful words appear (word-bounded) in the college name
             scored = []
