@@ -22,6 +22,7 @@ It also features a built-in social network where students can join "College Hubs
 - **🔍 Advanced Data Discovery:** Search over 7,000 U.S. colleges with precise filters for tuition cost, SAT scores, acceptance rates, and institution type.
 - **📊 Real Institutional Data:** Clean, easily readable data visualizations covering graduation rates, diversity, and maps.
 - **bookmark Bookmarks & Smart Matches:** Save your favorite schools and let our recommendation engine find similar hidden gems based on your statistical profile.
+- **💼 Proactive Recruiter Outreach:** A specialized feature set that allows verified college admissions staff to discover prospective students actively researching their institutions, enabling them to initiate highly-targeted, personalized direct messaging campaigns.
 - **💬 Social Hubs & DMs:** Every college has a dedicated community hub for students to post questions, comment, and connect via direct messaging.
 
 ---
