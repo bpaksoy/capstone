@@ -3,8 +3,10 @@ import axios from 'axios';
 import { baseUrl } from '../shared';
 import { useNavigate } from 'react-router-dom';
 import { MagnifyingGlassIcon, XMarkIcon, UserIcon, UserPlusIcon } from '@heroicons/react/24/outline';
+import { useCurrentUser } from '../UserProvider/UserProvider';
 
 const SearchProfilesModal = ({ isOpen, onClose }) => {
+    const { user, loggedIn } = useCurrentUser();
     const [query, setQuery] = useState('');
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -47,6 +49,12 @@ const SearchProfilesModal = ({ isOpen, onClose }) => {
     };
 
     const handleConnect = async (userId) => {
+        if (!loggedIn) {
+            onClose();
+            navigate('/login');
+            return;
+        }
+
         try {
             const token = localStorage.getItem('access');
             await axios.post(`${baseUrl}api/users/${userId}/friend-request/`, {}, {
@@ -126,17 +134,19 @@ const SearchProfilesModal = ({ isOpen, onClose }) => {
                                     </div>
 
                                     <div className="flex items-center gap-2 flex-shrink-0">
-                                        {!item.is_private && (
-                                            <button
-                                                onClick={() => {
-                                                    onClose();
+                                        <button
+                                            onClick={() => {
+                                                onClose();
+                                                if (item.is_private && !loggedIn) {
+                                                    navigate('/login');
+                                                } else {
                                                     navigate(`/profile/${item.id}`);
-                                                }}
-                                                className="text-xs font-bold bg-gray-100 text-gray-700 hover:bg-gray-200 px-3 py-1.5 rounded-lg transition-colors border-0 outline-none"
-                                            >
-                                                View Profile
-                                            </button>
-                                        )}
+                                                }
+                                            }}
+                                            className="text-xs font-bold bg-gray-100 text-gray-700 hover:bg-gray-200 px-3 py-1.5 rounded-lg transition-colors border-0 outline-none"
+                                        >
+                                            {item.is_private && !loggedIn ? 'Private' : 'View Profile'}
+                                        </button>
 
                                         {item.friendship_status === 'none' && (
                                             <button
