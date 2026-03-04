@@ -13,7 +13,7 @@ const OnboardingModal = () => {
         },
         {
             title: "Meet Wormie, Your AI Guide 🤖",
-            description: "Have a question about tuition, acceptance rates, or campus life? Just ask Wormie! Our smart AI counselor is always ready to help you out in the bottom right corner.",
+            description: "Have a question about tuition, acceptance rates, or campus life? Just ask Wormie! Our smart AI counselor is always ready to help you out on the right hand side.",
             icon: "🐛",
             color: "from-[#24adbf]/80 to-[#17717d]"
         },
