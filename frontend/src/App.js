@@ -26,7 +26,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import CollegePortal from "./pages/CollegePortal";
 import DirectMessages from "./pages/DirectMessages";
 import StaffVerification from "./pages/StaffVerification";
-
+import OnboardingModal from "./components/OnboardingModal";
 
 import ScrollToTopOnNavigate from "./utils/ScrollToTopOnNavigate";
 
@@ -37,6 +37,7 @@ const App = () => {
       <UserProvider>
         <ScrollToTopOnNavigate />
         <Header />
+        <OnboardingModal />
         <Routes>
           <Route path="/" element={<Colleges />} />
           <Route path="/trending" element={<Trending />} />
