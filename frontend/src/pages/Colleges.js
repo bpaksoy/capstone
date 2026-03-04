@@ -70,14 +70,16 @@ const Colleges = () => {
             <div>
                 {notFound && <NotFound />}
                 <div className="bg-primary min-h-screen">
-                    <div className="w-full flex flex-col items-center justify-center pt-12 pb-4 px-4 text-center animate-fadeIn">
-                        <h1 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-white tracking-tight drop-shadow-md mb-3 max-w-3xl">
-                            Share your academic progress, build your application, and find your dream school.
-                        </h1>
-                        <p className="text-base md:text-lg text-teal-100 max-w-2xl font-medium drop-shadow-sm">
-                            Connect with community members and trusted recruiters to unlock your full potential.
-                        </p>
-                    </div>
+                    {viewMode === 'featured' && (
+                        <div className="w-full flex flex-col items-center justify-center pt-12 pb-4 px-4 text-center animate-fadeIn">
+                            <h1 className="text-2xl md:text-3xl lg:text-4xl font-light text-gray-900 tracking-tight mb-3 max-w-3xl">
+                                Share your academic progress, build your application, and find your dream school.
+                            </h1>
+                            <p className="text-base md:text-lg text-gray-800 max-w-2xl font-light">
+                                Connect with community members and trusted recruiters to unlock your full potential.
+                            </p>
+                        </div>
+                    )}
                     <Search />
                     {showColleges ? (
                         <>
