@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { baseUrl } from '../shared';
 import { images } from '../constants';
@@ -15,7 +15,8 @@ const PublicProfile = () => {
     const [isFriend, setIsFriend] = useState(false);
     const [isPending, setIsPending] = useState(false);
     const [otherUserData, setOtherUserData] = useState(otherUser);
-    const { user: currentUser } = useCurrentUser();
+    const { user: currentUser, loggedIn } = useCurrentUser();
+    const navigate = useNavigate();
     const token = localStorage.getItem('access');
 
     const { data: friendsData, loading: friendsLoading, fetchData: fetchFriendsData } = useFetch({}, token);
@@ -46,6 +47,11 @@ const PublicProfile = () => {
     }, [updatedOtherUserData]);
 
     const handleFriendRequest = async (friendId) => {
+        if (!loggedIn) {
+            navigate('/login');
+            return;
+        }
+
         try {
             await axios({
                 method: isFriend ? 'delete' : 'post',
