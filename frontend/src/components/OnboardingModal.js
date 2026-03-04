@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { SparklesIcon as SparklesIconSolid } from '@heroicons/react/24/solid';
+import { MagnifyingGlassIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
 
 const OnboardingModal = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -8,26 +10,22 @@ const OnboardingModal = () => {
         {
             title: "Welcome to Worm! 🎓",
             description: "Your AI-powered journey to finding the perfect college match starts here. Let's take a quick tour of what you can do.",
-            icon: "✨",
-            color: "from-[#17717d]/60 to-[#17717d]"
+            icon: <SparklesIconSolid className="w-16 h-16 text-[#A855F7] drop-shadow-lg" />
         },
         {
             title: "Meet Wormie, Your AI Guide 🤖",
             description: "Have a question about tuition, acceptance rates, or campus life? Just ask Wormie! Our smart AI counselor is always ready to help you out on the right hand side.",
-            icon: "🐛",
-            color: "from-[#24adbf]/80 to-[#17717d]"
+            icon: <img src="/wormie-logo.svg" alt="Wormie" className="w-[72px] h-[72px] drop-shadow-xl" />
         },
         {
             title: "Discover & Smart Match 🎯",
             description: "Search out of 7,000+ colleges using advanced filters. Bookmark your favorites, and our recommendation engine will find hidden gems tailored to your stats.",
-            icon: "🔍",
-            color: "from-[#aaf0d1] to-[#17717d]"
+            icon: <MagnifyingGlassIcon className="w-20 h-20 text-[#24adbf] drop-shadow-xl" />
         },
         {
             title: "Connect in College Hubs 💬",
             description: "Join the conversation! Every college has a dedicated hub where you can post questions, share thoughts, and DM other prospective students or verified staff.",
-            icon: "🏫",
-            color: "from-teal-300 to-[#17717d]"
+            icon: <ChatBubbleLeftRightIcon className="w-20 h-20 text-teal-300 drop-shadow-xl" />
         }
     ];
 
@@ -58,7 +56,7 @@ const OnboardingModal = () => {
             <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col transform transition-all animate-slideUp">
 
                 {/* Header Graphic */}
-                <div className={`h-40 w-full bg-gradient-to-br ${steps[currentStep].color} flex items-center justify-center transition-colors duration-500`}>
+                <div className="h-40 w-full bg-[#17717d] flex items-center justify-center transition-colors duration-500">
                     <span className="text-6xl filter drop-shadow-md animate-bounce-slow">
                         {steps[currentStep].icon}
                     </span>
@@ -79,7 +77,8 @@ const OnboardingModal = () => {
                     {steps.map((_, idx) => (
                         <div
                             key={idx}
-                            className={`h-2 rounded-full transition-all duration-300 ${idx === currentStep ? 'w-8 bg-primary' : 'w-2 bg-gray-200'}`}
+                            onClick={() => setCurrentStep(idx)}
+                            className={`h-2 rounded-full transition-all duration-300 cursor-pointer hover:opacity-80 ${idx === currentStep ? 'w-8 bg-[#17717d]' : 'w-2 bg-gray-200'}`}
                         />
                     ))}
                 </div>
