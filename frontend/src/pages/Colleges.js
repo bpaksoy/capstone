@@ -7,7 +7,6 @@ import { baseUrl } from '../shared';
 import Search from '../components/Search';
 import { useCurrentUser } from '../UserProvider/UserProvider';
 import ScrollToTop from '../components/ScrollToTop';
-import { images } from '../constants';
 
 const Colleges = () => {
     const { user, loading, loggedIn } = useCurrentUser();
@@ -71,12 +70,11 @@ const Colleges = () => {
             <div>
                 {notFound && <NotFound />}
                 <div className="bg-primary min-h-screen">
-                    <div className="w-full flex flex-col items-center justify-center pt-20 pb-4 px-4 text-center animate-fadeIn">
-                        <img src={images.wormLogoFull} alt="Worm Logo" className="h-24 w-auto mb-6 drop-shadow-lg" />
-                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight drop-shadow-md mb-4 max-w-4xl">
+                    <div className="w-full flex flex-col items-center justify-center pt-8 pb-1 px-4 text-center animate-fadeIn">
+                        <h1 className="text-base font-semibold text-white tracking-tight drop-shadow-sm mb-1">
                             Share your academic progress, build your application, and find your dream school.
                         </h1>
-                        <p className="text-xl text-teal-100 max-w-2xl font-medium drop-shadow-sm">
+                        <p className="text-xs text-teal-100 max-w-xl font-medium drop-shadow-sm">
                             Connect with community members and trusted recruiters to unlock your full potential.
                         </p>
                     </div>
