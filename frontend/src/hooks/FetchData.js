@@ -11,9 +11,9 @@ const useFetch = (options = {}, token) => {
     const tokenRef = useRef(token);
     tokenRef.current = token;
 
-    const fetchData = useCallback(async (url, method) => {
+    const fetchData = useCallback(async (url, method, isBackground = false) => {
         try {
-            setLoading(true);
+            if (!isBackground) setLoading(true);
             const res = await axios(url, {
                 method,
                 headers: {
@@ -24,7 +24,7 @@ const useFetch = (options = {}, token) => {
         } catch (err) {
             setError(err);
         } finally {
-            setLoading(false);
+            if (!isBackground) setLoading(false);
         }
         // Empty deps: fetchData is now stable forever
     }, []);

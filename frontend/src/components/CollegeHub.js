@@ -12,8 +12,8 @@ const CollegeHub = ({ collegeId, collegeName }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [isPostModalOpen, setIsPostModalOpen] = useState(false);
 
-    const fetchHubPosts = useCallback(async () => {
-        setIsLoading(true);
+    const fetchHubPosts = useCallback(async (isBackground = false) => {
+        if (!isBackground) setIsLoading(true);
         try {
             const token = localStorage.getItem('access');
             const headers = token ? { Authorization: `Bearer ${token}` } : {};
@@ -24,7 +24,7 @@ const CollegeHub = ({ collegeId, collegeName }) => {
         } catch (error) {
             console.error("Error fetching hub posts:", error);
         } finally {
-            setIsLoading(false);
+            if (!isBackground) setIsLoading(false);
         }
     }, [collegeId]);
 
@@ -32,8 +32,8 @@ const CollegeHub = ({ collegeId, collegeName }) => {
         fetchHubPosts();
     }, [fetchHubPosts]);
 
-    const handleAddPost = () => {
-        fetchHubPosts();
+    const handleAddPost = (scrollToTop = true) => {
+        fetchHubPosts(!scrollToTop);
     };
 
     if (isLoading && posts.length === 0) {

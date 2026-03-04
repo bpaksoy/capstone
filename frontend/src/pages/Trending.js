@@ -32,8 +32,10 @@ function Trending() {
     const [activeCategory, setActiveCategory] = useState('all');
 
     // Fetch posts (with optional category filter)
-    const fetchPosts = async (category = 'all') => {
-        setPostsLoading(true);
+    const fetchPosts = async (category = 'all', isBackground = false) => {
+        if (!isBackground) {
+            setPostsLoading(true);
+        }
         try {
             const token = localStorage.getItem('access');
             const headers = (token && token !== 'null') ? { Authorization: `Bearer ${token}` } : {};
@@ -43,7 +45,9 @@ function Trending() {
         } catch (error) {
             console.error("Error fetching posts", error);
         } finally {
-            setPostsLoading(false);
+            if (!isBackground) {
+                setPostsLoading(false);
+            }
         }
     };
 
@@ -71,7 +75,7 @@ function Trending() {
     }, []);
 
     const handleAddPost = (scrollToTop = true) => {
-        fetchPosts(activeCategory);
+        fetchPosts(activeCategory, !scrollToTop);
         if (scrollToTop) {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -115,7 +119,8 @@ function Trending() {
         }, 500);
     };
 
-    if (postsLoading || newsLoading) {
+    // Only show the global loader on the VERY first load of posts
+    if (postsLoading && posts.length === 0) {
         return <Loader text="Uncovering the latest trends..." />;
     }
 

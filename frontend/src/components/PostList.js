@@ -264,7 +264,7 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
                                 </div>
                                 <div className="text-gray-400 cursor-pointer relative">
                                     {post.author.id === user?.id && (
-                                        <button onClick={() => handleOpenModal(post.id)} className="hover:bg-gray-100 rounded-full p-2 transition-colors">
+                                        <button type="button" onClick={(e) => { e.stopPropagation(); handleOpenModal(post.id); }} className="hover:bg-gray-100 rounded-full p-2 transition-colors">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                 <circle cx="12" cy="7" r="1" />
                                                 <circle cx="12" cy="12" r="1" />
@@ -305,7 +305,8 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
                                                 <p className="text-gray-800 text-base leading-relaxed whitespace-pre-wrap">{displayContent}</p>
                                                 {shouldTruncate && (
                                                     <button
-                                                        onClick={() => toggleExpandPost(post.id)}
+                                                        type="button"
+                                                        onClick={(e) => { e.stopPropagation(); toggleExpandPost(post.id); }}
                                                         className="text-blue-500 hover:text-blue-700 text-sm font-semibold mt-2 focus:outline-none"
                                                     >
                                                         {isExpanded ? 'See less' : 'See more...'}
@@ -340,9 +341,13 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
                                         </>
                                     )}
                                 </div>
-                                <div className="hover:underline cursor-pointer" onClick={() => toggleComments(post.id)}>
-                                    {post.comments_count > 0 ? `${post.comments_count} Comments` : ''}
-                                </div>
+                                <button
+                                    type="button"
+                                    className="hover:underline cursor-pointer focus:outline-none"
+                                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleComments(post.id); }}
+                                >
+                                    {post.comments_count >= 0 ? `${post.comments_count} Comments` : ''}
+                                </button>
                             </div>
 
                             {/* Action Buttons */}
@@ -361,7 +366,8 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
                                     </LikeButton>
                                 ) : (
                                     <button
-                                        onClick={() => navigate('/login')}
+                                        type="button"
+                                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/login'); }}
                                         className="flex-1 flex items-center justify-center gap-2 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors font-medium text-sm"
                                     >
                                         <svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -372,7 +378,8 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
                                 )}
 
                                 <button
-                                    onClick={() => toggleComments(post.id)}
+                                    type="button"
+                                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleComments(post.id); }}
                                     className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium text-sm"
                                 >
                                     <svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -382,7 +389,8 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
                                 </button>
 
                                 <button
-                                    onClick={(e) => { e.stopPropagation(); handleShare(post); }}
+                                    type="button"
+                                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleShare(post); }}
                                     className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium text-sm"
                                 >
                                     <svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -394,7 +402,7 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
 
                             {/* Comments Section */}
                             {visibleComments[post.id] && (
-                                <div className="px-6 py-4 bg-gray-50 rounded-b-xl border-t border-gray-100">
+                                <div className="px-6 py-4 bg-gray-50 rounded-b-xl border-t border-gray-100" onClick={(e) => e.stopPropagation()}>
                                     {user && (
                                         <div className="mb-6">
                                             <CommentModal postId={post.id} onAddComment={updateComments} />

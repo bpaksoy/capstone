@@ -182,7 +182,7 @@ const PublicProfile = () => {
                                                 ) : postsData?.length > 0 ? (
                                                     <PostList
                                                         posts={postsData}
-                                                        onAddPost={() => fetchPostsData(`${baseUrl}api/users/${userId}/posts/`, 'get')}
+                                                        onAddPost={(scrollToTop = true) => fetchPostsData(`${baseUrl}api/users/${userId}/posts/`, 'get', !scrollToTop)}
                                                     />
                                                 ) : (
                                                     <p className="text-gray-400 italic">No posts yet.</p>

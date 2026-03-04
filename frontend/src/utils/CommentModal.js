@@ -28,7 +28,6 @@ function AddCommentModal({ postId, onAddComment }) {
 
             setContent('');
             onAddComment(Date.now());
-            updatePosts();
 
         } catch (err) {
             console.error("Error posting comment:", err);
@@ -38,7 +37,7 @@ function AddCommentModal({ postId, onAddComment }) {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="w-full flex items-start gap-2">
+        <div className="w-full flex items-start gap-2">
             <div className="flex-1 relative">
                 <textarea
                     className="w-full bg-gray-50 border-0 rounded-2xl px-4 py-2 text-gray-900 text-sm focus:ring-2 focus:ring-primary focus:outline-none focus:bg-white transition-all resize-none overflow-hidden min-h-[40px] leading-relaxed"
@@ -49,11 +48,18 @@ function AddCommentModal({ postId, onAddComment }) {
                         e.target.style.height = 'auto';
                         e.target.style.height = e.target.scrollHeight + 'px';
                     }}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSubmit(e);
+                        }
+                    }}
                     rows={1}
                 />
             </div>
             <button
-                type="submit"
+                type="button"
+                onClick={handleSubmit}
                 disabled={!content.trim() || isSubmitting}
                 className={`p-2 rounded-full transition-colors ${content.trim() && !isSubmitting
                     ? 'bg-primary text-white hover:bg-primary/90 shadow-sm'
@@ -68,7 +74,7 @@ function AddCommentModal({ postId, onAddComment }) {
                     </svg>
                 )}
             </button>
-        </form>
+        </div>
     );
 }
 

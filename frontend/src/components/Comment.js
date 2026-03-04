@@ -166,7 +166,7 @@ function Comment({ postId, lastUpdatedComment, onAddPost, user }) {
                                             {/* Edit/Delete Menu */}
                                             <div className="text-gray-400 cursor-pointer relative mt-2">
                                                 {comment.author.id === user?.id && (
-                                                    <button onClick={() => handleOpenModal(comment.id)} className="hover:bg-gray-200 rounded-full p-1 transition-colors">
+                                                    <button type="button" onClick={(e) => { e.stopPropagation(); handleOpenModal(comment.id); }} className="hover:bg-gray-200 rounded-full p-1 transition-colors">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                             <circle cx="12" cy="12" r="1" />
                                                             <circle cx="19" cy="12" r="1" />
@@ -193,7 +193,8 @@ function Comment({ postId, lastUpdatedComment, onAddPost, user }) {
                             ))}
                             {visibleCount < comments.length && (
                                 <button
-                                    onClick={() => setVisibleCount((prev) => prev + 10)}
+                                    type="button"
+                                    onClick={(e) => { e.stopPropagation(); setVisibleCount((prev) => prev + 10); }}
                                     className="text-sm font-semibold text-gray-500 hover:text-gray-700 hover:underline mt-2 text-left w-full pl-2"
                                 >
                                     View more comments ({comments.length - visibleCount} remaining)

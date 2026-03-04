@@ -28,7 +28,6 @@ function AddReplyModal({ commentId, onAddReply }) {
             setContent('');
             setIsReplying(false);
             onAddReply(Date.now());
-            updatePosts();
 
         } catch (err) {
             console.error("Error posting reply:", err);
@@ -50,7 +49,7 @@ function AddReplyModal({ commentId, onAddReply }) {
 
     return (
         <div className="mt-2 pl-2 border-l-2 border-gray-100">
-            <form onSubmit={handleSubmit} className="w-full flex items-start gap-2">
+            <div className="w-full flex items-start gap-2">
                 <div className="flex-1 relative">
                     <textarea
                         className="w-full bg-gray-50 border-0 rounded-2xl px-3 py-2 text-gray-900 text-sm focus:ring-2 focus:ring-primary focus:outline-none focus:bg-white transition-all resize-none overflow-hidden min-h-[36px] leading-relaxed"
@@ -61,12 +60,19 @@ function AddReplyModal({ commentId, onAddReply }) {
                             e.target.style.height = 'auto';
                             e.target.style.height = e.target.scrollHeight + 'px';
                         }}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                handleSubmit(e);
+                            }
+                        }}
                         rows={1}
                         autoFocus
                     />
                 </div>
                 <button
-                    type="submit"
+                    type="button"
+                    onClick={handleSubmit}
                     disabled={!content.trim() || isSubmitting}
                     className={`p-1.5 rounded-full transition-colors ${content.trim() && !isSubmitting
                         ? 'bg-primary text-white hover:bg-primary/90 shadow-sm'
@@ -93,7 +99,7 @@ function AddReplyModal({ commentId, onAddReply }) {
                         <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
                     </svg>
                 </button>
-            </form>
+            </div>
         </div>
     );
 }

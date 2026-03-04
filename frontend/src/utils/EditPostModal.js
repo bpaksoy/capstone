@@ -95,52 +95,51 @@ function EditPostModal({ onAddPost, post, isOpen, onClose }) {
                                 </button>
                             </div>
 
-                            <form onSubmit={handleSubmit}>
-                                <div className="px-6 py-6 sm:p-6 space-y-6">
-                                    {/* Inputs - Styled like AddPostModal */}
-                                    <div className="space-y-4">
-                                        <div>
-                                            <input
-                                                type="text"
-                                                className="block w-full border-0 p-0 text-gray-900 placeholder:text-gray-400 focus:ring-0 focus:outline-none border-b-2 border-transparent focus:border-primary transition-colors sm:text-lg font-medium leading-6"
-                                                placeholder="Post title..."
-                                                id="title"
-                                                value={title}
-                                                onChange={(e) => setTitle(e.target.value)}
-                                            />
-                                        </div>
-                                        <div>
-                                            <textarea
-                                                className="block w-full border-0 p-0 text-gray-900 placeholder:text-gray-400 focus:ring-0 focus:outline-none border-l-2 border-transparent focus:border-primary pl-2 sm:text-base leading-6 resize-none min-h-[150px]"
-                                                placeholder="Update your content..."
-                                                id="content"
-                                                value={content}
-                                                onChange={(e) => setContent(e.target.value)}
-                                            />
-                                        </div>
+                            <div className="px-6 py-6 sm:p-6 space-y-6">
+                                {/* Inputs - Styled like AddPostModal */}
+                                <div className="space-y-4">
+                                    <div>
+                                        <input
+                                            type="text"
+                                            className="block w-full border-0 p-0 text-gray-900 placeholder:text-gray-400 focus:ring-0 focus:outline-none border-b-2 border-transparent focus:border-primary transition-colors sm:text-lg font-medium leading-6"
+                                            placeholder="Post title..."
+                                            id="title"
+                                            value={title}
+                                            onChange={(e) => setTitle(e.target.value)}
+                                        />
+                                    </div>
+                                    <div>
+                                        <textarea
+                                            className="block w-full border-0 p-0 text-gray-900 placeholder:text-gray-400 focus:ring-0 focus:outline-none border-l-2 border-transparent focus:border-primary pl-2 sm:text-base leading-6 resize-none min-h-[150px]"
+                                            placeholder="Update your content..."
+                                            id="content"
+                                            value={content}
+                                            onChange={(e) => setContent(e.target.value)}
+                                        />
                                     </div>
                                 </div>
+                            </div>
 
-                                <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-gray-100">
-                                    <button
-                                        type="submit"
-                                        disabled={isLoading || (!title && !content)}
-                                        className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-bold text-white sm:ml-3 sm:w-auto sm:text-sm ${isLoading || (!title && !content)
-                                                ? 'bg-gray-300 cursor-not-allowed'
-                                                : 'bg-primary hover:opacity-90'
-                                            }`}
-                                    >
-                                        {isLoading ? 'Saving...' : 'Post'}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={handleCloseModal}
-                                        className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:w-auto sm:text-sm"
-                                    >
-                                        Cancel
-                                    </button>
-                                </div>
-                            </form>
+                            <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-gray-100">
+                                <button
+                                    type="button"
+                                    onClick={handleSubmit}
+                                    disabled={isLoading || (!title && !content)}
+                                    className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-bold text-white sm:ml-3 sm:w-auto sm:text-sm ${isLoading || (!title && !content)
+                                        ? 'bg-gray-300 cursor-not-allowed'
+                                        : 'bg-primary hover:opacity-90'
+                                        }`}
+                                >
+                                    {isLoading ? 'Saving...' : 'Post'}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleCloseModal}
+                                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:w-auto sm:text-sm"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

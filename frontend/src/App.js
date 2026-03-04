@@ -49,6 +49,7 @@ const App = () => {
           <Route path="/colleges/:id/details" element={<CollegeDetail />} />
           <Route path="/smart-colleges/:id/details" element={<SmartCollegeDetail />} />
           <Route path="/search/:query" element={<SearchResults />} />
+          <Route path="/detailed-search" element={<DetailedSearch />} />
           <Route element={<PrivateRoute />} >
             <Route path="/bookmarks" element={<Bookmarks />} />
             <Route path="/smart-bookmarks" element={<SmartBookmarks />} />
@@ -56,7 +57,6 @@ const App = () => {
             <Route path="/profile/:userId" element={<PublicProfile />} />
             <Route path="/friends" element={<Friends />} />
             <Route path="/settings" element={<Settings />} />
-            <Route path="/detailed-search" element={<DetailedSearch />} />
             <Route path="/college/portal" element={<CollegePortal />} />
             <Route path="/messages" element={<DirectMessages />} />
             <Route path="/404" element={<NotFound />} />

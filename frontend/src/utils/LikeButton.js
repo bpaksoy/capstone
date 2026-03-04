@@ -5,7 +5,8 @@ const LikeButton = ({ contentType, objectId, onLikeStatusChange, refetchComments
     const token = localStorage.getItem('access');
     const { isLiked, count, loading, error, handleLike, handleUnlike } = useLike(contentType, objectId, token, refetchComments);
 
-    const handleClick = () => {
+    const handleClick = (e) => {
+        if (e) e.stopPropagation();
         if (isLiked) {
             handleUnlike();
             console.log("unlike clicked!");
@@ -26,7 +27,7 @@ const LikeButton = ({ contentType, objectId, onLikeStatusChange, refetchComments
     const buttonClass = className || "underline decoration-solid rounded hover:bg-gray-300 p-2";
 
     return (
-        <button onClick={handleClick} className={buttonClass}>
+        <button type="button" onClick={handleClick} className={buttonClass}>
             {children ? children : (isLiked ? 'Unlike' : 'Like')}
         </button>
     );

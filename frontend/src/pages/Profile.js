@@ -367,9 +367,9 @@ const Profile = () => {
                                         {postsLoading ? (
                                             <div className="flex justify-center p-8"><div className="w-8 h-8 rounded-full border-4 border-primary border-t-transparent animate-spin"></div></div>
                                         ) : postsData && postsData.length > 0 ? (
-                                            <PostList posts={postsData} onAddPost={() => {
+                                            <PostList posts={postsData} onAddPost={(scrollToTop = true) => {
                                                 const url = baseUrl + `api/users/${user.id}/posts/`;
-                                                fetchPostsData(url, 'get');
+                                                fetchPostsData(url, 'get', !scrollToTop);
                                             }} />
                                         ) : (
                                             <div className="text-center py-12 text-gray-400 italic bg-gray-50 rounded-2xl mx-4 sm:mx-0">

@@ -104,7 +104,7 @@ export const UserProvider = ({ children }) => {
             // The tabs have fallen out of sync!
             if (loggedIn !== isNowLoggedIn) {
                 console.log("Session state mismatch detected on tab focus. Syncing tab state...");
-                window.location.reload();
+                // window.location.reload(); // Temporarily disabled to debug comment click reload issue
             }
         };
 
