@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { baseUrl } from '../shared';
 import { useCurrentUser } from '../UserProvider/UserProvider';
-import { ChatBubbleLeftRightIcon, PaperAirplaneIcon, UsersIcon, PaperClipIcon, ArrowDownTrayIcon, DocumentIcon, XMarkIcon, PencilIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { ChatBubbleLeftRightIcon, PaperAirplaneIcon, UsersIcon, PaperClipIcon, ArrowDownTrayIcon, DocumentIcon, XMarkIcon, PencilIcon, PlusIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { Link, useLocation } from 'react-router-dom';
 import NewStudentMessageModal from '../components/NewStudentMessageModal';
 
@@ -361,11 +361,11 @@ const DirectMessages = () => {
     if (!loggedIn) return <div className="p-20 text-center">Please login to view messages.</div>;
 
     return (
-        <div className="bg-primary min-h-screen flex flex-col pt-12 pb-12">
-            <div className="max-w-7xl w-full mx-auto px-4 flex flex-col h-[calc(100vh-120px)] min-h-[600px]">
-                <div className="bg-white rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] border border-white/10 overflow-hidden flex flex-col md:flex-row flex-1">
+        <div className="bg-primary min-h-screen flex flex-col md:pt-12 md:pb-12 pt-0 pb-0">
+            <div className="max-w-6xl w-full mx-auto md:px-4 flex flex-col h-screen md:h-[calc(100vh-120px)] min-h-[500px]">
+                <div className="bg-white md:rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] md:border border-white/10 overflow-hidden flex flex-row flex-1">
                     {/* Conversations List */}
-                    <div className="w-80 border-r border-gray-100 flex flex-col bg-gray-50/30">
+                    <div className={`w-full md:w-80 border-r border-gray-100 flex flex-col bg-gray-50/30 ${selectedUser ? 'hidden md:flex' : 'flex'}`}>
                         <div className="p-6 border-b border-gray-100 bg-white flex justify-between items-center">
                             <h2 className="text-xl font-bold text-gray-900">Messages</h2>
                             {user?.role === 'college_staff' && (
@@ -426,11 +426,17 @@ const DirectMessages = () => {
                     </div>
 
                     {/* Chat Area */}
-                    <div className="flex-1 flex flex-col bg-white">
+                    <div className={`flex-1 flex flex-col bg-white ${selectedUser ? 'flex' : 'hidden md:flex'}`}>
                         {selectedUser ? (
                             <>
-                                <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                                <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-10">
                                     <div className="flex items-center gap-3">
+                                        <button
+                                            onClick={() => setSelectedUser(null)}
+                                            className="md:hidden p-2 -ml-2 hover:bg-gray-50 rounded-full transition-colors"
+                                        >
+                                            <ArrowLeftIcon className="w-6 h-6 text-gray-600" />
+                                        </button>
                                         <div className="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center text-primary border border-teal-100">
                                             <UsersIcon className="w-6 h-6" />
                                         </div>
@@ -441,12 +447,12 @@ const DirectMessages = () => {
                                     </div>
                                 </div>
 
-                                <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar bg-gray-50/10">
+                                <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 custom-scrollbar bg-gray-50/10">
                                     {messages.map((m, idx) => {
                                         const isMine = String(m.sender_id) === String(user?.id);
                                         return (
                                             <div key={m.id || idx} className={`flex ${isMine ? 'justify-end' : 'justify-start'} group`}>
-                                                <div className={`max-w-[70%] px-4 py-3 rounded-2xl text-sm shadow-sm relative ${isMine
+                                                <div className={`max-w-[85%] md:max-w-[70%] px-4 py-3 rounded-2xl text-sm shadow-sm relative ${isMine
                                                     ? 'bg-primary text-white rounded-tr-none'
                                                     : 'bg-white text-gray-800 border border-gray-100 rounded-tl-none'
                                                     }`}>
@@ -517,7 +523,7 @@ const DirectMessages = () => {
                                     </div>
                                 )}
 
-                                <form onSubmit={handleSend} className="p-6 border-t border-gray-100 flex gap-3 items-center">
+                                <form onSubmit={handleSend} className="p-3 md:p-6 border-t border-gray-100 flex gap-2 md:gap-3 items-center bg-white sticky bottom-0">
                                     <button
                                         type="button"
                                         onClick={() => fileInputRef.current?.click()}
@@ -549,20 +555,20 @@ const DirectMessages = () => {
                                                 }
                                             }
                                         }}
-                                        placeholder="Type a message..."
-                                        className="flex-1 bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 pr-10 text-sm focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all outline-none font-medium text-gray-700 resize-none min-h-[56px] max-h-[200px] custom-scrollbar overflow-y-auto"
+                                        placeholder="Type..."
+                                        className="flex-1 bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all outline-none font-medium text-gray-700 resize-none min-h-[48px] max-h-[150px] custom-scrollbar overflow-y-auto"
                                     />
                                     <button
                                         type="submit"
                                         disabled={(!newMessage.trim() && !selectedFile) || isLoading}
-                                        className="p-3.5 bg-primary text-white rounded-2xl hover:bg-teal-700 active:scale-95 transition-all shadow-lg shadow-teal-700/20 disabled:opacity-50 flex items-center gap-2"
+                                        className="p-3 md:px-5 bg-primary text-white rounded-2xl hover:bg-teal-700 active:scale-95 transition-all shadow-lg shadow-teal-700/20 disabled:opacity-50 flex items-center gap-2"
                                     >
                                         {isLoading ? (
                                             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                         ) : (
                                             <PaperAirplaneIcon className="w-5 h-5" />
                                         )}
-                                        <span className="text-xs font-bold uppercase">{isLoading ? 'Sending...' : 'Send'}</span>
+                                        <span className="hidden md:inline text-xs font-bold uppercase">{isLoading ? 'Sending...' : 'Send'}</span>
                                     </button>
                                 </form>
                             </>
