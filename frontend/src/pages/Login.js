@@ -82,7 +82,7 @@ export default function Login() {
                         <div className="bg-purple p-3.5 rounded-full shadow-xl mb-3">
                             <img src="/wormie-logo.svg" alt="" className="h-8 w-8" />
                         </div>
-                        <h1 className="text-3xl font-black text-gray-900 tracking-tight">Worm</h1>
+                        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Worm</h1>
                     </div>
                     <h2 className="text-xl font-bold text-gray-800 text-center mb-2">
                         Share your academic progress, build your application, and find your dream school.

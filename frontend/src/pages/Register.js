@@ -109,7 +109,7 @@ export default function Register() {
                         <div className="bg-purple p-3.5 rounded-full shadow-xl mb-3">
                             <img src="/wormie-logo.svg" alt="" className="h-8 w-8" />
                         </div>
-                        <h1 className="text-3xl font-black text-gray-900 tracking-tight">Worm</h1>
+                        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Worm</h1>
                     </div>
                     <p className="text-xl text-gray-600 text-center">
                         {verifying ? "Verify your email" : "Join Our Community"}
