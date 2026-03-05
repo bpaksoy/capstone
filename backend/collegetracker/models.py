@@ -82,6 +82,7 @@ class College(models.Model):
     application_deadline = models.CharField(max_length=100, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     image = models.ImageField(upload_to='college_images/', blank=True, null=True)
+    verified_picture = models.BooleanField(default=False)
     logo_url = models.URLField(max_length=500, null=True, blank=True)
     logo = models.ImageField(upload_to='college_logos/', blank=True, null=True)
     

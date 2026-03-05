@@ -1168,6 +1168,7 @@ def staff_update_college(request, pk):
     # Handle banner image upload
     if 'image' in request.FILES:
         college.image = request.FILES['image']
+        college.verified_picture = True
 
     college.save()
 

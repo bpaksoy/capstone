@@ -19,7 +19,7 @@ const formatter = new Intl.NumberFormat('en-US', {
     maximumFractionDigits: 0,
 })
 
-const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, cost_of_attendance, image, img, control, locale, hbcu, hsi, programs_count, relaffil, top_major, grad_rate, retention_rate, avg_net_price, website, logo_url }) => {
+const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, cost_of_attendance, image, img, control, locale, hbcu, hsi, programs_count, relaffil, top_major, grad_rate, retention_rate, avg_net_price, website, logo_url, verified_picture }) => {
     const { loggedIn, user } = useCurrentUser();
     const navigate = useNavigate();
     const location = useLocation();
@@ -114,7 +114,7 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
                 {/* Image Section */}
                 <div className="relative aspect-video overflow-hidden shrink-0">
                     <img
-                        src={(image || img)
+                        src={verified_picture && (image || img)
                             ? ((image || img).startsWith('http') ? (image || img) : `${baseUrl}${(image || img).replace(/^\//, '')}`)
                             : getStableImage()
                         }

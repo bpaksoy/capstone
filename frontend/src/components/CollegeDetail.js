@@ -229,7 +229,7 @@ const CollegeDetail = () => {
                         <div className="bg-white rounded-lg shadow-md p-6">
                             <div className="flex flex-col md:flex-row items-start gap-8">
                                 <img
-                                    src={college.image
+                                    src={college.verified_picture && college.image
                                         ? (college.image.startsWith('http') ? college.image : baseUrl + college.image.replace(/^\//, ''))
                                         : getStableImage()
                                     }
@@ -281,8 +281,8 @@ const CollegeDetail = () => {
                                             onClick={handleToggleFollow}
                                             disabled={followLoading}
                                             className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm active:scale-95 ${isFollowing
-                                                    ? 'bg-violet-50 text-violet-600 border border-violet-200 hover:bg-violet-100'
-                                                    : 'bg-primary text-white hover:bg-teal-700 shadow-teal-700/20'
+                                                ? 'bg-violet-50 text-violet-600 border border-violet-200 hover:bg-violet-100'
+                                                : 'bg-primary text-white hover:bg-teal-700 shadow-teal-700/20'
                                                 }`}
                                         >
                                             {isFollowing ? (
