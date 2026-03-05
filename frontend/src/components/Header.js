@@ -120,7 +120,7 @@ const Header = (props) => {
                                         window.dispatchEvent(new Event('resetHomeView'));
                                     }
                                 }}>
-                                    <img src={images.wormLogoFull} alt="Worm" className="h-8 w-auto" />
+                                    <img src="/wormie-logo.svg" alt="Worm" className="h-8 w-auto hover:rotate-6 transition-transform duration-300" />
                                 </NavLink>
                             </div>
                             <div className="hidden sm:ml-6 sm:block">
