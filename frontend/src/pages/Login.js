@@ -78,7 +78,12 @@ export default function Login() {
                 />
 
                 <div className="w-full p-8 lg:w-1/2 flex flex-col justify-center">
-                    <img src="/wormie-logo.svg" alt="Worm Logo" className="h-12 w-auto mx-auto mb-4 brightness-[0.1]" />
+                    <div className="flex flex-col items-center mb-6">
+                        <div className="bg-purple p-2.5 rounded-2xl shadow-xl mb-3">
+                            <img src="/wormie-logo.svg" alt="" className="h-10 w-10 invert" />
+                        </div>
+                        <h1 className="text-3xl font-black text-gray-900 tracking-tight">Worm</h1>
+                    </div>
                     <h2 className="text-xl font-bold text-gray-800 text-center mb-2">
                         Share your academic progress, build your application, and find your dream school.
                     </h2>
