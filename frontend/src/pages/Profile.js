@@ -180,13 +180,27 @@ const Profile = () => {
                                             </span>
                                             <span className="text-sm">Friends</span>
                                         </div>
-                                        <div onClick={() => { setActiveTab('posts'); tabsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }} className="mr-8 p-3 text-center cursor-pointer hover:text-primary transition-colors">
+                                        <div onClick={() => {
+                                            setActiveTab('posts');
+                                            setTimeout(() => {
+                                                const yOffset = -20;
+                                                const y = tabsRef.current?.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                                                window.scrollTo({ top: y, behavior: 'smooth' });
+                                            }, 100);
+                                        }} className="mr-8 p-3 text-center cursor-pointer hover:text-primary transition-colors">
                                             <span className="text-xl font-bold block uppercase tracking-wide text-gray-800">
                                                 {postsLoading ? "..." : postsData?.length || 0}
                                             </span>
                                             <span className="text-sm">Posts</span>
                                         </div>
-                                        <div onClick={() => { setActiveTab('comments'); tabsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }} className="lg:mr-4 p-3 text-center cursor-pointer hover:text-primary transition-colors">
+                                        <div onClick={() => {
+                                            setActiveTab('comments');
+                                            setTimeout(() => {
+                                                const yOffset = -20;
+                                                const y = tabsRef.current?.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                                                window.scrollTo({ top: y, behavior: 'smooth' });
+                                            }, 100);
+                                        }} className="lg:mr-4 p-3 text-center cursor-pointer hover:text-primary transition-colors">
                                             <span className="text-xl font-bold block uppercase tracking-wide text-gray-800">
                                                 {commentsLoading ? "..." : commentsData?.length || 0}
                                             </span>
@@ -333,19 +347,19 @@ const Profile = () => {
                             {/* Tabs Navigation */}
                             <div ref={tabsRef} className="mt-8 pt-4 border-t border-gray-100 flex justify-center gap-4 sm:gap-8">
                                 <button
-                                    className={`pb-4 font-bold text-xs sm:text-sm uppercase tracking-wider transition-colors border-b-2 focus:outline-none focus:ring-2 focus:ring-primary/20 rounded-t-lg ${activeTab === 'about' ? 'border-primary text-gray-900' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+                                    className={`pb-4 font-bold text-xs sm:text-sm uppercase tracking-wider transition-all duration-300 border-b-2 focus:outline-none focus:border-primary ${activeTab === 'about' ? 'border-primary text-gray-900' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
                                     onClick={() => setActiveTab('about')}
                                 >
                                     About
                                 </button>
                                 <button
-                                    className={`pb-4 font-bold text-xs sm:text-sm uppercase tracking-wider transition-colors border-b-2 focus:outline-none focus:ring-2 focus:ring-primary/20 rounded-t-lg ${activeTab === 'posts' ? 'border-primary text-gray-900' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+                                    className={`pb-4 font-bold text-xs sm:text-sm uppercase tracking-wider transition-all duration-300 border-b-2 focus:outline-none focus:border-primary ${activeTab === 'posts' ? 'border-primary text-gray-900' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
                                     onClick={() => setActiveTab('posts')}
                                 >
                                     My Posts
                                 </button>
                                 <button
-                                    className={`pb-4 font-bold text-xs sm:text-sm uppercase tracking-wider transition-colors border-b-2 focus:outline-none focus:ring-2 focus:ring-primary/20 rounded-t-lg ${activeTab === 'comments' ? 'border-primary text-gray-900' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+                                    className={`pb-4 font-bold text-xs sm:text-sm uppercase tracking-wider transition-all duration-300 border-b-2 focus:outline-none focus:border-primary ${activeTab === 'comments' ? 'border-primary text-gray-900' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
                                     onClick={() => setActiveTab('comments')}
                                 >
                                     My Comments
