@@ -8,12 +8,15 @@ const Footer = () => {
             <div className="container mx-auto px-4">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
                     <div className="col-span-1 md:col-span-1">
-                        <Link to="/" className="flex items-center mb-4">
-                            <img
-                                alt="Worm Logo"
-                                src={images.wormLogoFull}
-                                className="h-8 w-auto"
-                            />
+                        <Link to="/" className="flex items-center gap-2.5 group mb-4">
+                            <div className="bg-purple p-1.5 rounded-full shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                <img
+                                    alt=""
+                                    src="/wormie-logo.svg"
+                                    className="h-5 w-5"
+                                />
+                            </div>
+                            <span className="text-white text-xl font-bold tracking-tight">Worm</span>
                         </Link>
                         <p className="text-gray-400 text-sm leading-relaxed">
                             Empowering students to find their perfect college match through data-driven insights and community connection.
