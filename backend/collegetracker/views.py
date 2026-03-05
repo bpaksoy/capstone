@@ -583,8 +583,24 @@ class DetailedSearchListView(generics.ListAPIView):
         
         if name_param and name_param.lower() != 'all':
             name_lower = name_param.lower()
+            state_map = {
+                'alabama': 'AL', 'alaska': 'AK', 'arizona': 'AZ', 'arkansas': 'AR', 'california': 'CA',
+                'colorado': 'CO', 'connecticut': 'CT', 'delaware': 'DE', 'florida': 'FL', 'georgia': 'GA',
+                'hawaii': 'HI', 'idaho': 'ID', 'illinois': 'IL', 'indiana': 'IN', 'iowa': 'IA',
+                'kansas': 'KS', 'kentucky': 'KY', 'louisiana': 'LA', 'maine': 'ME', 'maryland': 'MD',
+                'massachusetts': 'MA', 'michigan': 'MI', 'minnesota': 'MN', 'mississippi': 'MS',
+                'missouri': 'MO', 'montana': 'MT', 'nebraska': 'NE', 'nevada': 'NV', 'new hampshire': 'NH',
+                'new jersey': 'NJ', 'new mexico': 'NM', 'new york': 'NY', 'north carolina': 'NC',
+                'north dakota': 'ND', 'ohio': 'OH', 'oklahoma': 'OK', 'oregon': 'OR', 'pennsylvania': 'PA',
+                'rhode island': 'RI', 'south carolina': 'SC', 'south dakota': 'SD', 'tennessee': 'TN',
+                'texas': 'TX', 'utah': 'UT', 'vermont': 'VT', 'virginia': 'VA', 'washington': 'WA',
+                'west virginia': 'WV', 'wisconsin': 'WI', 'wyoming': 'WY', 'washington dc': 'DC', 'district of columbia': 'DC'
+            }
+
             if name_lower == 'hbcu':
                 queryset = queryset.filter(hbcu=True)
+            elif name_lower in state_map:
+                queryset = queryset.filter(state__iexact=state_map[name_lower])
             elif name_lower in ['ivy', 'ivy league']:
                 ivy_list = [
                     'Brown University', 
@@ -746,10 +762,26 @@ def search(request, name):
     name_lower = name.lower()
     suggestion = None
     
+    state_map = {
+        'alabama': 'AL', 'alaska': 'AK', 'arizona': 'AZ', 'arkansas': 'AR', 'california': 'CA',
+        'colorado': 'CO', 'connecticut': 'CT', 'delaware': 'DE', 'florida': 'FL', 'georgia': 'GA',
+        'hawaii': 'HI', 'idaho': 'ID', 'illinois': 'IL', 'indiana': 'IN', 'iowa': 'IA',
+        'kansas': 'KS', 'kentucky': 'KY', 'louisiana': 'LA', 'maine': 'ME', 'maryland': 'MD',
+        'massachusetts': 'MA', 'michigan': 'MI', 'minnesota': 'MN', 'mississippi': 'MS',
+        'missouri': 'MO', 'montana': 'MT', 'nebraska': 'NE', 'nevada': 'NV', 'new hampshire': 'NH',
+        'new jersey': 'NJ', 'new mexico': 'NM', 'new york': 'NY', 'north carolina': 'NC',
+        'north dakota': 'ND', 'ohio': 'OH', 'oklahoma': 'OK', 'oregon': 'OR', 'pennsylvania': 'PA',
+        'rhode island': 'RI', 'south carolina': 'SC', 'south dakota': 'SD', 'tennessee': 'TN',
+        'texas': 'TX', 'utah': 'UT', 'vermont': 'VT', 'virginia': 'VA', 'washington': 'WA',
+        'west virginia': 'WV', 'wisconsin': 'WI', 'wyoming': 'WY', 'washington dc': 'DC', 'district of columbia': 'DC'
+    }
+
     if name_lower == 'all':
         data = College.objects.all().order_by('name')[:12]
     elif name_lower == 'hbcu':
         data = College.objects.filter(hbcu=True).order_by('name')[:12]
+    elif name_lower in state_map:
+        data = College.objects.filter(state__iexact=state_map[name_lower]).order_by('name')[:12]
     elif name_lower in ['ivy', 'ivy league']:
         ivy_list = [
             'Brown University', 
