@@ -121,8 +121,8 @@ const Header = (props) => {
                                     }
                                 }}>
                                     <div className="flex items-center gap-2 group">
-                                        <div className="bg-purple p-1 rounded-xl shadow-lg group-hover:rotate-12 transition-transform duration-300">
-                                            <img src="/wormie-logo.svg" alt="" className="h-6 w-6 invert" />
+                                        <div className="bg-purple p-1.5 rounded-full shadow-lg group-hover:rotate-12 transition-transform duration-300">
+                                            <img src="/wormie-logo.svg" alt="" className="h-5 w-5" />
                                         </div>
                                         <span className="text-white text-xl font-black tracking-tight">Worm</span>
                                     </div>
