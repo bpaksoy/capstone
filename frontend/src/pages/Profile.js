@@ -348,19 +348,40 @@ const Profile = () => {
                             <div ref={tabsRef} className="mt-8 pt-4 border-t border-gray-100 flex justify-center gap-4 sm:gap-8">
                                 <button
                                     className={`pb-4 font-bold text-xs sm:text-sm uppercase tracking-wider transition-all duration-300 border-b-2 focus:outline-none focus:border-primary ${activeTab === 'about' ? 'border-primary text-gray-900' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
-                                    onClick={() => setActiveTab('about')}
+                                    onClick={() => {
+                                        setActiveTab('about');
+                                        setTimeout(() => {
+                                            const yOffset = -20;
+                                            const y = tabsRef.current?.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                                            window.scrollTo({ top: y, behavior: 'smooth' });
+                                        }, 50);
+                                    }}
                                 >
                                     About
                                 </button>
                                 <button
                                     className={`pb-4 font-bold text-xs sm:text-sm uppercase tracking-wider transition-all duration-300 border-b-2 focus:outline-none focus:border-primary ${activeTab === 'posts' ? 'border-primary text-gray-900' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
-                                    onClick={() => setActiveTab('posts')}
+                                    onClick={() => {
+                                        setActiveTab('posts');
+                                        setTimeout(() => {
+                                            const yOffset = -20;
+                                            const y = tabsRef.current?.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                                            window.scrollTo({ top: y, behavior: 'smooth' });
+                                        }, 50);
+                                    }}
                                 >
                                     My Posts
                                 </button>
                                 <button
                                     className={`pb-4 font-bold text-xs sm:text-sm uppercase tracking-wider transition-all duration-300 border-b-2 focus:outline-none focus:border-primary ${activeTab === 'comments' ? 'border-primary text-gray-900' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
-                                    onClick={() => setActiveTab('comments')}
+                                    onClick={() => {
+                                        setActiveTab('comments');
+                                        setTimeout(() => {
+                                            const yOffset = -20;
+                                            const y = tabsRef.current?.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                                            window.scrollTo({ top: y, behavior: 'smooth' });
+                                        }, 50);
+                                    }}
                                 >
                                     My Comments
                                 </button>
