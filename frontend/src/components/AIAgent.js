@@ -81,12 +81,14 @@ const AIAgent = () => {
         const chatWidth = 420;
         const chatHeight = 550;
 
-        // When open, the transform is translate(-360px, -500px) roughly
-        // If open, we need more space on left/top
+        // When open, the transform is translate(position.x - 360, position.y - 500)
+        // Chat dimension is 420x550
+        // Top-left: (x-360, y-500)
+        // Bottom-right: (x-360+420, y-500+550) = (x+60, y+50)
         const minX = isOpen ? 360 + padding : 40 + padding;
-        const maxX = isOpen ? window.innerWidth - (chatWidth - 360) - padding : window.innerWidth - 40 - padding;
+        const maxX = isOpen ? window.innerWidth - 60 - padding : window.innerWidth - 40 - padding;
         const minY = isOpen ? 500 + padding : 40 + padding;
-        const maxY = isOpen ? window.innerHeight - (600 - 500) - padding : window.innerHeight - 40 - padding;
+        const maxY = isOpen ? window.innerHeight - 80 - padding : window.innerHeight - 40 - padding;
 
         const newX = Math.max(minX, Math.min(maxX, clientX - dragStartPos.current.x));
         const newY = Math.max(minY, Math.min(maxY, clientY - dragStartPos.current.y));
@@ -121,8 +123,22 @@ const AIAgent = () => {
             setTimeout(() => {
                 scrollToBottom();
             }, 50);
+
+            // Auto-reposition if chat box is cut off by top or left edges
+            const padding = 20;
+            const minX = 360 + padding;
+            const minY = 500 + padding;
+
+            if (position.x < minX || position.y < minY) {
+                const newPos = {
+                    x: Math.max(minX, position.x),
+                    y: Math.max(minY, position.y)
+                };
+                setPosition(newPos);
+                localStorage.setItem('wormiePosition', JSON.stringify(newPos));
+            }
         }
-    }, [chatHistory, isThinking, isOpen]);
+    }, [isOpen, position.x, position.y, chatHistory, isThinking]);
 
     const notifiedMatchesRef = useRef(new Set(
         JSON.parse(sessionStorage.getItem('notifiedMatches') || '[]')
