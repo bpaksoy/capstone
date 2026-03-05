@@ -133,10 +133,12 @@ function Trending() {
                 <div className="flex items-center justify-center gap-3 mb-3">
                     <div className="relative">
                         <div className="absolute inset-0 bg-purple/20 rounded-full blur-3xl animate-pulse"></div>
-                        <div className="relative p-3 bg-gradient-to-br from-purple via-indigo-600 to-blue-700 rounded-xl shadow-2xl shadow-purple/40 border border-white/20 animate-float">
-                            <svg className="w-5 h-5 text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0111 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
-                            </svg>
+                        <div className="relative p-2 bg-white rounded-2xl shadow-2xl shadow-purple/40 border border-white/20 animate-float">
+                            <img
+                                src="/wormie-logo.svg"
+                                alt="Wormie"
+                                className="w-8 h-8 filter brightness-0"
+                            />
                         </div>
                     </div>
                 </div>
