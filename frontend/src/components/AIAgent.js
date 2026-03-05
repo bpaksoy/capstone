@@ -75,11 +75,24 @@ const AIAgent = () => {
         const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
 
         // Boundary constraints
-        const newX = Math.max(20, Math.min(window.innerWidth - 60, clientX - dragStartPos.current.x));
-        const newY = Math.max(20, Math.min(window.innerHeight - 60, clientY - dragStartPos.current.y));
+        // Chat window is roughly 420px wide and 550px high
+        // Padding is 20px
+        const padding = 20;
+        const chatWidth = 420;
+        const chatHeight = 550;
+
+        // When open, the transform is translate(-360px, -500px) roughly
+        // If open, we need more space on left/top
+        const minX = isOpen ? 360 + padding : 40 + padding;
+        const maxX = isOpen ? window.innerWidth - (chatWidth - 360) - padding : window.innerWidth - 40 - padding;
+        const minY = isOpen ? 500 + padding : 40 + padding;
+        const maxY = isOpen ? window.innerHeight - (600 - 500) - padding : window.innerHeight - 40 - padding;
+
+        const newX = Math.max(minX, Math.min(maxX, clientX - dragStartPos.current.x));
+        const newY = Math.max(minY, Math.min(maxY, clientY - dragStartPos.current.y));
 
         setPosition({ x: newX, y: newY });
-    }, [isDragging]);
+    }, [isDragging, isOpen]);
 
     const handleStopDrag = useCallback(() => {
         if (!isDragging) return;
@@ -333,10 +346,11 @@ const AIAgent = () => {
         <div
             className="fixed z-[9999] flex flex-col items-end pointer-events-none transition-none"
             style={{
-                left: position.x,
-                top: position.y,
-                // Adjust for the bottom-right origin of the chat window relative to handle
-                transform: isOpen ? 'translate(-85%, -90%)' : 'translate(-50%, -50%)'
+                left: 0,
+                top: 0,
+                transform: isOpen
+                    ? `translate(${position.x - 360}px, ${position.y - 500}px)`
+                    : `translate(${position.x - 40}px, ${position.y - 40}px)`
             }}
         >
             {/* Chat Window */}
