@@ -106,10 +106,10 @@ export default function Register() {
 
                 <div className="w-full p-8 lg:w-1/2">
                     <div className="flex flex-col items-center mb-6">
-                        <div className="bg-purple p-3.5 rounded-full shadow-xl mb-3">
-                            <img src="/wormie-logo.svg" alt="" className="h-8 w-8" />
+                        <div className="bg-purple p-4 rounded-full shadow-xl mb-3">
+                            <img src="/wormie-logo.svg" alt="" className="h-10 w-10" />
                         </div>
-                        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Worm</h1>
+                        <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Worm</h1>
                     </div>
                     <p className="text-xl text-gray-600 text-center">
                         {verifying ? "Verify your email" : "Join Our Community"}

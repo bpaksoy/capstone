@@ -120,11 +120,11 @@ const Header = (props) => {
                                         window.dispatchEvent(new Event('resetHomeView'));
                                     }
                                 }}>
-                                    <div className="flex items-center gap-2 group">
-                                        <div className="bg-purple p-1.5 rounded-full shadow-lg group-hover:rotate-12 transition-transform duration-300">
-                                            <img src="/wormie-logo.svg" alt="" className="h-5 w-5" />
+                                    <div className="flex items-center gap-2.5 group">
+                                        <div className="bg-purple p-2 rounded-full shadow-lg group-hover:rotate-12 transition-transform duration-300">
+                                            <img src="/wormie-logo.svg" alt="" className="h-6 w-6" />
                                         </div>
-                                        <span className="text-white text-xl font-bold tracking-tight">Worm</span>
+                                        <span className="text-white text-2xl font-bold tracking-tight">Worm</span>
                                     </div>
                                 </NavLink>
                             </div>
