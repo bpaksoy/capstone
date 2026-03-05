@@ -55,17 +55,20 @@ const AIAgent = () => {
     });
     const [isDragging, setIsDragging] = useState(false);
     const dragStartPos = useRef({ x: 0, y: 0 });
+    const dragDistance = useRef(0); // Add this to track how far we've moved
 
     const handleStartDrag = useCallback((e) => {
-        // Only allow dragging from the button or the header
         setIsDragging(true);
         const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
         const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
 
         dragStartPos.current = {
+            startX: clientX,
+            startY: clientY,
             x: clientX - position.x,
             y: clientY - position.y
         };
+        dragDistance.current = 0;
     }, [position]);
 
     const handleDragMove = useCallback((e) => {
@@ -74,17 +77,13 @@ const AIAgent = () => {
         const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
         const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
 
-        // Boundary constraints
-        // Chat window is roughly 420px wide and 550px high
-        // Padding is 20px
-        const padding = 20;
-        const chatWidth = 420;
-        const chatHeight = 550;
+        // Calculate total displacement
+        const dx = clientX - dragStartPos.current.startX;
+        const dy = clientY - dragStartPos.current.startY;
+        dragDistance.current = Math.sqrt(dx * dx + dy * dy);
 
-        // When open, the transform is translate(position.x - 360, position.y - 500)
-        // Chat dimension is 420x550
-        // Top-left: (x-360, y-500)
-        // Bottom-right: (x-360+420, y-500+550) = (x+60, y+50)
+        // Boundary constraints
+        const padding = 20;
         const minX = isOpen ? 360 + padding : 40 + padding;
         const maxX = isOpen ? window.innerWidth - 60 - padding : window.innerWidth - 40 - padding;
         const minY = isOpen ? 500 + padding : 40 + padding;
@@ -101,6 +100,7 @@ const AIAgent = () => {
         setIsDragging(false);
         localStorage.setItem('wormiePosition', JSON.stringify(position));
     }, [isDragging, position]);
+
 
     useEffect(() => {
         if (isDragging) {
@@ -544,9 +544,12 @@ const AIAgent = () => {
                     <button
                         onMouseDown={handleStartDrag}
                         onTouchStart={handleStartDrag}
-                        onClick={() => {
-                            setIsOpen(true);
-                            setUnreadWormieMessage(null);
+                        onClick={(e) => {
+                            // Only open if we haven't moved more than a few pixels (i.e., it was a click)
+                            if (dragDistance.current < 10) {
+                                setIsOpen(true);
+                                setUnreadWormieMessage(null);
+                            }
                         }}
                         className={`group relative p-5 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 active:scale-90 flex items-center justify-center pointer-events-auto bg-[#A855F7] text-white border border-white/10 ${unreadWormieMessage ? 'animate-[bounce_2s_infinite]' : ''} ${isDragging ? 'cursor-grabbing scale-110' : 'cursor-grab'}`}
                     >
