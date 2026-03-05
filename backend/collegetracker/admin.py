@@ -15,9 +15,15 @@ admin.site.register(Article)
 
 
 class CollegeAdmin(admin.ModelAdmin):
-    list_display = ('name', 'city', 'state', 'admission_rate',
-                    'sat_score', 'cost_of_attendance', 'UNITID')
+    list_display = ('name', 'city', 'state', 'has_image', 'verified_picture')
+    list_filter = ('verified_picture', 'state')
+    search_fields = ('name', 'city', 'UNITID')
+    list_editable = ('verified_picture',)
 
+    def has_image(self, obj):
+        return bool(obj.image)
+    has_image.boolean = True
+    has_image.short_description = 'Has Image'
 
 admin.site.register(College, CollegeAdmin)
 
