@@ -361,229 +361,245 @@ const DirectMessages = () => {
     if (!loggedIn) return <div className="p-20 text-center">Please login to view messages.</div>;
 
     return (
-        <div className="max-w-7xl mx-auto px-4 py-8 flex flex-col h-[calc(100vh-120px)] min-h-[500px] mb-12">
-            <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden flex flex-col md:flex-row flex-1">
-                {/* Conversations List */}
-                <div className="w-80 border-r border-gray-100 flex flex-col bg-gray-50/30">
-                    <div className="p-6 border-b border-gray-100 bg-white flex justify-between items-center">
-                        <h2 className="text-xl font-bold text-gray-900">Messages</h2>
-                        {user?.role === 'college_staff' && (
-                            <button
-                                onClick={() => setIsNewStudentModalOpen(true)}
-                                title="Message New Public Students"
-                                className="p-2 -mr-2 bg-gray-50 text-gray-600 hover:text-primary hover:bg-teal-50 rounded-full transition-colors"
-                            >
-                                <PlusIcon className="w-5 h-5" />
-                            </button>
-                        )}
-                    </div>
-                    <div className="flex-1 overflow-y-auto p-2 space-y-1">
-                        {isConversationsLoading ? (
-                            <div className="flex justify-center items-center py-20 w-full">
-                                <div className="modern-loader !scale-75">
-                                    <div></div>
-                                    <div></div>
-                                    <div></div>
-                                    <div></div>
-                                </div>
-                            </div>
-                        ) : conversations.length > 0 ? (
-                            conversations.map(conv => (
-                                <div
-                                    key={conv.user.id}
-                                    onClick={() => setSelectedUser(conv.user)}
-                                    className={`p-4 rounded-2xl cursor-pointer transition-all ${String(selectedUser?.id) === String(conv.user.id)
-                                        ? 'bg-primary text-white shadow-lg shadow-teal-700/20'
-                                        : 'bg-[#f8f9fa] border border-gray-100/50 hover:bg-white text-gray-700 hover:shadow-sm'
-                                        }`}
-                                >
-                                    <div className="flex justify-between items-start mb-1">
-                                        <p className="font-bold text-sm truncate">{conv.user.username}</p>
-                                        <p className={`text-[10px] font-bold ${selectedUser?.id === conv.user.id ? 'text-white/60' : 'text-gray-400'}`}>
-                                            {new Date(conv.lastMessage.created_at).toLocaleDateString()}
-                                        </p>
-                                    </div>
-                                    <p className={`text-xs truncate ${String(selectedUser?.id) === String(conv.user.id) ? 'text-white/80' : 'text-gray-500'}`}>
-                                        {conv.lastMessage.content || 'Sent an attachment'}
-                                    </p>
-                                    {conv.unreadCount > 0 && String(selectedUser?.id) !== String(conv.user.id) && showSideBadge && (
-                                        <div className="mt-2 flex justify-end transition-opacity duration-500">
-                                            <span className="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">
-                                                {conv.unreadCount}
-                                            </span>
-                                        </div>
-                                    )}
-                                </div>
-                            ))
-                        ) : (
-                            <div className="text-center py-20 opacity-40">
-                                <UsersIcon className="w-10 h-10 mx-auto mb-2" />
-                                <p className="text-xs font-bold uppercase tracking-widest">No messages yet</p>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Chat Area */}
-                <div className="flex-1 flex flex-col bg-white">
-                    {selectedUser ? (
-                        <>
-                            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center text-primary border border-teal-100">
-                                        <UsersIcon className="w-6 h-6" />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-bold text-gray-900 leading-none">{selectedUser.username}</h3>
-                                        <Link to={`/profile/${selectedUser.id}`} className="text-[10px] text-primary font-bold uppercase hover:underline">View Profile</Link>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar bg-gray-50/10">
-                                {messages.map((m, idx) => {
-                                    const isMine = String(m.sender_id) === String(user?.id);
-                                    return (
-                                        <div key={m.id || idx} className={`flex ${isMine ? 'justify-end' : 'justify-start'} group`}>
-                                            <div className={`max-w-[70%] px-4 py-3 rounded-2xl text-sm shadow-sm relative ${isMine
-                                                ? 'bg-primary text-white rounded-tr-none'
-                                                : 'bg-white text-gray-800 border border-gray-100 rounded-tl-none'
-                                                }`}>
-                                                {editingMessageId === m.id ? (
-                                                    <div className="flex flex-col gap-2 min-w-[200px]">
-                                                        <textarea
-                                                            ref={editTextareaRef}
-                                                            value={editContent}
-                                                            onChange={(e) => setEditContent(e.target.value)}
-                                                            className="w-full bg-white/10 border border-white/20 rounded-lg p-2 text-white outline-none resize-none overflow-hidden"
-                                                            autoFocus
-                                                        />
-                                                        <div className="flex justify-end gap-2 text-[10px] font-bold uppercase">
-                                                            <button onClick={handleCancelEdit} className="text-white/70 hover:text-white">Cancel</button>
-                                                            <button onClick={(e) => handleEditSubmit(e, m.id)} className="bg-white text-primary px-2 py-1 rounded">Save</button>
-                                                        </div>
-                                                    </div>
-                                                ) : (
-                                                    <>
-                                                        {m.content && <p className="leading-relaxed whitespace-pre-wrap">{m.content}</p>}
-                                                        {renderAttachment(m)}
-                                                        <span className={`text-[10px] mt-1 block opacity-60 ${isMine ? 'text-right text-white/70' : 'text-left text-gray-400'}`}>
-                                                            {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                        </span>
-                                                        {isMine && !m.attachment_url && (
-                                                            <button
-                                                                onClick={() => {
-                                                                    setEditingMessageId(m.id);
-                                                                    setEditContent(m.content);
-                                                                }}
-                                                                className="absolute -left-10 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-gray-100 rounded-full"
-                                                            >
-                                                                <PencilIcon className="w-3.5 h-3.5 text-gray-400" />
-                                                            </button>
-                                                        )}
-                                                    </>
-                                                )}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                                <div ref={messagesEndRef} />
-                            </div>
-
-                            {selectedFile && (
-                                <div className="px-6 py-2 bg-teal-50 border-t border-teal-100 flex items-center justify-between">
-                                    <div className="flex items-center gap-2 overflow-hidden">
-                                        <PaperClipIcon className="w-4 h-4 text-primary" />
-                                        <span className="text-xs font-bold text-gray-700 truncate">{selectedFile.name}</span>
-                                    </div>
-                                    <button onClick={() => setSelectedFile(null)} className="text-red-500 p-1">
-                                        <XMarkIcon className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            )}
-
-                            {sendError && (
-                                <div className="px-6 py-2 bg-red-50 border-t border-red-100 flex items-center justify-between">
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] font-bold text-red-600 uppercase">Send Failed</span>
-                                        <p className="text-[11px] text-red-500 mt-0.5">
-                                            {typeof sendError === 'string' ? sendError : (sendError?.error || JSON.stringify(sendError))}
-                                        </p>
-                                    </div>
-                                    <button onClick={() => setSendError(null)} className="text-red-400 p-1 self-start">
-                                        <XMarkIcon className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            )}
-
-                            <form onSubmit={handleSend} className="p-6 border-t border-gray-100 flex gap-3 items-center">
-                                <button
-                                    type="button"
-                                    onClick={() => fileInputRef.current?.click()}
-                                    className="p-3 bg-gray-100 text-gray-500 rounded-2xl hover:bg-gray-200 transition-all active:scale-95"
-                                >
-                                    <PaperClipIcon className="w-5 h-5" />
-                                </button>
-                                <input
-                                    type="file"
-                                    ref={fileInputRef}
-                                    onChange={handleFileChange}
-                                    className="hidden"
-                                />
-                                <textarea
-                                    ref={textareaRef}
-                                    rows="1"
-                                    value={newMessage}
-                                    onChange={(e) => setNewMessage(e.target.value)}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter') {
-                                            if (e.shiftKey) {
-                                                // Allow default behavior (new line)
-                                                return;
-                                            }
-                                            // Regular Enter: Send if not empty
-                                            e.preventDefault();
-                                            if (newMessage.trim() || selectedFile) {
-                                                handleSend(e);
-                                            }
-                                        }
-                                    }}
-                                    placeholder="Type a message..."
-                                    className="flex-1 bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 pr-10 text-sm focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all outline-none font-medium text-gray-700 resize-none min-h-[56px] max-h-[200px] custom-scrollbar overflow-y-auto"
-                                />
-                                <button
-                                    type="submit"
-                                    disabled={(!newMessage.trim() && !selectedFile) || isLoading}
-                                    className="p-3.5 bg-primary text-white rounded-2xl hover:bg-teal-700 active:scale-95 transition-all shadow-lg shadow-teal-700/20 disabled:opacity-50 flex items-center gap-2"
-                                >
-                                    {isLoading ? (
-                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                    ) : (
-                                        <PaperAirplaneIcon className="w-5 h-5" />
-                                    )}
-                                    <span className="text-xs font-bold uppercase">{isLoading ? 'Sending...' : 'Send'}</span>
-                                </button>
-                            </form>
-                        </>
-                    ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center text-center p-12 space-y-4 opacity-40">
-                            <ChatBubbleLeftRightIcon className="w-20 h-20 text-gray-200" />
-                            <div>
-                                <h3 className="text-xl font-bold text-gray-900">Your Conversations</h3>
-                                <p className="text-sm text-gray-500 max-w-sm mx-auto">Select a chat from the left to view your messages with students or college representatives.</p>
-                            </div>
+        <div className="bg-primary min-h-screen flex flex-col pt-24 pb-12">
+            {/* Hero Header */}
+            <div className="text-center mb-10">
+                <div className="flex items-center justify-center gap-3 mb-4">
+                    <div className="relative">
+                        <div className="absolute inset-0 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
+                        <div className="relative p-3 bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20">
+                            <ChatBubbleLeftRightIcon className="w-8 h-8 text-white" />
                         </div>
-                    )}
+                    </div>
                 </div>
+                <h1 className="text-3xl font-black text-white tracking-tight leading-none">Your Inbox</h1>
+                <p className="text-white/60 text-sm mt-2 font-medium">Direct connections with peers and university staff</p>
             </div>
 
-            <NewStudentMessageModal
-                isOpen={isNewStudentModalOpen}
-                onClose={() => setIsNewStudentModalOpen(false)}
-                onStartChat={(student) => {
-                    setSelectedUser(student);
-                }}
-            />
+            <div className="max-w-7xl w-full mx-auto px-4 flex flex-col h-[calc(100vh-280px)] min-h-[600px]">
+                <div className="bg-white rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] border border-white/10 overflow-hidden flex flex-col md:flex-row flex-1">
+                    {/* Conversations List */}
+                    <div className="w-80 border-r border-gray-100 flex flex-col bg-gray-50/30">
+                        <div className="p-6 border-b border-gray-100 bg-white flex justify-between items-center">
+                            <h2 className="text-xl font-bold text-gray-900">Messages</h2>
+                            {user?.role === 'college_staff' && (
+                                <button
+                                    onClick={() => setIsNewStudentModalOpen(true)}
+                                    title="Message New Public Students"
+                                    className="p-2 -mr-2 bg-gray-50 text-gray-600 hover:text-primary hover:bg-teal-50 rounded-full transition-colors"
+                                >
+                                    <PlusIcon className="w-5 h-5" />
+                                </button>
+                            )}
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-2 space-y-1">
+                            {isConversationsLoading ? (
+                                <div className="flex justify-center items-center py-20 w-full">
+                                    <div className="modern-loader !scale-75">
+                                        <div></div>
+                                        <div></div>
+                                        <div></div>
+                                        <div></div>
+                                    </div>
+                                </div>
+                            ) : conversations.length > 0 ? (
+                                conversations.map(conv => (
+                                    <div
+                                        key={conv.user.id}
+                                        onClick={() => setSelectedUser(conv.user)}
+                                        className={`p-4 rounded-2xl cursor-pointer transition-all ${String(selectedUser?.id) === String(conv.user.id)
+                                            ? 'bg-primary text-white shadow-lg shadow-teal-700/20'
+                                            : 'bg-[#f8f9fa] border border-gray-100/50 hover:bg-white text-gray-700 hover:shadow-sm'
+                                            }`}
+                                    >
+                                        <div className="flex justify-between items-start mb-1">
+                                            <p className="font-bold text-sm truncate">{conv.user.username}</p>
+                                            <p className={`text-[10px] font-bold ${selectedUser?.id === conv.user.id ? 'text-white/60' : 'text-gray-400'}`}>
+                                                {new Date(conv.lastMessage.created_at).toLocaleDateString()}
+                                            </p>
+                                        </div>
+                                        <p className={`text-xs truncate ${String(selectedUser?.id) === String(conv.user.id) ? 'text-white/80' : 'text-gray-500'}`}>
+                                            {conv.lastMessage.content || 'Sent an attachment'}
+                                        </p>
+                                        {conv.unreadCount > 0 && String(selectedUser?.id) !== String(conv.user.id) && showSideBadge && (
+                                            <div className="mt-2 flex justify-end transition-opacity duration-500">
+                                                <span className="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+                                                    {conv.unreadCount}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-center py-20 opacity-40">
+                                    <UsersIcon className="w-10 h-10 mx-auto mb-2" />
+                                    <p className="text-xs font-bold uppercase tracking-widest">No messages yet</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Chat Area */}
+                    <div className="flex-1 flex flex-col bg-white">
+                        {selectedUser ? (
+                            <>
+                                <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center text-primary border border-teal-100">
+                                            <UsersIcon className="w-6 h-6" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold text-gray-900 leading-none">{selectedUser.username}</h3>
+                                            <Link to={`/profile/${selectedUser.id}`} className="text-[10px] text-primary font-bold uppercase hover:underline">View Profile</Link>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar bg-gray-50/10">
+                                    {messages.map((m, idx) => {
+                                        const isMine = String(m.sender_id) === String(user?.id);
+                                        return (
+                                            <div key={m.id || idx} className={`flex ${isMine ? 'justify-end' : 'justify-start'} group`}>
+                                                <div className={`max-w-[70%] px-4 py-3 rounded-2xl text-sm shadow-sm relative ${isMine
+                                                    ? 'bg-primary text-white rounded-tr-none'
+                                                    : 'bg-white text-gray-800 border border-gray-100 rounded-tl-none'
+                                                    }`}>
+                                                    {editingMessageId === m.id ? (
+                                                        <div className="flex flex-col gap-2 min-w-[200px]">
+                                                            <textarea
+                                                                ref={editTextareaRef}
+                                                                value={editContent}
+                                                                onChange={(e) => setEditContent(e.target.value)}
+                                                                className="w-full bg-white/10 border border-white/20 rounded-lg p-2 text-white outline-none resize-none overflow-hidden"
+                                                                autoFocus
+                                                            />
+                                                            <div className="flex justify-end gap-2 text-[10px] font-bold uppercase">
+                                                                <button onClick={handleCancelEdit} className="text-white/70 hover:text-white">Cancel</button>
+                                                                <button onClick={(e) => handleEditSubmit(e, m.id)} className="bg-white text-primary px-2 py-1 rounded">Save</button>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            {m.content && <p className="leading-relaxed whitespace-pre-wrap">{m.content}</p>}
+                                                            {renderAttachment(m)}
+                                                            <span className={`text-[10px] mt-1 block opacity-60 ${isMine ? 'text-right text-white/70' : 'text-left text-gray-400'}`}>
+                                                                {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                            </span>
+                                                            {isMine && !m.attachment_url && (
+                                                                <button
+                                                                    onClick={() => {
+                                                                        setEditingMessageId(m.id);
+                                                                        setEditContent(m.content);
+                                                                    }}
+                                                                    className="absolute -left-10 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-gray-100 rounded-full"
+                                                                >
+                                                                    <PencilIcon className="w-3.5 h-3.5 text-gray-400" />
+                                                                </button>
+                                                            )}
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                    <div ref={messagesEndRef} />
+                                </div>
+
+                                {selectedFile && (
+                                    <div className="px-6 py-2 bg-teal-50 border-t border-teal-100 flex items-center justify-between">
+                                        <div className="flex items-center gap-2 overflow-hidden">
+                                            <PaperClipIcon className="w-4 h-4 text-primary" />
+                                            <span className="text-xs font-bold text-gray-700 truncate">{selectedFile.name}</span>
+                                        </div>
+                                        <button onClick={() => setSelectedFile(null)} className="text-red-500 p-1">
+                                            <XMarkIcon className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                )}
+
+                                {sendError && (
+                                    <div className="px-6 py-2 bg-red-50 border-t border-red-100 flex items-center justify-between">
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] font-bold text-red-600 uppercase">Send Failed</span>
+                                            <p className="text-[11px] text-red-500 mt-0.5">
+                                                {typeof sendError === 'string' ? sendError : (sendError?.error || JSON.stringify(sendError))}
+                                            </p>
+                                        </div>
+                                        <button onClick={() => setSendError(null)} className="text-red-400 p-1 self-start">
+                                            <XMarkIcon className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                )}
+
+                                <form onSubmit={handleSend} className="p-6 border-t border-gray-100 flex gap-3 items-center">
+                                    <button
+                                        type="button"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="p-3 bg-gray-100 text-gray-500 rounded-2xl hover:bg-gray-200 transition-all active:scale-95"
+                                    >
+                                        <PaperClipIcon className="w-5 h-5" />
+                                    </button>
+                                    <input
+                                        type="file"
+                                        ref={fileInputRef}
+                                        onChange={handleFileChange}
+                                        className="hidden"
+                                    />
+                                    <textarea
+                                        ref={textareaRef}
+                                        rows="1"
+                                        value={newMessage}
+                                        onChange={(e) => setNewMessage(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                if (e.shiftKey) {
+                                                    // Allow default behavior (new line)
+                                                    return;
+                                                }
+                                                // Regular Enter: Send if not empty
+                                                e.preventDefault();
+                                                if (newMessage.trim() || selectedFile) {
+                                                    handleSend(e);
+                                                }
+                                            }
+                                        }}
+                                        placeholder="Type a message..."
+                                        className="flex-1 bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 pr-10 text-sm focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all outline-none font-medium text-gray-700 resize-none min-h-[56px] max-h-[200px] custom-scrollbar overflow-y-auto"
+                                    />
+                                    <button
+                                        type="submit"
+                                        disabled={(!newMessage.trim() && !selectedFile) || isLoading}
+                                        className="p-3.5 bg-primary text-white rounded-2xl hover:bg-teal-700 active:scale-95 transition-all shadow-lg shadow-teal-700/20 disabled:opacity-50 flex items-center gap-2"
+                                    >
+                                        {isLoading ? (
+                                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        ) : (
+                                            <PaperAirplaneIcon className="w-5 h-5" />
+                                        )}
+                                        <span className="text-xs font-bold uppercase">{isLoading ? 'Sending...' : 'Send'}</span>
+                                    </button>
+                                </form>
+                            </>
+                        ) : (
+                            <div className="flex-1 flex flex-col items-center justify-center text-center p-12 space-y-4 opacity-40">
+                                <ChatBubbleLeftRightIcon className="w-20 h-20 text-gray-200" />
+                                <div>
+                                    <h3 className="text-xl font-bold text-gray-900">Your Conversations</h3>
+                                    <p className="text-sm text-gray-500 max-w-sm mx-auto">Select a chat from the left to view your messages with students or college representatives.</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <NewStudentMessageModal
+                    isOpen={isNewStudentModalOpen}
+                    onClose={() => setIsNewStudentModalOpen(false)}
+                    onStartChat={(student) => {
+                        setSelectedUser(student);
+                    }}
+                />
+            </div>
         </div>
     );
 };
