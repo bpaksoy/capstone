@@ -2,6 +2,7 @@
   <img src="https://hischolar-49a2a.web.app/wormie-logo.svg" alt="Wormie Logo" width="100"/>
   <h1>Worm</h1>
   <p><strong>Find your perfect college match with AI-driven insights and real student community.</strong></p>
+  <p><a href="https://hischolar-49a2a.web.app" target="_blank"><strong>🚀 Live Application</strong></a></p>
 </div>
 
 ---
