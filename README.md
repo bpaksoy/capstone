@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://wormie.app/wormie-logo.svg" alt="Wormie Logo" width="100"/>
+  <img src="https://wormie.app/wormie-logo.svg" alt="Worm Logo" width="100"/>
   <h1>Worm</h1>
   <p><strong>Find your perfect college match with AI-driven insights and real student community.</strong></p>
   <p><a href="https://wormie.app" target="_blank"><strong>🚀 Live Application</strong></a></p>
