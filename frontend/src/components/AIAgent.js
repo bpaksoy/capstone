@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
     ChatBubbleLeftRightIcon,
     XMarkIcon,
@@ -41,6 +41,67 @@ const AIAgent = () => {
     const scrollToBottom = () => {
         chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
+
+    // Draggable Logic
+    const [position, setPosition] = useState(() => {
+        const stored = localStorage.getItem('wormiePosition');
+        if (stored) return JSON.parse(stored);
+
+        // Default position: Right-center
+        return {
+            x: window.innerWidth - 80,
+            y: window.innerHeight / 2 - 40
+        };
+    });
+    const [isDragging, setIsDragging] = useState(false);
+    const dragStartPos = useRef({ x: 0, y: 0 });
+
+    const handleStartDrag = useCallback((e) => {
+        // Only allow dragging from the button or the header
+        setIsDragging(true);
+        const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+        const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+
+        dragStartPos.current = {
+            x: clientX - position.x,
+            y: clientY - position.y
+        };
+    }, [position]);
+
+    const handleDragMove = useCallback((e) => {
+        if (!isDragging) return;
+
+        const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+        const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+
+        // Boundary constraints
+        const newX = Math.max(20, Math.min(window.innerWidth - 60, clientX - dragStartPos.current.x));
+        const newY = Math.max(20, Math.min(window.innerHeight - 60, clientY - dragStartPos.current.y));
+
+        setPosition({ x: newX, y: newY });
+    }, [isDragging]);
+
+    const handleStopDrag = useCallback(() => {
+        if (!isDragging) return;
+        setIsDragging(false);
+        localStorage.setItem('wormiePosition', JSON.stringify(position));
+    }, [isDragging, position]);
+
+    useEffect(() => {
+        if (isDragging) {
+            window.addEventListener('mousemove', handleDragMove);
+            window.addEventListener('mouseup', handleStopDrag);
+            window.addEventListener('touchmove', handleDragMove);
+            window.addEventListener('touchend', handleStopDrag);
+        }
+        return () => {
+            window.removeEventListener('mousemove', handleDragMove);
+            window.removeEventListener('mouseup', handleStopDrag);
+            window.removeEventListener('touchmove', handleDragMove);
+            window.removeEventListener('touchend', handleStopDrag);
+        };
+    }, [isDragging, handleDragMove, handleStopDrag]);
+
 
     useEffect(() => {
         if (isOpen) {
@@ -269,13 +330,25 @@ const AIAgent = () => {
     };
 
     return (
-        <div className="fixed top-1/2 right-6 -translate-y-1/2 z-[9999] flex flex-col items-end pointer-events-none">
+        <div
+            className="fixed z-[9999] flex flex-col items-end pointer-events-none transition-none"
+            style={{
+                left: position.x,
+                top: position.y,
+                // Adjust for the bottom-right origin of the chat window relative to handle
+                transform: isOpen ? 'translate(-85%, -90%)' : 'translate(-50%, -50%)'
+            }}
+        >
             {/* Chat Window */}
             {isOpen && (
-                <div className="mb-4 w-full max-w-[420px] h-[550px] bg-white/95 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/40 overflow-hidden flex flex-col animate-slideUp pointer-events-auto">
-                    {/* Header - Clean & Professional */}
-                    <div className="p-6 bg-gray-800 text-white flex items-center justify-between border-b border-white/10">
-                        <div className="flex items-center gap-3">
+                <div className="mb-4 w-full max-w-[420px] h-[550px] bg-white/95 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/40 overflow-hidden flex flex-col animate-slideUp pointer-events-auto cursor-default">
+                    {/* Header - Draggable Hub */}
+                    <div
+                        onMouseDown={handleStartDrag}
+                        onTouchStart={handleStartDrag}
+                        className="p-6 bg-gray-800 text-white flex items-center justify-between border-b border-white/10 cursor-move active:cursor-grabbing select-none"
+                    >
+                        <div className="flex items-center gap-3 pointer-events-none">
                             <div className="p-2 bg-[#A855F7] rounded-2xl">
                                 <img src="/wormie-logo.svg" alt="Wormie" className="w-8 h-8" />
                             </div>
@@ -439,14 +512,16 @@ const AIAgent = () => {
                     )}
 
                     <button
+                        onMouseDown={handleStartDrag}
+                        onTouchStart={handleStartDrag}
                         onClick={() => {
                             setIsOpen(true);
                             setUnreadWormieMessage(null);
                         }}
-                        className={`group relative p-5 rounded-full shadow-2xl transition-all duration-500 hover:scale-110 active:scale-90 flex items-center justify-center pointer-events-auto bg-[#A855F7] text-white border border-white/10 ${unreadWormieMessage ? 'animate-[bounce_2s_infinite]' : ''}`}
+                        className={`group relative p-5 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 active:scale-90 flex items-center justify-center pointer-events-auto bg-[#A855F7] text-white border border-white/10 ${unreadWormieMessage ? 'animate-[bounce_2s_infinite]' : ''} ${isDragging ? 'cursor-grabbing scale-110' : 'cursor-grab'}`}
                     >
                         <div className={`absolute inset-0 rounded-full bg-purple opacity-20 group-hover:opacity-40 ${unreadWormieMessage ? 'animate-ping' : ''}`}></div>
-                        <img src="/wormie-logo.svg" alt="Wormie" className="w-10 h-10 relative z-10" />
+                        <img src="/wormie-logo.svg" alt="Wormie" className="w-10 h-10 relative z-10 pointer-events-none" />
 
                         {/* Red dot indicator if there's a message and bubble is hidden for some reason */}
                         {unreadWormieMessage && (
