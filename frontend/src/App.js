@@ -51,11 +51,11 @@ const App = () => {
           <Route path="/smart-colleges/:id/details" element={<SmartCollegeDetail />} />
           <Route path="/search/:query" element={<SearchResults />} />
           <Route path="/detailed-search" element={<DetailedSearch />} />
+          <Route path="/profile/:userId" element={<PublicProfile />} />
           <Route element={<PrivateRoute />} >
             <Route path="/bookmarks" element={<Bookmarks />} />
             <Route path="/smart-bookmarks" element={<SmartBookmarks />} />
             <Route path="/profile" element={<Profile />} />
-            <Route path="/profile/:userId" element={<PublicProfile />} />
             <Route path="/friends" element={<Friends />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/college/portal" element={<CollegePortal />} />
