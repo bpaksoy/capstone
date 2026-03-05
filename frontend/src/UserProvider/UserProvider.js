@@ -135,7 +135,11 @@ export const UserProvider = ({ children }) => {
 
     const handleLogout = useCallback(async () => {
         await signOut();
+        const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
         localStorage.clear();
+        if (hasSeenOnboarding) {
+            localStorage.setItem('hasSeenOnboarding', hasSeenOnboarding);
+        }
         setUser(null);
         setLoggedIn(false);
         setAppLoading(false);

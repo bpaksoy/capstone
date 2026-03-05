@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useSignIn } from "@clerk/clerk-react";
 import { useNavigate, Link, Navigate } from 'react-router-dom';
 import graduation from "../assets/images/graduation.jpg";
+import { images } from "../constants";
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { useCurrentUser } from '../UserProvider/UserProvider';
 import Loader from '../components/Loader';
@@ -22,12 +23,13 @@ export default function Login() {
         return <Navigate to="/" replace />;
     }
 
-    if (appLoading || !isLoaded) {
+    if (appLoading || !isLoaded || isLoggingIn) {
         return <Loader text="Loading..." />;
     }
 
     const handleGoogleSignIn = async () => {
         try {
+            setIsLoggingIn(true);
             await signIn.authenticateWithRedirect({
                 strategy: "oauth_google",
                 redirectUrl: window.location.origin + "/sso-callback",
@@ -36,6 +38,7 @@ export default function Login() {
         } catch (err) {
             console.error("Google sign in error:", err);
             setError("Failed to start Google sign in. Please try again.");
+            setIsLoggingIn(false);
         }
     };
 
@@ -74,9 +77,14 @@ export default function Login() {
                     style={{ backgroundImage: `url(${graduation})` }}
                 />
 
-                <div className="w-full p-8 lg:w-1/2">
-                    <h2 className="text-2xl font-bold text-gray-800 text-center">Worm</h2>
-                    <p className="text-xl text-gray-600 text-center">Welcome back!</p>
+                <div className="w-full p-8 lg:w-1/2 flex flex-col justify-center">
+                    <img src={images.wormLogoFull} alt="Worm Logo" className="h-12 w-auto mx-auto mb-4" />
+                    <h2 className="text-xl font-bold text-gray-800 text-center mb-2">
+                        Share your academic progress, build your application, and find your dream school.
+                    </h2>
+                    <p className="text-sm text-gray-600 text-center mb-6">
+                        Connect with community members and trusted recruiters.
+                    </p>
 
                     <button
                         onClick={handleGoogleSignIn}
