@@ -28,7 +28,7 @@ SECRET_KEY = 'django-insecure-new-secret-key-to-force-logout-all-users-12345'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['wormie.app', 'www.wormie.app', 'collegetracker-api-xeqdgwi3iq-uc.a.run.app', 'localhost', '127.0.0.1']
 
 
 SIMPLE_JWT = {
@@ -75,12 +75,18 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:3001",
     "http://localhost:3002",
+    "https://wormie.app",
+    "https://www.wormie.app",
+    "https://hischolar-49a2a.web.app",
+    "https://hischolar-49a2a.firebaseapp.app",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:3001",
     "http://localhost:3002",
+    "https://wormie.app",
+    "https://www.wormie.app",
 ]
 
 REST_FRAMEWORK = {
