@@ -361,22 +361,8 @@ const DirectMessages = () => {
     if (!loggedIn) return <div className="p-20 text-center">Please login to view messages.</div>;
 
     return (
-        <div className="bg-primary min-h-screen flex flex-col pt-24 pb-12">
-            {/* Hero Header */}
-            <div className="text-center mb-10">
-                <div className="flex items-center justify-center gap-3 mb-4">
-                    <div className="relative">
-                        <div className="absolute inset-0 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
-                        <div className="relative p-3 bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20">
-                            <ChatBubbleLeftRightIcon className="w-8 h-8 text-white" />
-                        </div>
-                    </div>
-                </div>
-                <h1 className="text-3xl font-black text-white tracking-tight leading-none">Your Inbox</h1>
-                <p className="text-white/60 text-sm mt-2 font-medium">Direct connections with peers and university staff</p>
-            </div>
-
-            <div className="max-w-7xl w-full mx-auto px-4 flex flex-col h-[calc(100vh-280px)] min-h-[600px]">
+        <div className="bg-primary min-h-screen flex flex-col pt-12 pb-12">
+            <div className="max-w-7xl w-full mx-auto px-4 flex flex-col h-[calc(100vh-120px)] min-h-[600px]">
                 <div className="bg-white rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] border border-white/10 overflow-hidden flex flex-col md:flex-row flex-1">
                     {/* Conversations List */}
                     <div className="w-80 border-r border-gray-100 flex flex-col bg-gray-50/30">
