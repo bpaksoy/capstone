@@ -99,8 +99,18 @@ class ClerkLoginView(APIView):
             
             # 2. Fetch or Use Cached Clerk's JWKS
             if _JWKS_CACHE is None:
-                jwks_url = "https://close-calf-1.clerk.accounts.dev/.well-known/jwks.json"
-                _JWKS_CACHE = requests.get(jwks_url).json()
+                # Use environment variable for JWKS URL, fallback to production wormie.app if available, else dev
+                jwks_url = os.getenv('CLERK_JWKS_URL') or "https://clerk.wormie.app/.well-known/jwks.json"
+                
+                # Fallback to dev if production URL fails or is not yet ready
+                try:
+                    resp = requests.get(jwks_url)
+                    if not resp.ok:
+                        raise Exception("Production JWKS not ready")
+                    _JWKS_CACHE = resp.json()
+                except:
+                    jwks_url = "https://close-calf-1.clerk.accounts.dev/.well-known/jwks.json"
+                    _JWKS_CACHE = requests.get(jwks_url).json()
             
             jwks = _JWKS_CACHE
             

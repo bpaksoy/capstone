@@ -69,46 +69,49 @@ const Colleges = () => {
             <ScrollToTop />
             <div>
                 {notFound && <NotFound />}
-                <div className="bg-primary min-h-screen">
-                    {viewMode === 'featured' && (
-                        <div className="w-full flex flex-col items-center justify-center pt-12 pb-4 px-4 text-center animate-fadeIn">
-                            <h1 className="text-2xl md:text-3xl lg:text-4xl font-light text-gray-900 tracking-tight mb-3 max-w-3xl">
-                                Share your academic progress, build your application, and find your dream school.
+                <div className="bg-primary min-h-screen pb-24">
+                    <div className="bg-primary flex flex-col items-center pt-28 pb-20 px-4 border-b border-black/10">
+                        <div className="max-w-4xl mx-auto flex flex-col items-center text-center animate-fadeIn">
+                            <h1 className="text-3xl md:text-5xl font-normal text-gray-900 tracking-tight mb-6">
+                                Build your path to the perfect College Match.
                             </h1>
-                            <p className="text-base md:text-lg text-gray-800 max-w-2xl font-light">
-                                Connect with community members and trusted recruiters to unlock your full potential.
+                            <p className="text-white/70 text-base md:text-lg max-w-2xl font-light mb-4">
+                                Discover thousands of top-tier schools and find the community where you belong.
                             </p>
+                            <Search />
                         </div>
-                    )}
-                    <Search />
+                    </div>
                     {showColleges ? (
                         <>
                             {viewMode === 'featured' ? (
-                                <div className="flex flex-col items-center animate-fadeIn pt-6">
-                                    <div className="w-full text-center py-10">
-                                        <h2 className="text-4xl font-extrabold text-white tracking-tight drop-shadow-md">
+                                <div className="flex flex-col items-center animate-fadeIn pt-20">
+                                    <div className="w-full text-center pb-16">
+                                        <h2 className="text-3xl md:text-4xl font-normal text-gray-900 tracking-tight">
                                             Featured Colleges
                                         </h2>
-                                        <p className="text-blue-100 mt-2 text-lg">Discover top-rated institutions</p>
+                                        <div className="w-16 h-1 bg-white/30 mx-auto mt-4 rounded-full"></div>
+                                        <p className="text-white/60 mt-4 text-base font-light">Discover top-rated institutions across the country</p>
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-6 w-full max-w-7xl mx-auto">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 px-6 w-full max-w-7xl mx-auto">
                                         {featuredColleges.length > 0 ? (
                                             featuredColleges.map((college) => (
                                                 <College key={college.id} {...college} />
                                             ))
                                         ) : (
-                                            <div className="text-white col-span-full">Loading featured colleges...</div>
+                                            <div className="text-gray-400 col-span-full text-center py-20">
+                                                <div className="animate-pulse text-xl opacity-50">Loading featured colleges...</div>
+                                            </div>
                                         )}
                                     </div>
 
-                                    <div className="py-12">
+                                    <div className="py-24">
                                         <button
                                             onClick={() => {
                                                 setViewMode('all');
                                                 window.scrollTo({ top: 0, behavior: 'smooth' });
                                             }}
-                                            className="group relative inline-flex items-center justify-center px-6 py-2 text-sm font-medium text-white transition-all duration-200 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/50 shadow-sm"
+                                            className="group relative inline-flex items-center justify-center px-10 py-3 text-sm font-semibold text-white/80 hover:text-white transition-all duration-300 bg-white/10 hover:bg-white/20 border border-white/5 hover:border-white/20 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/50 active:scale-95"
                                         >
                                             Explore All Colleges
                                             <svg className="w-5 h-5 ml-2 -mr-1 transition-transform group-hover:translate-x-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -119,13 +122,13 @@ const Colleges = () => {
                                 </div>
                             ) : (
                                 <div className="animate-fadeIn">
-                                    <div className="container mx-auto px-4 py-4 mb-4">
+                                    <div className="container mx-auto px-4 py-12">
                                         <button
                                             onClick={() => {
                                                 setViewMode('featured');
                                                 window.scrollTo({ top: 0, behavior: 'smooth' });
                                             }}
-                                            className="flex items-center text-white hover:text-blue-200 transition-colors font-medium"
+                                            className="flex items-center text-gray-500 hover:text-primary transition-all duration-300 font-semibold group"
                                         >
                                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                                                 <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />

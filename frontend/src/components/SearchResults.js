@@ -199,56 +199,63 @@ function SearchResults() {
 
     return (
         <div className="bg-primary min-h-screen">
-            <Search />
-            <SearchFilterBar onFilterChange={handleFilterChange} activeFilters={filters} />
+            <div className="pt-24 pb-16 px-4 border-b border-black/10">
+                <div className="max-w-7xl mx-auto px-4">
+                    <Search />
+                </div>
+            </div>
+
+            <div className="py-8">
+                <SearchFilterBar onFilterChange={handleFilterChange} activeFilters={filters} />
+            </div>
 
             {suggestion && (
-                <div className="max-w-xl mx-auto px-8 mt-6 flex justify-center">
-                    <div className="bg-gray-800/40 backdrop-blur-md border border-white/10 rounded-full py-2 px-6 shadow-xl flex items-center space-x-2 animate-fadeIn">
-                        <span className="text-sm font-medium text-gray-400">Did you mean?</span>
-                        <span className="text-sm font-bold text-white tracking-wide">"{suggestion}"</span>
+                <div className="max-w-xl mx-auto px-8 mt-6 flex justify-center text-center">
+                    <div className="bg-gray-800/40 border border-white/10 rounded-full py-2 px-8 shadow-sm flex items-center space-x-2 animate-fadeIn transition-all">
+                        <span className="text-sm font-medium text-white/50">Did you mean?</span>
+                        <span className="text-sm font-semibold text-white tracking-wide">"{suggestion}"</span>
                     </div>
                 </div>
             )}
 
             {isLoading && page === 1 ? (
                 <div className="max-w-7xl mx-auto px-8 mt-24 flex flex-col items-center justify-center animate-fadeIn pb-32">
-                    <svg className="animate-spin h-12 w-12 text-teal-400 mb-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-80" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <svg className="animate-spin h-10 w-10 text-white mb-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-10" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <h2 className="text-xl font-bold text-white tracking-tight">Searching Colleges...</h2>
-                    <p className="text-white/50 text-sm mt-2">Looking for the best matches based on your criteria</p>
+                    <h2 className="text-xl font-normal text-gray-900 tracking-tight">Searching Colleges...</h2>
+                    <p className="text-white/50 text-sm mt-3 font-light">Looking for the best matches based on your criteria</p>
                 </div>
             ) : (
                 <>
                     {searchResult && searchResult.length > 0 && (
-                        <div className="max-w-7xl mx-auto px-8 mt-12 flex items-center justify-between">
+                        <div className="max-w-7xl mx-auto px-8 mt-16 flex items-center justify-between">
                             <div>
-                                <h2 className="text-2xl font-bold text-white tracking-tight">
+                                <h2 className="text-2xl font-normal text-gray-900 tracking-tight">
                                     Found {searchResult.length} {searchResult.length === 1 ? 'College' : 'Colleges'}
                                 </h2>
                                 {query !== 'all' && (
-                                    <p className="text-white/40 text-sm mt-1">Discovering matches for "<span className="text-teal-300 font-bold">{query}</span>"</p>
+                                    <p className="text-white/40 text-sm mt-2 font-light tracking-wide italic-none">Discovering matches for "<span className="text-white/80 font-semibold">{query}</span>"</p>
                                 )}
                             </div>
                         </div>
                     )}
 
                     {!isLoading && searchResult && searchResult.length === 0 && (
-                        <div className="max-w-4xl mx-auto px-8 mt-16 text-center animate-fadeIn">
-                            <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-10 backdrop-blur-sm">
-                                <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6 border border-white/10">
-                                    <svg className="w-8 h-8 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="max-w-4xl mx-auto px-8 mt-16 text-center animate-fadeIn pb-24">
+                            <div className="bg-gray-800/10 border border-white/5 rounded-3xl p-16 backdrop-blur-sm">
+                                <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-8 border border-white/10">
+                                    <svg className="w-10 h-10 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                     </svg>
                                 </div>
-                                <h2 className="text-2xl font-bold text-white mb-3">No matching colleges</h2>
-                                <p className="text-white/40 text-base max-w-sm mx-auto leading-relaxed">
-                                    We couldn't find any colleges matching "<span className="text-teal-300 font-bold">{query}</span>" with your current filters.
+                                <h2 className="text-2xl font-normal text-gray-900 mb-4 tracking-tight">No matching colleges</h2>
+                                <p className="text-white/50 text-base max-w-sm mx-auto leading-relaxed font-light italic-none">
+                                    We couldn't find any results for "<span className="text-white/80 font-semibold">{query}</span>". Try adjusting your filters or searching for a different term.
                                 </p>
-                                <Link to="/" className="inline-block mt-8 px-8 py-2.5 bg-white/10 hover:bg-white/20 border border-white/10 text-white font-medium rounded-full transition-all text-sm backdrop-blur-md shadow-lg shadow-black/5">
-                                    Return to Search
+                                <Link to="/" className="inline-block mt-10 px-10 py-3 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-full transition-all border border-white/10 shadow-sm active:scale-95">
+                                    Return to Home
                                 </Link>
                             </div>
                         </div>
@@ -257,8 +264,8 @@ function SearchResults() {
                         <>
                             <div className={
                                 searchResult.length === 1
-                                    ? "flex justify-center px-8 w-full max-w-7xl mx-auto mt-12"
-                                    : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-8 w-full max-w-7xl mx-auto mt-12"
+                                    ? "flex justify-center px-8 w-full max-w-7xl mx-auto mt-16 pb-24"
+                                    : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 px-8 w-full max-w-7xl mx-auto mt-16 pb-24"
                             }>
                                 {searchResult.map((college) => {
                                     return (
@@ -269,10 +276,10 @@ function SearchResults() {
                                 })}
                             </div>
                             {hasMore ? (
-                                <div className="flex justify-center py-12 pb-20">
+                                <div className="flex justify-center py-12 pb-32">
                                     <button
                                         onClick={loadMore}
-                                        className="group relative inline-flex items-center justify-center px-6 py-2 text-sm font-medium text-white transition-all duration-200 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/50 shadow-sm"
+                                        className="group relative inline-flex items-center justify-center px-10 py-3 text-sm font-semibold text-white/80 hover:text-white transition-all duration-300 bg-white/10 hover:bg-white/20 border border-white/5 hover:border-white/20 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/50 active:scale-95"
                                     >
                                         {isLoading ? (
                                             <span className="flex items-center">
@@ -293,8 +300,8 @@ function SearchResults() {
                                     </button>
                                 </div>
                             ) : (
-                                <div className="pb-20 text-center">
-                                    <p className="text-white/60 font-medium">No more colleges to display</p>
+                                <div className="pb-32 text-center">
+                                    <p className="text-gray-400 font-medium opacity-60">You've reached the end of the matches</p>
                                 </div>
                             )}
                         </>
