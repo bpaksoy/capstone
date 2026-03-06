@@ -3,13 +3,13 @@
   "name": "Worm - Find your perfect college match",
   "icons": [
     {
-      "src": "wormie-logo.svg",
-      "sizes": "any",
-      "type": "image/svg+xml"
+      "src": "og-image.png",
+      "sizes": "1200x630",
+      "type": "image/png"
     },
     {
-      "src": "favicon.png",
-      "sizes": "192x192",
+      "src": "logo192.png",
+      "sizes": "512x512",
       "type": "image/png"
     }
   ],
