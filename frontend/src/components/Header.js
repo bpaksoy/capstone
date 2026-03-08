@@ -46,10 +46,19 @@ const Header = (props) => {
             setNotifications(notifsRes.data);
             setUnreadCount(newCount);
 
-            // Show badge only when it's the first fetch or count increased
-            if (newCount > 0 && newCount !== lastCount) {
-                setShowBadge(true);
+            // Show badge if there are any unread notifications
+            if (newCount > 0) {
+                // If the count increased, it's a NEW notification, so we definitely show the pulse
+                if (newCount > lastCount) {
+                    setShowBadge(true);
+                } else if (lastCount === 0) {
+                    // If it was 0 and now it's > 0 (initial load with unread), show it too
+                    setShowBadge(true);
+                }
                 setLastCount(newCount);
+            } else {
+                setShowBadge(false);
+                setLastCount(0);
             }
         } catch (error) {
             console.error('Error fetching notifications:', error);
@@ -58,8 +67,8 @@ const Header = (props) => {
 
     useEffect(() => {
         fetchNotifications();
-        // Refresh every minute
-        const interval = setInterval(fetchNotifications, 60000);
+        // Refresh every 15 seconds for snappier chat notifications
+        const interval = setInterval(fetchNotifications, 15000);
         return () => clearInterval(interval);
     }, [loggedIn, forceFetchFriendRequests]);
 
@@ -146,11 +155,17 @@ const Header = (props) => {
                                             className={({ isActive }) => {
                                                 return classNames(
                                                     isActive ? 'bg-gray-900 text-white shadow-[0_0_15px_rgba(255,255,255,0.1)]' : 'text-gray-300 hover:bg-gray-700 hover:text-white',
-                                                    'rounded-md px-3 py-2 text-sm font-medium transition-all duration-300',
+                                                    'rounded-md px-3 py-2 text-sm font-medium transition-all duration-300 relative',
                                                 )
                                             }}
                                         >
                                             {item.name}
+                                            {item.name === 'Messages' && unreadCount > 0 && notifications.some(n => !n.is_read && n.notification_type === 'direct_message') && (
+                                                <span className="absolute top-1 right-1 flex h-2 w-2">
+                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple opacity-75"></span>
+                                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-purple"></span>
+                                                </span>
+                                            )}
                                         </NavLink>
                                     ))}
                                     {loggedIn ?
@@ -240,13 +255,15 @@ const Header = (props) => {
                                                         className={`flex items-start gap-3 px-4 py-3 rounded-xl transition-all hover:bg-gray-50 cursor-pointer ${!notif.is_read ? 'bg-teal-50/30 border-l-2 border-primary' : ''}`}
                                                     >
                                                         <div className="flex-shrink-0 mt-1">
-                                                            <div className={`p-2 rounded-lg ${!notif.is_read ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-gray-400'}`}>
+                                                            <div className={`p-2 rounded-lg ${!notif.is_read 
+                                                                ? (notif.notification_type === 'direct_message' ? 'bg-purple/10 text-purple' : 'bg-primary/10 text-primary') 
+                                                                : 'bg-gray-100 text-gray-400'}`}>
                                                                 {notif.notification_type === 'like' && <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a2 2 0 00-.8 1.6z" /></svg>}
                                                                 {notif.notification_type === 'comment' && <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" /></svg>}
                                                                 {(notif.notification_type === 'friend_request' || notif.notification_type === 'accepted_request') && <UserIcon className="w-4 h-4" />}
                                                                 {notif.notification_type === 'direct_message' && (
                                                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                                                                     </svg>
                                                                 )}
                                                             </div>

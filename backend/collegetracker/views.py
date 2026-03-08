@@ -1446,6 +1446,14 @@ def get_messages(request):
             ).order_by('created_at')
             # Mark incoming messages as read
             messages.filter(recipient=request.user, is_read=False).update(is_read=True)
+            
+            # Mark corresponding notifications as read to sync header badge
+            Notification.objects.filter(
+                recipient=request.user,
+                sender_id=other_user_id,
+                notification_type='direct_message',
+                is_read=False
+            ).update(is_read=True)
         else:
             messages = DirectMessage.objects.filter(
                 Q(sender=request.user) | Q(recipient=request.user)

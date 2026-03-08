@@ -147,7 +147,7 @@ const DirectMessages = () => {
         }
     };
 
-    // Fade out sidebar badges after 8 seconds to prevent them "standing there"
+    // showSideBadge is used for a temporary "pulse" or notification effect
     useEffect(() => {
         if (showSideBadge) {
             const timer = setTimeout(() => setShowSideBadge(false), 8000);
@@ -201,7 +201,7 @@ const DirectMessages = () => {
                 currentTotalUnread += g.unreadCount;
             });
 
-            if (currentTotalUnread > lastTotalUnread.current) {
+            if (currentTotalUnread > (conversations.length > 0 ? lastTotalUnread.current : 0) && lastTotalUnread.current !== 0) {
                 setShowSideBadge(true);
             }
             lastTotalUnread.current = currentTotalUnread;
@@ -391,13 +391,15 @@ const DirectMessages = () => {
                                     <div
                                         key={conv.user.id}
                                         onClick={() => setSelectedUser(conv.user)}
-                                        className={`p-4 rounded-2xl cursor-pointer transition-all ${String(selectedUser?.id) === String(conv.user.id)
-                                            ? 'bg-primary text-white shadow-lg shadow-teal-700/20'
-                                            : 'bg-[#f8f9fa] border border-gray-100/50 hover:bg-white text-gray-700 hover:shadow-sm'
+                                        className={`p-4 rounded-2xl cursor-pointer transition-all border ${String(selectedUser?.id) === String(conv.user.id)
+                                            ? 'bg-primary text-white shadow-lg shadow-teal-700/20 border-primary'
+                                            : conv.unreadCount > 0
+                                                ? 'bg-white border-primary/30 shadow-md transform scale-[1.02] z-10'
+                                                : 'bg-[#f8f9fa] border-gray-100/50 hover:bg-white text-gray-700 hover:shadow-sm'
                                             }`}
                                     >
                                         <div className="flex justify-between items-start mb-1">
-                                            <p className="font-bold text-sm truncate">{conv.user.username}</p>
+                                            <p className={`text-sm truncate ${conv.unreadCount > 0 && String(selectedUser?.id) !== String(conv.user.id) ? 'font-black text-gray-900' : 'font-bold'}`}>{conv.user.username}</p>
                                             <p className={`text-[10px] font-bold ${selectedUser?.id === conv.user.id ? 'text-white/60' : 'text-gray-400'}`}>
                                                 {new Date(conv.lastMessage.created_at).toLocaleDateString()}
                                             </p>
@@ -405,9 +407,10 @@ const DirectMessages = () => {
                                         <p className={`text-xs truncate ${String(selectedUser?.id) === String(conv.user.id) ? 'text-white/80' : 'text-gray-500'}`}>
                                             {conv.lastMessage.content || 'Sent an attachment'}
                                         </p>
-                                        {conv.unreadCount > 0 && String(selectedUser?.id) !== String(conv.user.id) && showSideBadge && (
-                                            <div className="mt-2 flex justify-end transition-opacity duration-500">
-                                                <span className="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+                                        {conv.unreadCount > 0 && String(selectedUser?.id) !== String(conv.user.id) && (
+                                            <div className="mt-2 flex justify-between items-center transition-opacity duration-500">
+                                                <span className="text-[10px] font-bold text-primary animate-pulse italic">New Message</span>
+                                                <span className="bg-purple text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-sm ring-2 ring-white">
                                                     {conv.unreadCount}
                                                 </span>
                                             </div>
