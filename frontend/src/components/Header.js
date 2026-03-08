@@ -25,52 +25,19 @@ function classNames(...classes) {
 
 const Header = (props) => {
     const navigate = useNavigate();
-    const { user, handleLogout, loading, loggedIn, forceFetchFriendRequests } = useCurrentUser();
+    const { user, handleLogout, loading, loggedIn, forceFetchFriendRequests, notifications, unreadCount, setNotifications, setUnreadCount, fetchNotifications, hasUnreadMessages } = useCurrentUser();
     const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
     const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
-    const [notifications, setNotifications] = useState([]);
-    const [unreadCount, setUnreadCount] = useState(0);
     const [showBadge, setShowBadge] = useState(false);
     const [lastCount, setLastCount] = useState(0);
 
-    const fetchNotifications = async () => {
-        if (!loggedIn) return;
-        try {
-            const config = { headers: { Authorization: `Bearer ${localStorage.getItem('access')}` } };
-            const [notifsRes, countRes] = await Promise.all([
-                axios.get(`${baseUrl}api/notifications/`, config),
-                axios.get(`${baseUrl}api/notifications/count/`, config)
-            ]);
-
-            const newCount = countRes.data.unread_count;
-            setNotifications(notifsRes.data);
-            setUnreadCount(newCount);
-
-            // Show badge if there are any unread notifications
-            if (newCount > 0) {
-                // If the count increased, it's a NEW notification, so we definitely show the pulse
-                if (newCount > lastCount) {
-                    setShowBadge(true);
-                } else if (lastCount === 0) {
-                    // If it was 0 and now it's > 0 (initial load with unread), show it too
-                    setShowBadge(true);
-                }
-                setLastCount(newCount);
-            } else {
-                setShowBadge(false);
-                setLastCount(0);
-            }
-        } catch (error) {
-            console.error('Error fetching notifications:', error);
-        }
-    };
-
+    // Trigger pulse animation when unreadCount increases
     useEffect(() => {
-        fetchNotifications();
-        // Refresh every 15 seconds for snappier chat notifications
-        const interval = setInterval(fetchNotifications, 15000);
-        return () => clearInterval(interval);
-    }, [loggedIn, forceFetchFriendRequests]);
+        if (unreadCount > lastCount) {
+            setShowBadge(true);
+        }
+        setLastCount(unreadCount);
+    }, [unreadCount]);
 
     // Handle the "Stand there" issue: hide badge after a delay
     useEffect(() => {
@@ -160,7 +127,7 @@ const Header = (props) => {
                                             }}
                                         >
                                             {item.name}
-                                            {item.name === 'Messages' && unreadCount > 0 && notifications.some(n => !n.is_read && n.notification_type === 'direct_message') && (
+                                            {item.name === 'Messages' && hasUnreadMessages && (
                                                 <span className="absolute top-1 right-1 flex h-2 w-2">
                                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple opacity-75"></span>
                                                     <span className="relative inline-flex rounded-full h-2 w-2 bg-purple"></span>

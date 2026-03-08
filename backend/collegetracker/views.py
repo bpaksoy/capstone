@@ -305,9 +305,14 @@ class NotificationCountView(APIView):
 
     def get(self, request, format=None):
         try:
-            unread_count = Notification.objects.filter(
-                recipient=request.user, is_read=False).count()
-            return Response({'unread_count': unread_count}, status=status.HTTP_200_OK)
+            unread_notifications = Notification.objects.filter(recipient=request.user, is_read=False)
+            unread_count = unread_notifications.count()
+            has_unread_messages = unread_notifications.filter(notification_type='direct_message').exists()
+            
+            return Response({
+                'unread_count': unread_count,
+                'has_unread_messages': has_unread_messages
+            }, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

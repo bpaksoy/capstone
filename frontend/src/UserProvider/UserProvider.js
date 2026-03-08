@@ -21,6 +21,9 @@ export const UserProvider = ({ children }) => {
     const [appLoading, setAppLoading] = useState(!hasToken);
     const [friendRequests, setFriendRequests] = useState([]);
     const [forceFetchFriendRequests, setForceFetchFriendRequests] = useState(false);
+    const [notifications, setNotifications] = useState([]);
+    const [unreadCount, setUnreadCount] = useState(0);
+    const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
 
     // Keep getToken stable via ref to prevent infinite re-auth loops
     const getTokenRef = useRef(getToken);
@@ -173,21 +176,45 @@ export const UserProvider = ({ children }) => {
         }
     }, []);
 
+    const fetchNotifications = useCallback(async () => {
+        const token = localStorage.getItem('access');
+        if (!token) return;
+        try {
+            const config = { headers: { Authorization: `Bearer ${token}` } };
+            const [notifsRes, countRes] = await Promise.all([
+                axios.get(`${baseUrl}api/notifications/`, config),
+                axios.get(`${baseUrl}api/notifications/count/`, config)
+            ]);
+
+            setNotifications(notifsRes.data);
+            setUnreadCount(countRes.data.unread_count);
+            setHasUnreadMessages(countRes.data.has_unread_messages);
+        } catch (error) {
+            console.error('Error fetching notifications:', error);
+        }
+    }, []);
+
     // Fetch friend requests once when first logged in
     useEffect(() => {
         if (loggedIn) {
             fetchFriendRequests();
+            fetchNotifications();
+            const interval = setInterval(fetchNotifications, 15000);
+            return () => clearInterval(interval);
+        } else {
+            setNotifications([]);
+            setUnreadCount(0);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [loggedIn]);
+    }, [loggedIn, fetchFriendRequests, fetchNotifications]);
 
-    // Fetch when forced (e.g., after accepting a request)
+    // Fetch when forced (e.g., after accepting a request or marking read)
     useEffect(() => {
         if (forceFetchFriendRequests) {
             fetchFriendRequests();
+            fetchNotifications();
             setForceFetchFriendRequests(false);
         }
-    }, [forceFetchFriendRequests, fetchFriendRequests]);
+    }, [forceFetchFriendRequests, fetchFriendRequests, fetchNotifications]);
 
     const value = {
         user,
@@ -198,6 +225,13 @@ export const UserProvider = ({ children }) => {
         updateLoggedInStatus,
         appLoading,
         friendRequests,
+        notifications,
+        unreadCount,
+        hasUnreadMessages,
+        setNotifications,
+        setUnreadCount,
+        setHasUnreadMessages,
+        fetchNotifications,
         setForceFetchFriendRequests
     };
 
