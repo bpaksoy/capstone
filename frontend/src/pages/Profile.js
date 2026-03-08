@@ -423,7 +423,7 @@ const Profile = () => {
                                 {activeTab === 'about' && (
                                     <div className="w-full lg:w-9/12 mx-auto text-center animate-in fade-in duration-300">
                                         <p className="mb-4 text-lg leading-relaxed text-gray-700">
-                                            {user?.bio ? user.bio : <span className="text-gray-400 italic">No bio added yet.</span>}
+                                            {user?.bio ? user.bio : <span className="text-gray-400">No bio added yet.</span>}
                                         </p>
                                         <AddBioModal initialValues={user} fetchUser={fetchUser} />
                                     </div>
