@@ -7,24 +7,27 @@ const AutocompleteInput = ({ placeholder, value, onChange, endpoint }) => {
     const [suggestions, setSuggestions] = useState([]);
     const [loading, setLoading] = useState(false);
 
+    const safeValue = value || '';
+
     useEffect(() => {
-        if (!value || value.length < 2) {
+        if (!safeValue || safeValue.length < 2) {
             setSuggestions([]);
             return;
         }
 
         // If the current value matches a suggestion, don't fetch (saves API calls)
-        if (suggestions.includes(value)) return;
+        if (Array.isArray(suggestions) && suggestions.includes(safeValue)) return;
 
         const fetchSuggestions = async () => {
             setLoading(true);
             try {
                 const response = await axios.get(`${baseUrl}${endpoint}`, {
-                    params: { query: value }
+                    params: { query: safeValue }
                 });
-                setSuggestions(response.data);
+                setSuggestions(Array.isArray(response.data) ? response.data : []);
             } catch (error) {
                 console.error('Error fetching suggestions:', error);
+                setSuggestions([]);
             } finally {
                 setLoading(false);
             }
@@ -32,17 +35,17 @@ const AutocompleteInput = ({ placeholder, value, onChange, endpoint }) => {
 
         const timeoutId = setTimeout(fetchSuggestions, 300);
         return () => clearTimeout(timeoutId);
-    }, [value, endpoint]);
+    }, [safeValue, endpoint]);
 
     return (
         <div className="relative">
-            <Combobox value={value} onChange={onChange}>
+            <Combobox value={safeValue} onChange={(val) => onChange(val || '')} nullable>
                 <div className="relative">
                     <ComboboxInput
                         className="appearance-none rounded-xl relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm shadow-sm transition-all"
                         placeholder={placeholder}
-                        displayValue={(val) => val}
-                        onChange={(event) => onChange(event.target.value)}
+                        displayValue={(val) => val || ''}
+                        onChange={(event) => onChange(event.target.value || '')}
                         autoComplete="off"
                     />
                 </div>
@@ -56,14 +59,14 @@ const AutocompleteInput = ({ placeholder, value, onChange, endpoint }) => {
                         {loading && (
                             <div className="px-4 py-2 text-gray-500 text-xs animate-pulse">Searching...</div>
                         )}
-                        {!loading && suggestions.length === 0 && value.length >= 2 && (
+                        {!loading && (!suggestions || suggestions.length === 0) && safeValue.length >= 2 && (
                             <div className="relative cursor-default select-none px-4 py-2 text-gray-400 italic text-xs">
                                 No exact matches found, keep typing...
                             </div>
                         )}
-                        {!loading && suggestions.map((item, index) => (
+                        {!loading && Array.isArray(suggestions) && suggestions.map((item, index) => (
                             <ComboboxOption
-                                key={index}
+                                key={`${item}-${index}`}
                                 className={({ focus }) =>
                                     `relative cursor-pointer select-none py-2.5 px-4 transition-colors ${focus ? 'bg-primary text-white' : 'text-gray-900 hover:bg-teal-50'
                                     }`

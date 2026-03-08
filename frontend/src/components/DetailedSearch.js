@@ -28,10 +28,15 @@ const DetailedSearch = () => {
 
     // Pre-fill search with user data if available
     useEffect(() => {
-        if (loggedIn && user?.sat_score) {
-            // Set range around their SAT score (e.g., -100 to +50)
-            setMinSat(Math.max(400, user.sat_score - 100));
-            setMaxSat(Math.min(1600, user.sat_score + 100));
+        if (loggedIn) {
+            if (user?.sat_score) {
+                // Set range around their SAT score (e.g., -100 to +50)
+                setMinSat(Math.max(400, user.sat_score - 100));
+                setMaxSat(Math.min(1600, user.sat_score + 100));
+            }
+            if (user?.major) {
+                setProgram(user.major);
+            }
         }
     }, [loggedIn, user]);
 
@@ -131,14 +136,14 @@ const DetailedSearch = () => {
                     <p className="mt-2 text-sm text-gray-500">
                         Use our detailed search to narrow down the best options for your future.
                     </p>
-                    {loggedIn && user?.sat_score && (
-                        <div className="mt-4 inline-flex items-center gap-2 bg-purple-50 px-4 py-2 rounded-full border border-purple-100 animate-fadeIn">
+                    {loggedIn && (user?.sat_score || user?.major || user?.gpa) && (
+                        <div className="mt-4 inline-flex items-center gap-2 bg-purple-50 px-4 py-2 rounded-full border border-purple-100 animate-fadeIn shadow-sm">
                             <span className="relative flex h-2 w-2">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple opacity-75"></span>
                                 <span className="relative inline-flex rounded-full h-2 w-2 bg-purple"></span>
                             </span>
                             <span className="text-[11px] font-bold text-purple-700 uppercase tracking-wider">
-                                Smart Assistant: Using your profile stats
+                                Smart Assistant: Optimized for you
                             </span>
                         </div>
                     )}

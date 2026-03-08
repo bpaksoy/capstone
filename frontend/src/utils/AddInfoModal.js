@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { baseUrl } from '../shared';
 import { icons } from '../constants';
+import { states as statesList } from '../constants/states';
+import { countries as countriesList } from '../constants/countries';
+import AutocompleteInput from './AutocompleteInput';
 
 const AddInfoModal = ({ initialValues = {}, fetchUser }) => {
     const [firstName, setFirstName] = useState(initialValues?.first_name || '');
@@ -40,23 +43,19 @@ const AddInfoModal = ({ initialValues = {}, fetchUser }) => {
         const accessToken = localStorage.getItem('access');
 
         const data = {
-            first_name: firstName,
-            last_name: lastName,
-            city: city,
-            state: state,
-            country: country,
-            major: major,
-            education: education,
+            first_name: firstName || '',
+            last_name: lastName || '',
+            city: city || '',
+            state: state || '',
+            country: country || '',
+            major: major || '',
+            education: education || '',
             gpa: gpa || null,
             sat_score: satScore || null,
         };
 
-        console.log("formData", data);
-
         try {
-            const response = await axios.patch(`${baseUrl}api/user/update/`, {
-                ...data,
-            }, {
+            const response = await axios.patch(`${baseUrl}api/user/update/`, data, {
                 headers: {
                     'Authorization': `Bearer ${accessToken}`
                 }
@@ -64,26 +63,16 @@ const AddInfoModal = ({ initialValues = {}, fetchUser }) => {
 
             console.log('User information updated successfully:', response.data);
             fetchUser();
-
+            handleCloseModal();
         } catch (err) {
             const msg = err.response?.data?.detail || err.response?.data?.message || 'Error updating profile info';
             setError(msg);
             console.error("Error updating profile:", err);
         }
-        console.log('Submitting user info:', { data });
-        handleCloseModal();
     };
 
     return (
         <div>
-            {error && (
-                <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-3 rounded shadow-sm mb-4 text-xs flex items-center gap-2 animate-shake" role="alert">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
-                    </svg>
-                    <span className="font-medium">{error}</span>
-                </div>
-            )}
             <button
                 onClick={handleOpenModal}
                 className="bg-primary hover:bg-teal-700 text-white text-sm font-bold py-2 px-6 rounded-full shadow hover:shadow-lg transition-all transform hover:-translate-y-0.5 flex items-center gap-2 mx-auto"
@@ -106,8 +95,15 @@ const AddInfoModal = ({ initialValues = {}, fetchUser }) => {
                                 <div className="flex items-start">
                                     <div className="w-full">
                                         <h3 className="text-xl font-bold leading-6 text-gray-900 mb-6" id="modal-headline">
-                                            Add Profile Info
+                                            Edit Profile Info
                                         </h3>
+                                        
+                                        {error && (
+                                            <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-3 rounded shadow-sm mb-4 text-xs flex items-center gap-2" role="alert">
+                                                <span className="font-medium">{error}</span>
+                                            </div>
+                                        )}
+
                                         <form onSubmit={handleSubmit}>
                                             <div className="space-y-4">
                                                 <div className="grid grid-cols-2 gap-4">
@@ -116,7 +112,7 @@ const AddInfoModal = ({ initialValues = {}, fetchUser }) => {
                                                         <input
                                                             type="text"
                                                             id="firstName"
-                                                            value={firstName}
+                                                            value={firstName || ''}
                                                             onChange={(e) => setFirstName(e.target.value)}
                                                             className="w-full px-3 py-3 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder-gray-400"
                                                             placeholder="First Name"
@@ -127,7 +123,7 @@ const AddInfoModal = ({ initialValues = {}, fetchUser }) => {
                                                         <input
                                                             type="text"
                                                             id="lastName"
-                                                            value={lastName}
+                                                            value={lastName || ''}
                                                             onChange={(e) => setLastName(e.target.value)}
                                                             className="w-full px-3 py-3 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder-gray-400"
                                                             placeholder="Last Name"
@@ -138,61 +134,71 @@ const AddInfoModal = ({ initialValues = {}, fetchUser }) => {
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div>
                                                         <label htmlFor="city" className="sr-only">City</label>
-                                                        <input
-                                                            type="text"
-                                                            id="city"
-                                                            value={city}
-                                                            onChange={(e) => setCity(e.target.value)}
-                                                            className="w-full px-3 py-3 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder-gray-400"
+                                                        <AutocompleteInput
                                                             placeholder="City"
+                                                            value={city || ''}
+                                                            onChange={setCity}
+                                                            endpoint="api/cities/autocomplete/"
                                                         />
                                                     </div>
                                                     <div>
                                                         <label htmlFor="state" className="sr-only">State</label>
-                                                        <input
-                                                            type="text"
-                                                            id="state"
-                                                            value={state}
-                                                            onChange={(e) => setState(e.target.value)}
-                                                            className="w-full px-3 py-3 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder-gray-400"
-                                                            placeholder="State"
-                                                        />
+                                                        <div className="relative">
+                                                            <select
+                                                                id="state"
+                                                                value={state || ''}
+                                                                onChange={(e) => setState(e.target.value)}
+                                                                className="appearance-none rounded-lg relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm shadow-sm transition-all bg-white"
+                                                            >
+                                                                <option value="">Select State</option>
+                                                                {statesList.map((st) => (
+                                                                    <option key={st} value={st}>{st}</option>
+                                                                ))}
+                                                            </select>
+                                                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
+                                                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
 
                                                 <div>
                                                     <label htmlFor="country" className="sr-only">Country</label>
-                                                    <input
-                                                        type="text"
-                                                        id="country"
-                                                        value={country}
-                                                        onChange={(e) => setCountry(e.target.value)}
-                                                        className="w-full px-3 py-3 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder-gray-400"
-                                                        placeholder="Country"
-                                                    />
+                                                    <div className="relative">
+                                                        <select
+                                                            id="country"
+                                                            value={country || ''}
+                                                            onChange={(e) => setCountry(e.target.value)}
+                                                            className="appearance-none rounded-lg relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm shadow-sm transition-all bg-white"
+                                                        >
+                                                            <option value="">Select Country</option>
+                                                            {countriesList.map((c) => (
+                                                                <option key={c} value={c}>{c}</option>
+                                                            ))}
+                                                        </select>
+                                                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
+                                                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                                        </div>
+                                                    </div>
                                                 </div>
 
                                                 <div>
                                                     <label htmlFor="major" className="sr-only">Major</label>
-                                                    <input
-                                                        type="text"
-                                                        id="major"
-                                                        value={major}
-                                                        onChange={(e) => setMajor(e.target.value)}
-                                                        className="w-full px-3 py-3 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder-gray-400"
-                                                        placeholder="Major"
+                                                    <AutocompleteInput
+                                                        placeholder="Major (e.g., Computer Science)"
+                                                        value={major || ''}
+                                                        onChange={setMajor}
+                                                        endpoint="api/programs/autocomplete/"
                                                     />
                                                 </div>
 
                                                 <div>
                                                     <label htmlFor="education" className="sr-only">Education</label>
-                                                    <input
-                                                        type="text"
-                                                        id="education"
-                                                        value={education}
-                                                        onChange={(e) => setEducation(e.target.value)}
-                                                        className="w-full px-3 py-3 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder-gray-400"
-                                                        placeholder="Education"
+                                                    <AutocompleteInput
+                                                        placeholder="College / University"
+                                                        value={education || ''}
+                                                        onChange={setEducation}
+                                                        endpoint="api/colleges/autocomplete/"
                                                     />
                                                 </div>
                                                 <div className="grid grid-cols-2 gap-4">
@@ -202,7 +208,7 @@ const AddInfoModal = ({ initialValues = {}, fetchUser }) => {
                                                             type="number"
                                                             step="0.01"
                                                             id="gpa"
-                                                            value={gpa}
+                                                            value={gpa === null ? '' : gpa}
                                                             onChange={(e) => setGpa(e.target.value)}
                                                             className="w-full px-3 py-3 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder-gray-400"
                                                             placeholder="GPA (e.g. 3.8)"
@@ -213,7 +219,7 @@ const AddInfoModal = ({ initialValues = {}, fetchUser }) => {
                                                         <input
                                                             type="number"
                                                             id="satScore"
-                                                            value={satScore}
+                                                            value={satScore === null ? '' : satScore}
                                                             onChange={(e) => setSatScore(e.target.value)}
                                                             className="w-full px-3 py-3 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder-gray-400"
                                                             placeholder="SAT Score"
@@ -227,7 +233,7 @@ const AddInfoModal = ({ initialValues = {}, fetchUser }) => {
                                                     type="submit"
                                                     className="px-6 py-2 text-sm font-bold text-white transition-colors rounded-lg bg-primary hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
                                                 >
-                                                    Save
+                                                    Save Changes
                                                 </button>
                                                 <button
                                                     type="button"
@@ -247,7 +253,6 @@ const AddInfoModal = ({ initialValues = {}, fetchUser }) => {
             )}
         </div>
     );
-
-}
+};
 
 export default AddInfoModal;
