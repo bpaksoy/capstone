@@ -39,8 +39,8 @@ function Search() {
                     </svg>
                 </div>
                 <input
-                    className="flex-grow px-4 py-3 text-base text-gray-700 placeholder-gray-400 bg-transparent outline-none border-none focus:ring-0 font-medium"
-                    placeholder="Search for a college or specific program..."
+                    className="flex-grow min-w-0 px-3 sm:px-4 py-3 text-[15px] sm:text-base text-gray-700 placeholder-gray-400 bg-transparent outline-none border-none focus:ring-0 font-medium truncate"
+                    placeholder="Search colleges, majors, or paths..."
                     type="text"
                     value={query}
                     onChange={(e) => {

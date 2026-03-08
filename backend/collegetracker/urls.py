@@ -15,11 +15,12 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from collegetracker import views
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 from graphene_django.views import GraphQLView
 from django.views.decorators.csrf import csrf_exempt
+from django.views.static import serve
 from .views import UploadApiView
 from .views import RegisterView, LoginView, CollegeListView, CommentListView, CommentDetailView, PostDetailView, CurrentUserView, PostListView, BookmarkToggleView, BookmarkedCollegesView, ReplyCreateView, ReplyListView, CommentCountView, PostCommentCountsView, UserUpdateView, UserCommentsView, UserPostsView, OnlinePingView
 from django.conf.urls.static import static
@@ -151,4 +152,12 @@ urlpatterns = [
     path('api/ai/history/', views.ChatHistoryView.as_view(), name='ai-history'),
     path('api/colleges/recommendations/', views.CollegeRecommendationView.as_view(), name='college-recommendations'),
     path('upload4/', views.UploadApiView4.as_view(), name='upload_file4'),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
+
+# Serve media files in production (OK for demo/Cloud Run if ephemeral storage is used)
+if not settings.DEBUG:
+    urlpatterns += [
+        re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+    ]
+else:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

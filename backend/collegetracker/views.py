@@ -146,6 +146,7 @@ class ClerkLoginView(APIView):
             first_name = user_info.get('first_name', '')
             last_name = user_info.get('last_name', '')
             username = user_info.get('username') or user_info.get('unsafe_metadata', {}).get('username') or email.split('@')[0]
+            image_url = user_info.get('image_url') or user_info.get('profile_image_url')
 
             # 6. Content Sync: Get or Create Django User
             user, created = User.objects.get_or_create(
@@ -157,6 +158,16 @@ class ClerkLoginView(APIView):
                 }
             )
             
+            if image_url and not user.image:
+                try:
+                    from django.core.files.base import ContentFile
+                    img_resp = requests.get(image_url)
+                    if img_resp.ok:
+                        file_name = f"user_{user.id}_avatar.jpg"
+                        user.image.save(file_name, ContentFile(img_resp.content), save=True)
+                except Exception as e:
+                    print(f"Error syncing Clerk image: {e}")
+
             if created:
                 user.set_unusable_password()
                 user.save()
@@ -184,7 +195,7 @@ class CurrentUserView(APIView):
     parser_classes = [MultiPartParser, FormParser]
 
     def get(self, request):
-        serializer = UserSerializer(request.user)
+        serializer = UserSerializer(request.user, context={'request': request})
         return Response(serializer.data)
 
     def post(self, request):
@@ -214,7 +225,7 @@ class UserDetailView(APIView):
                     status='accepted'
                 ).exists()
 
-            serializer = UserSerializer(target_user)
+            serializer = UserSerializer(target_user, context={'request': request})
             data = serializer.data
             data['is_friend'] = is_friend
             return Response(data)
@@ -231,7 +242,8 @@ class UserUpdateView(APIView):
     def post(self, request, format=None):
         user = self.request.user
         # partial=True allows updating only some fields
-        serializer = UserSerializer(user, data=request.data, partial=True)
+        serializer = UserSerializer(
+            user, data=request.data, partial=True, context={'request': request})
 
         if serializer.is_valid():
             serializer.save()
@@ -241,7 +253,8 @@ class UserUpdateView(APIView):
     def put(self, request, format=None):
         user = self.request.user
         # partial=True allows updating only some fields
-        serializer = UserSerializer(user, data=request.data, partial=True)
+        serializer = UserSerializer(
+            user, data=request.data, partial=True, context={'request': request})
 
         if serializer.is_valid():
             serializer.save()
@@ -251,7 +264,7 @@ class UserUpdateView(APIView):
     def patch(self, request, format=None):  # Use PATCH for partial updates
         user = self.request.user
         serializer = UserSerializer(
-            user, data=request.data, partial=True)  # partial=True is key
+            user, data=request.data, partial=True, context={'request': request})  # partial=True is key
 
         
         if serializer.is_valid():
@@ -1521,7 +1534,7 @@ def get_college_ambassadors(request, college_id):
             is_verified=True
         ).order_by('?')[:10] # Randomized small selection for diversity
         
-        serializer = UserSerializer(ambassadors, many=True)
+        serializer = UserSerializer(ambassadors, many=True, context={'request': request})
         return Response(serializer.data)
     except Exception as e:
         return Response({"error": str(e)}, status=500)
@@ -1564,7 +1577,7 @@ def get_pending_ambassadors(request, college_id):
             associated_college_id=college_id,
             is_verified=False
         )
-        serializer = UserSerializer(pending, many=True)
+        serializer = UserSerializer(pending, many=True, context={'request': request})
         return Response(serializer.data)
     except Exception as e:
         return Response({"error": str(e)}, status=500)
@@ -1743,7 +1756,7 @@ class PostListView(APIView):
             else:
                 posts = posts.order_by('-created_at').distinct()
 
-            serializer = PostSerializer(posts, many=True)
+            serializer = PostSerializer(posts, many=True, context={'request': request})
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             import traceback
@@ -1864,7 +1877,7 @@ class CommentListView(APIView):
         except Post.DoesNotExist:
             return Response({'error': 'Post not found'}, status=status.HTTP_404_NOT_FOUND)
         comments = post.comments.all()
-        serializer = CommentSerializer(comments, many=True)
+        serializer = CommentSerializer(comments, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, post_pk):
@@ -1872,7 +1885,7 @@ class CommentListView(APIView):
             post = Post.objects.get(pk=post_pk)
         except Post.DoesNotExist:
             return Response({'error': 'Post not found'}, status=status.HTTP_404_NOT_FOUND)
-        serializer = CommentSerializer(data=request.data)
+        serializer = CommentSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             comment = serializer.save(author=request.user, post=post)
             
@@ -2228,7 +2241,7 @@ class FriendsView(APIView):
             friends = [friendship.user1 for friendship in friendships if friendship.user1 != user] + \
                       [friendship.user2 for friendship in friendships if friendship.user2 != user]
 
-            serializer = UserSerializer(friends, many=True)
+            serializer = UserSerializer(friends, many=True, context={'request': request})
             return Response({'friends': serializer.data, 'is_friend': is_friend, 'is_pending': is_pending})
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -2254,7 +2267,7 @@ class MyFriendsView(APIView):
                 friend = friendship.user2 if friendship.user1 == user else friendship.user1
                 friends.append(friend)
 
-            serializer = UserSerializer(friends, many=True)
+            serializer = UserSerializer(friends, many=True, context={'request': request})
             return Response({'friends': serializer.data}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

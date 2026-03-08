@@ -4,6 +4,8 @@ import { baseUrl } from '../shared';
 import { icons } from '../constants';
 
 const AddInfoModal = ({ initialValues = {}, fetchUser }) => {
+    const [firstName, setFirstName] = useState(initialValues?.first_name || '');
+    const [lastName, setLastName] = useState(initialValues?.last_name || '');
     const [city, setCity] = useState(initialValues?.city || '');
     const [state, setState] = useState(initialValues?.state || '');
     const [country, setCountry] = useState(initialValues?.country || '');
@@ -16,6 +18,8 @@ const AddInfoModal = ({ initialValues = {}, fetchUser }) => {
 
     const handleOpenModal = () => {
         // Reset state to current initialValues when opening
+        setFirstName(initialValues?.first_name || '');
+        setLastName(initialValues?.last_name || '');
         setCity(initialValues?.city || '');
         setState(initialValues?.state || '');
         setCountry(initialValues?.country || '');
@@ -36,6 +40,8 @@ const AddInfoModal = ({ initialValues = {}, fetchUser }) => {
         const accessToken = localStorage.getItem('access');
 
         const data = {
+            first_name: firstName,
+            last_name: lastName,
             city: city,
             state: state,
             country: country,
@@ -104,6 +110,31 @@ const AddInfoModal = ({ initialValues = {}, fetchUser }) => {
                                         </h3>
                                         <form onSubmit={handleSubmit}>
                                             <div className="space-y-4">
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label htmlFor="firstName" className="sr-only">First Name</label>
+                                                        <input
+                                                            type="text"
+                                                            id="firstName"
+                                                            value={firstName}
+                                                            onChange={(e) => setFirstName(e.target.value)}
+                                                            className="w-full px-3 py-3 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder-gray-400"
+                                                            placeholder="First Name"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label htmlFor="lastName" className="sr-only">Last Name</label>
+                                                        <input
+                                                            type="text"
+                                                            id="lastName"
+                                                            value={lastName}
+                                                            onChange={(e) => setLastName(e.target.value)}
+                                                            className="w-full px-3 py-3 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder-gray-400"
+                                                            placeholder="Last Name"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div>
                                                         <label htmlFor="city" className="sr-only">City</label>

@@ -112,7 +112,7 @@ const Header = (props) => {
                                 <XMarkIcon aria-hidden="true" className="hidden h-6 w-6 group-data-[open]:block" />
                             </DisclosureButton>
                         </div>
-                        <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
+                        <div className="flex flex-1 items-center justify-start ml-12 sm:ml-0 sm:items-stretch sm:justify-start">
                             <div className="flex flex-shrink-0 items-center">
                                 <NavLink to="/" onClick={() => {
                                     if (window.location.pathname === '/') {

@@ -171,9 +171,51 @@ const Profile = () => {
                         <div className="px-6">
                             <div className="flex flex-wrap justify-center">
 
+                                {/* Profile Image Section (Center) - Moved to top for mobile rendering */}
+                                <div className="w-full lg:w-4/12 px-4 lg:order-2 flex justify-center">
+                                    <div className="relative group">
+                                        {user ? (
+                                            <>
+                                                <img
+                                                    alt=""
+                                                    src={user.image ? (user.image.startsWith('http') ? user.image : `${baseUrl}${user.image.startsWith('/') ? user.image.substring(1) : user.image}`) : images.avatar}
+                                                    onError={(e) => { e.target.onerror = null; e.target.src = images.avatar; }}
+                                                    className="shadow-xl rounded-full align-middle border-none absolute -m-16 -ml-20 lg:-ml-16 w-32 h-32 object-cover ring-4 ring-white bg-white max-w-[128px] max-h-[128px]"
+                                                />
+                                                {isUploadingImage && (
+                                                    <div className="absolute -m-16 -ml-20 lg:-ml-16 w-32 h-32 rounded-full bg-black/40 flex items-center justify-center z-10">
+                                                        <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+                                                    </div>
+                                                )}
+                                            </>
+                                        ) : (
+                                            <div className="shadow-xl rounded-full align-middle border-none absolute -m-16 -ml-20 lg:-ml-16 w-32 h-32 bg-gray-200 flex items-center justify-center">
+                                                <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                                            </div>
+                                        )}
+                                        {user?.id && !isUploadingImage && (
+                                            <div className="absolute top-10 -right-4 lg:-right-6 transition-opacity duration-200">
+                                                <label htmlFor="profile-upload-input" className="bg-white p-2 rounded-full shadow-lg border border-gray-100 cursor-pointer hover:bg-gray-50 transition-all flex items-center justify-center w-10 h-10 group">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-gray-600 group-hover:text-primary transition-colors">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
+                                                    </svg>
+                                                    <input
+                                                        type="file"
+                                                        id="profile-upload-input"
+                                                        style={{ display: 'none' }}
+                                                        onChange={handleImageChange}
+                                                        accept="image/*"
+                                                    />
+                                                </label>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
                                 {/* Stats Section (Left) */}
-                                <div className="w-full lg:w-4/12 px-4 lg:order-1">
-                                    <div className="flex justify-center py-4 lg:pt-4 pt-8 text-gray-600">
+                                <div className="w-full lg:w-4/12 px-4 lg:order-1 mt-4 lg:mt-0">
+                                    <div className="flex justify-center py-4 lg:pt-4 pt-16 text-gray-600">
                                         <div onClick={() => navigate('/friends')} className="mr-8 p-3 text-center cursor-pointer hover:text-primary transition-colors">
                                             <span className="text-xl font-bold block uppercase tracking-wide text-gray-800">
                                                 {friendsLoading ? "..." : friendsData?.friends?.length || 0}
@@ -208,95 +250,85 @@ const Profile = () => {
                                         </div>
                                     </div>
                                 </div>
-
-                                {/* Profile Image Section (Center) */}
-                                <div className="w-full lg:w-4/12 px-4 lg:order-2 flex justify-center">
-                                    <div className="relative group">
-                                        {user && (
-                                            <>
-                                                <img
-                                                    alt="Profile"
-                                                    src={user.image ? (user.image.startsWith('http') ? user.image : baseUrl + user.image) : images.avatar}
-                                                    className="shadow-xl rounded-full align-middle border-none absolute -m-16 -ml-20 lg:-ml-16 w-32 h-32 object-cover ring-4 ring-white bg-white max-w-[128px] max-h-[128px]"
-                                                />
-                                                {isUploadingImage && (
-                                                    <div className="absolute -m-16 -ml-20 lg:-ml-16 w-32 h-32 flex items-center justify-center bg-black bg-opacity-40 rounded-full z-10 ring-4 ring-white">
-                                                        <svg className="animate-spin h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                        </svg>
-                                                    </div>
-                                                )}
-                                            </>
-                                        )}
-                                        {user?.id && !isUploadingImage && (
-                                            <div className="absolute top-10 -right-6 lg:right-[-20px] transition-opacity duration-200">
-                                                <label htmlFor="profile-upload-input" className="cursor-pointer bg-white text-gray-700 hover:text-primary hover:bg-gray-100 shadow-md rounded-full p-2 flex items-center justify-center transition-all">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.122 2.122 0 0 0-1.791-1.059H8.637c-.69 0-1.35.295-1.791 1.059l-.822 1.316Z" />
-                                                    </svg>
-                                                </label>
-                                                <input
-                                                    type="file"
-                                                    id="profile-upload-input"
-                                                    style={{ display: 'none' }}
-                                                    onChange={handleImageChange}
-                                                    accept="image/*"
-                                                />
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Pending Requests Section (Right) */}
-                                <div className="w-full lg:w-4/12 px-4 lg:order-3">
-                                    <div className="py-6 px-3 mt-32 sm:mt-0">
-                                        {pendingRequests && pendingRequests.length > 0 ? (
-                                            <div className="bg-white border border-gray-100 rounded-xl shadow-sm p-4">
-                                                <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">Friend Requests</h4>
-                                                <div className="space-y-3">
-                                                    {pendingRequests.map((request) => (
-                                                        <div key={request.id} className="flex flex-col sm:flex-row justify-between items-center gap-2 p-2 bg-gray-50 rounded-lg">
-                                                            <div className="flex items-center gap-2">
-                                                                <img src={request.user1.image ? (request.user1.image.startsWith('http') ? request.user1.image : baseUrl + request.user1.image) : images.avatar} alt="avatar" className="w-8 h-8 rounded-full object-cover" />
-                                                                <p className="text-sm font-medium text-gray-900 truncate max-w-[100px]">{request.user1.username}</p>
-                                                            </div>
-                                                            <div className="flex gap-2">
-                                                                <button
-                                                                    onClick={() => handleFriendRequestResponse(request.id, 'accept')}
-                                                                    className="bg-primary hover:bg-teal-700 text-white text-xs font-bold py-1.5 px-3 rounded-full transition-colors"
-                                                                >
-                                                                    Accept
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => handleFriendRequestResponse(request.id, 'reject')}
-                                                                    className="bg-gray-200 hover:bg-gray-300 text-gray-600 text-xs font-bold py-1.5 px-3 rounded-full transition-colors"
-                                                                >
-                                                                    Reject
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            null
-                                        )}
-                                    </div>
+ 
+                                {/* Pending Requests Section (Right) - Empty spacing balance */}
+                                <div className="hidden lg:block w-full lg:w-4/12 px-4 lg:order-3">
                                 </div>
                             </div>
 
+                            {/* Pending Requests Section (Horizontal under picture) */}
+                            {pendingRequests && pendingRequests.length > 0 && (
+                                <div className="w-full max-w-lg mx-auto mt-6 mb-6 px-4">
+                                    <h4 className="text-xs font-bold text-gray-500 mb-2 uppercase tracking-widest text-center">Pending Friend Requests</h4>
+                                    <div className="space-y-3">
+                                        {pendingRequests.map((request) => (
+                                            <div 
+                                                key={request.id} 
+                                                onClick={() => navigate(`/profile/${request.user1.id}`)}
+                                                className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 bg-white rounded-xl border border-gray-200 shadow-sm transition-all hover:shadow-md cursor-pointer gap-3 sm:gap-0"
+                                            >
+                                                <div className="flex items-center gap-3 min-w-0 w-full sm:w-auto">
+                                                    <img
+                                                        src={request.user1.image ? (request.user1.image.startsWith('http') ? request.user1.image : `${baseUrl}${request.user1.image.startsWith('/') ? request.user1.image.substring(1) : request.user1.image}`) : images.avatar}
+                                                        onError={(e) => { e.target.onerror = null; e.target.src = images.avatar; }}
+                                                        alt=""
+                                                        className="w-10 h-10 rounded-full object-cover border border-gray-100 shrink-0"
+                                                    />
+                                                    <div className="flex flex-col min-w-0 text-left">
+                                                        <p className="text-sm font-bold text-gray-900 truncate">
+                                                            {request.user1.first_name || request.user1.last_name ? `${request.user1.first_name || ''} ${request.user1.last_name || ''}`.trim() : request.user1.username}
+                                                        </p>
+                                                        {(request.user1.first_name || request.user1.last_name) && (
+                                                            <p className="text-xs text-gray-500 font-medium truncate">@{request.user1.username}</p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div className="flex gap-2 shrink-0 ml-0 sm:ml-4 w-full sm:w-auto">
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); handleFriendRequestResponse(request.id, 'accept'); }}
+                                                        className="flex-1 sm:flex-none bg-primary hover:bg-teal-700 text-white text-xs py-2 sm:py-1.5 px-4 rounded-full shadow-sm transition-all active:scale-95 font-bold"
+                                                    >
+                                                        Accept
+                                                    </button>
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); handleFriendRequestResponse(request.id, 'reject'); }}
+                                                        className="flex-1 sm:flex-none bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs py-2 sm:py-1.5 px-4 rounded-full shadow-sm transition-all active:scale-95 font-bold"
+                                                    >
+                                                        Reject
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
                             {/* User Info & Bio */}
-                            <div className="text-center mt-12">
-                                <h3 className="text-4xl font-semibold leading-normal text-gray-800 mb-2 flex items-center justify-center gap-2">
-                                    {user?.username}
-                                    {user?.role === 'college_staff' && user?.is_verified && (
-                                        <div className="flex items-center gap-1 bg-teal-50 text-teal-600 text-[10px] uppercase tracking-widest px-2 py-1 rounded-lg border border-teal-100 shadow-sm">
-                                            <CheckBadgeIcon className="w-4 h-4" />
-                                            <span>Verified Representative</span>
+                            <div className="text-center mt-4 lg:mt-12">
+                                <div className="flex flex-col items-center justify-center mb-2">
+                                    <h3 className="text-4xl font-semibold leading-normal text-gray-800 flex flex-col md:flex-row items-center justify-center gap-2 md:gap-3">
+                                        {user?.first_name || user?.last_name ? `${user?.first_name || ''} ${user?.last_name || ''}`.trim() : user?.username}
+                                        {user?.role === 'college_staff' && user?.is_verified && (
+                                            <div className="flex items-center gap-1 bg-teal-50 text-teal-600 text-[10px] uppercase tracking-widest px-2 py-1 rounded-lg border border-teal-100 shadow-sm md:ml-2">
+                                                <CheckBadgeIcon className="w-4 h-4" />
+                                                <span>Verified Representative</span>
+                                            </div>
+                                        )}
+                                    </h3>
+                                    
+                                    {(user?.first_name || user?.last_name) && (
+                                        <p className="text-md text-gray-500 font-medium">@{user?.username}</p>
+                                    )}
+                                    
+                                    {(!user?.first_name || !user?.last_name) && (
+                                        <div className="text-xs font-bold text-purple bg-purple/10 border border-purple/20 px-3 py-1.5 rounded-full flex items-center gap-2 mt-3 shadow-sm">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-purple animate-pulse">
+                                                <path fillRule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clipRule="evenodd" />
+                                            </svg>
+                                            Adding your name helps colleges establish a verified connection with you
                                         </div>
                                     )}
-                                </h3>
+                                </div>
 
                                 <div className="text-sm leading-normal mt-0 mb-2 text-gray-500 font-bold uppercase flex justify-center items-center gap-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-gray-400">

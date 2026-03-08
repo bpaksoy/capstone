@@ -52,7 +52,7 @@ if os.environ.get('DB_NAME'):
 # else: fall back to SQLite from base settings (dev/demo mode)
 
 # =====================================================
-# STATIC FILES — WhiteNoise
+# STATIC & MEDIA FILES (Django 5.1 STORAGES)
 # =====================================================
 MIDDLEWARE.insert(
     MIDDLEWARE.index('django.middleware.security.SecurityMiddleware') + 1,
@@ -60,21 +60,32 @@ MIDDLEWARE.insert(
 )
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
-# =====================================================
-# MEDIA FILES — Google Cloud Storage (if configured)
-# =====================================================
 GCS_BUCKET = os.environ.get('GCS_BUCKET_NAME')
+
 if GCS_BUCKET:
-    DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
     GS_BUCKET_NAME = GCS_BUCKET
     GS_DEFAULT_ACL = 'publicRead'
     MEDIA_URL = f'https://storage.googleapis.com/{GCS_BUCKET}/'
+    
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
 else:
-    # Fallback: serve media locally (OK for demo)
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
     MEDIA_URL = '/media/'
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
 
 # =====================================================
 # LOGGING

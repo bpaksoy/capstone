@@ -69,7 +69,7 @@ function Reply({ commentId, lastUpdatedReply, onAddPost, user }) {
                     {replies.map((reply) => (
                         <div key={reply.id} className="relative">
                             <div className="flex items-start gap-2">
-                                <img src={images.avatar} alt="User Avatar" className="w-5 h-5 rounded-full mt-1 object-cover opacity-70" />
+                                <img src={reply.author.image ? (reply.author.image.startsWith('http') ? reply.author.image : `${baseUrl}${reply.author.image.startsWith('/') ? reply.author.image.substring(1) : reply.author.image}`) : images.avatar} alt="User Avatar" className="w-5 h-5 rounded-full mt-1 object-cover opacity-70" />
                                 <div className="flex-1">
                                     <div className="bg-gray-50 px-3 py-2 rounded-2xl inline-block">
                                         <p className="text-gray-900 font-semibold text-xs">{reply.author.username}</p>
