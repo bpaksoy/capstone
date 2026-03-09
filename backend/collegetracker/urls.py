@@ -151,6 +151,7 @@ urlpatterns = [
     path('api/ai/chat/', views.AIChatView.as_view(), name='ai-chat'),
     path('api/ai/history/', views.ChatHistoryView.as_view(), name='ai-history'),
     path('api/colleges/recommendations/', views.CollegeRecommendationView.as_view(), name='college-recommendations'),
+    path('api/populate-wormie/', views.populate_wormie_content_view, name='populate-wormie'),
     path('upload4/', views.UploadApiView4.as_view(), name='upload_file4'),
 ]
 
