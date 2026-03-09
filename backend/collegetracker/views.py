@@ -42,7 +42,8 @@ from django.core.cache import cache
 from datetime import datetime, timedelta
 load_dotenv()
 
-api_view(['GET', 'POST'])
+# Removed dangling decorator
+
 
 
 class RegisterView(APIView):

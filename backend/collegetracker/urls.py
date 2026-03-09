@@ -22,7 +22,7 @@ from graphene_django.views import GraphQLView
 from django.views.decorators.csrf import csrf_exempt
 from django.views.static import serve
 from .views import UploadApiView
-from .views import RegisterView, LoginView, CollegeListView, CommentListView, CommentDetailView, PostDetailView, CurrentUserView, PostListView, BookmarkToggleView, BookmarkedCollegesView, ReplyCreateView, ReplyListView, CommentCountView, PostCommentCountsView, UserUpdateView, UserCommentsView, UserPostsView, OnlinePingView
+from .views import RegisterView, LoginView, CollegeListView, CommentListView, CommentDetailView, PostDetailView, CurrentUserView, PostListView, BookmarkToggleView, BookmarkedCollegesView, ReplyCreateView, ReplyListView, CommentCountView, PostCommentCountsView, UserUpdateView, UserCommentsView, UserPostsView, OnlinePingView, populate_wormie_content_view
 from django.conf.urls.static import static
 from django.conf import settings
 
@@ -151,7 +151,7 @@ urlpatterns = [
     path('api/ai/chat/', views.AIChatView.as_view(), name='ai-chat'),
     path('api/ai/history/', views.ChatHistoryView.as_view(), name='ai-history'),
     path('api/colleges/recommendations/', views.CollegeRecommendationView.as_view(), name='college-recommendations'),
-    path('api/populate-wormie/', views.populate_wormie_content_view, name='populate-wormie'),
+    path('api/populate-wormie/', populate_wormie_content_view, name='populate-wormie'),
     path('upload4/', views.UploadApiView4.as_view(), name='upload_file4'),
 ]
 
