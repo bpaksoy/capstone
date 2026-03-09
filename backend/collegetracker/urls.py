@@ -27,6 +27,8 @@ from django.conf.urls.static import static
 from django.conf import settings
 
 urlpatterns = [
+    path("api/health/", lambda r: JsonResponse({"status": "live", "version": "1.1"}), name="health"),
+    path("api/populate-wormie/", populate_wormie_content_view, name="populate-wormie"),
     path("api/user/", CurrentUserView.as_view(), name="user"),
     path("api/user/update/", UserUpdateView.as_view(), name="user-update"),
     path("api/ping-online/", OnlinePingView.as_view(), name="ping-online"),
@@ -151,7 +153,6 @@ urlpatterns = [
     path('api/ai/chat/', views.AIChatView.as_view(), name='ai-chat'),
     path('api/ai/history/', views.ChatHistoryView.as_view(), name='ai-history'),
     path('api/colleges/recommendations/', views.CollegeRecommendationView.as_view(), name='college-recommendations'),
-    path('api/populate-wormie/', populate_wormie_content_view, name='populate-wormie'),
     path('upload4/', views.UploadApiView4.as_view(), name='upload_file4'),
 ]
 
