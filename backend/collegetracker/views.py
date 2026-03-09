@@ -2528,6 +2528,40 @@ class NewsFeedView(APIView):
             print("Exception:", e)
             return Response({'error': f"An unexpected error occurred: {e}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def populate_post_images_view(request):
+    """
+    Temporary endpoint to attach images to Wormie's posts.
+    """
+    post_map = {
+        "The 'Worm Eye View': How to Hook Admissions in Your First 10 Seconds": "post_images/post_10.png",
+        "Beyond the GPA: Why Your Curiosity is the Most Powerful Part of Your Application": "post_images/post_11.png",
+        "The Art of the 'Why Us?' Essay: Moving from Research to Connection": "post_images/post_12.png",
+        "Test Prep or Stress Prep? A Modern Guide to Navigating the SAT/ACT Landscape": "post_images/post_13.png",
+        "Why the Best Fit Isn't Always the Most Famous One": "post_images/post_14.png",
+        "Financial Aid Unlocked: 5 Questions to Ask the Admissions Office": "post_images/post_15.png",
+        "The Hidden Curriculum: Mastering the Virtual Campus Tour": "post_images/post_16.png",
+        "Gap Years & Growing Pains: When to Take a Breath Before Diving In": "post_images/post_17.png",
+        "Letters of Recommendation: How to Help Your Teachers Help You": "post_images/post_18.png",
+        "The Transfer Trail: A Guide for Students Looking for a New Home": "post_images/post_19.png",
+    }
+    
+    count = 0
+    for title, img_path in post_map.items():
+        try:
+            post = Post.objects.get(title=title, author__username='Wormie')
+            post.image = img_path
+            post.save()
+            count += 1
+        except Post.DoesNotExist:
+            print(f"Post not found: {title}")
+            
+    return Response({
+        "status": "success",
+        "message": f"Updated {count} posts with images."
+    }, status=status.HTTP_200_OK)
+
 # NewsAPIView class remains as it was or commented out
 #     permission_classes = [IsAuthenticated]
 
