@@ -7,6 +7,7 @@ import { baseUrl } from '../shared';
 import Search from '../components/Search';
 import { useCurrentUser } from '../UserProvider/UserProvider';
 import ScrollToTop from '../components/ScrollToTop';
+import PromotionalHero from '../components/PromotionalHero';
 
 const Colleges = () => {
     const { user, loading, loggedIn } = useCurrentUser();
@@ -70,17 +71,7 @@ const Colleges = () => {
             <div>
                 {notFound && <NotFound />}
                 <div className="bg-primary min-h-screen pb-24">
-                    <div className="bg-primary flex flex-col items-center pt-28 pb-20 px-4 border-b border-black/10">
-                        <div className="max-w-4xl mx-auto flex flex-col items-center text-center animate-fadeIn">
-                            <h1 className="text-3xl md:text-5xl font-normal text-gray-900 tracking-tight mb-6">
-                                Build your path to the perfect College Match.
-                            </h1>
-                            <p className="text-white/70 text-base md:text-lg max-w-2xl font-light mb-4">
-                                Discover thousands of top-tier schools and find the community where you belong.
-                            </p>
-                            <Search />
-                        </div>
-                    </div>
+                    <PromotionalHero />
                     {showColleges ? (
                         <>
                             {viewMode === 'featured' ? (
