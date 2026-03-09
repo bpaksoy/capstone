@@ -28,7 +28,7 @@ SECRET_KEY = 'django-insecure-new-secret-key-to-force-logout-all-users-12345'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['wormie.app', 'www.wormie.app', 'collegetracker-api-xeqdgwi3iq-uc.a.run.app', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['wormie.app', 'www.wormie.app', 'collegetracker-api-301955187113.us-central1.run.app', 'collegetracker-api-xeqdgwi3iq-uc.a.run.app', 'localhost', '127.0.0.1']
 
 
 SIMPLE_JWT = {
