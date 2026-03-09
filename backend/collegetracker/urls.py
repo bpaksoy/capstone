@@ -22,13 +22,11 @@ from graphene_django.views import GraphQLView
 from django.views.decorators.csrf import csrf_exempt
 from django.views.static import serve
 from .views import UploadApiView
-from .views import RegisterView, LoginView, CollegeListView, CommentListView, CommentDetailView, PostDetailView, CurrentUserView, PostListView, BookmarkToggleView, BookmarkedCollegesView, ReplyCreateView, ReplyListView, CommentCountView, PostCommentCountsView, UserUpdateView, UserCommentsView, UserPostsView, OnlinePingView, populate_wormie_content_view
+from .views import RegisterView, LoginView, CollegeListView, CommentListView, CommentDetailView, PostDetailView, CurrentUserView, PostListView, BookmarkToggleView, BookmarkedCollegesView, ReplyCreateView, ReplyListView, CommentCountView, PostCommentCountsView, UserUpdateView, UserCommentsView, UserPostsView, OnlinePingView
 from django.conf.urls.static import static
 from django.conf import settings
 
 urlpatterns = [
-    path("api/health/", lambda r: JsonResponse({"status": "live", "version": "1.1"}), name="health"),
-    path("api/populate-wormie/", populate_wormie_content_view, name="populate-wormie"),
     path("api/user/", CurrentUserView.as_view(), name="user"),
     path("api/user/update/", UserUpdateView.as_view(), name="user-update"),
     path("api/ping-online/", OnlinePingView.as_view(), name="ping-online"),
