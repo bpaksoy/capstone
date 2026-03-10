@@ -323,7 +323,7 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
                                         <img
                                             src={post.image.startsWith('http') ? post.image : `${baseUrl}${post.image.startsWith('/') ? post.image.substring(1) : post.image}`}
                                             alt="Post Content"
-                                            className="w-full h-auto max-h-[600px] object-cover transition-transform duration-700 hover:scale-[1.01]"
+                                            className="w-full h-auto max-h-[380px] object-cover transition-transform duration-700 hover:scale-[1.01]"
                                         />
                                     </div>
                                 )}
