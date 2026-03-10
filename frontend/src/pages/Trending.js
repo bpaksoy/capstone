@@ -149,16 +149,16 @@ function Trending() {
 
     // Base layout remains consistent, we only toggle the feed content
     const renderContent = () => {
-        if (postsLoading && posts.length === 0) {
-            return (
-                <div className="w-full flex justify-center py-20">
-                    <Loader text={`Uncovering ${JOURNEY_CATEGORIES.find(c => c.key === activeCategory)?.label}...`} fullScreen={false} />
-                </div>
-            );
-        }
-
         return (
             <>
+                {postsLoading && posts.length === 0 && (
+                    <div className="w-full flex justify-center py-20">
+                        <Loader text={`Uncovering ${JOURNEY_CATEGORIES.find(c => c.key === activeCategory)?.label}...`} fullScreen={false} />
+                    </div>
+                )}
+                
+                {(!postsLoading || posts.length > 0) && (
+                    <>
                 {/* Active Category Indicator */}
                 {activeCategory !== 'all' && (
                     <div className="w-full max-w-2xl mb-4">
@@ -228,6 +228,8 @@ function Trending() {
                             </button>
                         )}
                     </div>
+                )}
+                    </>
                 )}
             </>
         );
