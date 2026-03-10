@@ -56,7 +56,7 @@ def populate_wormie_posts():
         {
             'title': "Financial Aid Unlocked: 5 Questions to Ask the Admissions Office",
             'category': 'financial_aid',
-            'content': "Everyone knows about FAFSA, but the real power is in the 'Appeal.' If your financial situation has changed, or if a similar school gave you a better package, don't be afraid to ask for a reconsideration. \n\nWormie’s advice: Reach out to your regional representative. They are your advocates in the room. Ask: 'What are the criteria for your merit-based scholarships?' and 'How does the school support students whose families have unexpected financial hardship?'"
+            'content': "Everyone knows about FAFSA, but the real power is in the 'Appeal.' If your financial situation has changed, or if a similar school gave you a better package, don't be afraid to ask for a reconsideration. \n\nWormie’s advice: Reach out to your regional representative. They are your advocates in the room. Ask:\n1. What are the specific criteria for merit-based scholarships?\n2. Does the school offer 'Financial Aid Appeals' if my family's situation changes?\n3. How does the school support students with unexpected financial hardship mid-year?\n4. Are there departmental scholarships I can apply for as an upperclassman?\n5. Is it possible to 'match' a financial aid offer from a peer institution?"
         },
         {
             'title': "The Hidden Curriculum: Mastering the Virtual Campus Tour",
@@ -82,18 +82,18 @@ def populate_wormie_posts():
 
     # 3. Insert posts
     for data in posts_data:
-        post, created = Post.objects.get_or_create(
+        post, created = Post.objects.update_or_create(
             title=data['title'],
-            author=wormie,
             defaults={
                 'content': data['content'],
-                'category': data['category']
+                'category': data['category'],
+                'author': wormie
             }
         )
         if created:
             print(f"Created post: {data['title']}")
         else:
-            print(f"Post already exists: {data['title']}")
+            print(f"Updated post: {data['title']}")
 
 if __name__ == "__main__":
     populate_wormie_posts()

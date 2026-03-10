@@ -22,6 +22,13 @@ const AIAgent = () => {
     const [message, setMessage] = useState('');
     const location = useLocation();
     const navigate = useNavigate();
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 640);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
     const [activeTargetUser, setActiveTargetUser] = useState(() => {
         const stored = sessionStorage.getItem('activeTargetUser');
         return stored ? JSON.parse(stored) : null;
@@ -416,15 +423,15 @@ const AIAgent = () => {
 
     return (
         <div
-            className="fixed z-[9999] flex flex-col items-end pointer-events-none transition-none"
-            style={{
-                right: offset.right,
-                bottom: offset.bottom
-            }}
+            className={`fixed z-[9999] flex flex-col pointer-events-none transition-all duration-300 ${isOpen && isMobile ? 'inset-0 items-center justify-center bg-black/40 backdrop-blur-[8px]' : 'items-end'}`}
+            style={isOpen && isMobile 
+                ? {} 
+                : { right: offset.right, bottom: offset.bottom }
+            }
         >
             {/* Chat Window */}
             {isOpen && (
-                <div className="mb-4 w-[92vw] sm:w-[420px] h-[75vh] sm:h-[550px] bg-white/95 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/40 overflow-hidden flex flex-col animate-slideUp pointer-events-auto cursor-default">
+                <div className={`w-[96vw] max-w-[420px] ${isMobile ? 'h-[85vh] m-auto' : 'h-[550px] mb-4'} bg-white/95 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/40 overflow-hidden flex flex-col animate-slideUp pointer-events-auto cursor-default`}>
                     {/* Header - Draggable Hub */}
                     <div
                         onMouseDown={handleStartDrag}
@@ -435,38 +442,36 @@ const AIAgent = () => {
                             <div className="p-2 bg-[#A855F7] rounded-2xl">
                                 <img src="/wormie-logo.svg" alt="Wormie" className="w-8 h-8" />
                             </div>
-                            <div>
+                            <div className="min-w-0">
                                 <h3 className="font-bold text-lg tracking-tight">Wormie</h3>
                                 <div className="flex items-center gap-1.5">
                                     <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(74,222,128,0.8)]"></span>
-                                    <span className="text-[10px] text-white/70 font-bold uppercase tracking-widest">Global Admissions Agent</span>
+                                    <span className="text-[10px] text-white/70 font-bold uppercase tracking-widest truncate"> Admissions Agent</span>
                                 </div>
                             </div>
                         </div>
                         <div className="flex items-center gap-1">
                             {loggedIn && (
-                                <>
+                                <div className="flex items-center mr-1 bg-white/5 rounded-2xl p-0.5">
                                     <button
                                         onClick={handleVisualClear}
-                                        className="p-1.5 hover:bg-white/10 rounded-xl transition-colors text-white/50 hover:text-white"
-                                        title="Clear Screen (Keep Memory)"
+                                        className="p-2 hover:bg-white/10 rounded-xl transition-colors text-white/50 hover:text-white"
+                                        title="Clear Screen"
                                     >
-                                        <ArrowPathIcon className="w-5 h-5" />
+                                        <ArrowPathIcon className="w-4 h-4" />
                                     </button>
                                     <button
                                         onClick={handleClearHistory}
-                                        className="p-1.5 hover:bg-white/10 rounded-xl transition-colors text-white/50 hover:text-red-400"
-                                        title="Wipe Memory (Delete All)"
+                                        className="p-2 hover:bg-white/10 rounded-xl transition-colors text-white/50 hover:text-red-400"
+                                        title="Delete Memory"
                                     >
-                                        <TrashIcon className="w-5 h-5" />
+                                        <TrashIcon className="w-4 h-4" />
                                     </button>
-                                </>
+                                </div>
                             )}
                             <button
-                                onClick={() => {
-                                    setIsOpen(false);
-                                }}
-                                className="p-1.5 hover:bg-white/10 rounded-xl transition-colors"
+                                onClick={() => setIsOpen(false)}
+                                className="p-2 hover:bg-white/10 rounded-xl transition-colors"
                             >
                                 <XMarkIcon className="w-6 h-6" />
                             </button>
