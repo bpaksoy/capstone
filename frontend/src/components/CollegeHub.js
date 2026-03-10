@@ -20,7 +20,7 @@ const CollegeHub = ({ collegeId, collegeName }) => {
             const response = await axios.get(`${baseUrl}api/posts/?college_id=${collegeId}`, {
                 headers: headers
             });
-            setPosts(response.data);
+            setPosts(response.data.results || []);
         } catch (error) {
             console.error("Error fetching hub posts:", error);
         } finally {

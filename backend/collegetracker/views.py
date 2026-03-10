@@ -1749,35 +1749,43 @@ class PostListView(APIView):
             page_size = request.query_params.get('page_size', 10)
             
             # Base visibility logic:
-            visibility_query = Q(author__is_private=False)
+            # We want posts where author is not private OR author is the user OR author is a friend
+            visibility_query = Q(author__is_private=False) | Q(author__isnull=True)
             if user.is_authenticated:
                 visibility_query |= Q(author=user) | \
                                    Q(author__friendship_user1__user2=user, author__friendship_user1__status='accepted') | \
                                    Q(author__friendship_user2__user1=user, author__friendship_user2__status='accepted')
 
-            # Special case for hubs: Official announcements should ALWAYS be visible
-            if college_id:
-                visibility_query |= Q(college_id=college_id, is_announcement=True)
-
-            # Optimization: Use select_related and annotate to avoid N+1 queries
-            posts_queryset = Post.objects.filter(visibility_query).select_related('author', 'college').annotate(
-                annotated_comments_count=Count('comments', distinct=True),
-                annotated_likes_count=Count('likes', distinct=True)
-            )
+            # Build the base queryset first so we can apply college filtering more clearly
+            posts_queryset = Post.objects.all()
 
             if college_id:
-                posts_queryset = posts_queryset.filter(college_id=college_id)
+                # For hubs: 
+                # (Matches the base visibility AND matches the college hub) 
+                # OR (It is an announcement for this specific college - announcements are ALWAYS public in their hub)
+                posts_queryset = posts_queryset.filter(
+                    (visibility_query & Q(college_id=college_id)) |
+                    Q(college_id=college_id, is_announcement=True)
+                ).distinct()
+            else:
+                posts_queryset = posts_queryset.filter(visibility_query).distinct()
 
             # Filter by category if provided
             category = request.query_params.get('category')
             if category and category != 'all':
                 posts_queryset = posts_queryset.filter(category=category)
-            
+
+            # Optimization: Use select_related and annotate to avoid N+1 queries
+            posts_queryset = posts_queryset.select_related('author', 'college').annotate(
+                annotated_comments_count=Count('comments', distinct=True),
+                annotated_likes_count=Count('likes', distinct=True)
+            )
+
             # Pin announcements to the top if in a hub, otherwise sort by newest
             if college_id:
-                posts_queryset = posts_queryset.order_by('-is_announcement', '-created_at').distinct()
+                posts_queryset = posts_queryset.order_by('-is_announcement', '-created_at')
             else:
-                posts_queryset = posts_queryset.order_by('-created_at').distinct()
+                posts_queryset = posts_queryset.order_by('-created_at')
 
             # Server-side pagination
             paginator = Paginator(posts_queryset, page_size)

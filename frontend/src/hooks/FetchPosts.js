@@ -24,8 +24,8 @@ const usePosts = () => {
 
                 // The serializer already provides comments_count and likes_count
                 // We map them to the expected names if necessary, or just use what we have
-                setPosts(response.data);
-                console.log("Fetched posts count:", response.data.length);
+                setPosts(response.data.results || []);
+                console.log("Fetched posts count:", (response.data.results || []).length);
             } catch (error) {
                 console.error("Error fetching posts:", error);
                 setError(error);
