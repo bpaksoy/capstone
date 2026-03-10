@@ -199,13 +199,13 @@ function SearchResults() {
 
     return (
         <div className="bg-primary min-h-screen">
-            <div className="pt-24 pb-16 px-4 border-b border-black/10">
+            <div className="pt-24 pb-6 lg:pb-12 px-4 border-b border-black/10">
                 <div className="max-w-7xl mx-auto px-4">
                     <Search />
                 </div>
             </div>
 
-            <div className="py-8">
+            <div className="pt-4 pb-2">
                 <SearchFilterBar onFilterChange={handleFilterChange} activeFilters={filters} />
             </div>
 
@@ -230,7 +230,7 @@ function SearchResults() {
             ) : (
                 <>
                     {searchResult && searchResult.length > 0 && (
-                        <div className="max-w-7xl mx-auto px-8 mt-16 flex items-center justify-between">
+                        <div className="max-w-7xl mx-auto px-8 mt-6 md:mt-10 flex items-center justify-between">
                             <div>
                                 <h2 className="text-2xl font-normal text-gray-900 tracking-tight">
                                     Found {searchResult.length} {searchResult.length === 1 ? 'College' : 'Colleges'}
@@ -243,7 +243,7 @@ function SearchResults() {
                     )}
 
                     {!isLoading && searchResult && searchResult.length === 0 && (
-                        <div className="max-w-4xl mx-auto px-8 mt-16 text-center animate-fadeIn pb-24">
+                        <div className="max-w-4xl mx-auto px-8 mt-8 md:mt-12 text-center animate-fadeIn pb-24">
                             <div className="bg-gray-800/10 border border-white/5 rounded-3xl p-16 backdrop-blur-sm">
                                 <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-8 border border-white/10">
                                     <svg className="w-10 h-10 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -264,8 +264,8 @@ function SearchResults() {
                         <>
                             <div className={
                                 searchResult.length === 1
-                                    ? "flex justify-center px-8 w-full max-w-7xl mx-auto mt-16 pb-24"
-                                    : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 px-8 w-full max-w-7xl mx-auto mt-16 pb-24"
+                                    ? "flex justify-center px-8 w-full max-w-7xl mx-auto mt-6 md:mt-10 pb-24"
+                                    : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 px-8 w-full max-w-7xl mx-auto mt-6 md:mt-10 pb-24"
                             }>
                                 {searchResult.map((college) => {
                                     return (

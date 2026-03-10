@@ -50,8 +50,8 @@ const SearchFilterBar = ({ onFilterChange, activeFilters }) => {
     return (
         <div className="max-w-7xl mx-auto px-8 mt-4">
             <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-4 transition-all duration-300">
-                <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+                    <div className="flex items-center gap-2 md:gap-3 w-full">
                         <button
                             onClick={() => setIsExpanded(!isExpanded)}
                             className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 md:py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-all text-sm font-bold border border-white/5"
@@ -62,7 +62,7 @@ const SearchFilterBar = ({ onFilterChange, activeFilters }) => {
                         </button>
 
                         {/* Summary of active filters */}
-                        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar flex-1">
+                        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar flex-1 pb-1">
                             {activeFilters.query && (
                                 <span className="flex items-center gap-1.5 px-3 py-1 bg-white/20 text-white rounded-lg text-xs font-bold whitespace-nowrap border border-white/10">
                                     Search: "{activeFilters.query}"
@@ -97,12 +97,14 @@ const SearchFilterBar = ({ onFilterChange, activeFilters }) => {
                     </div>
 
                     {hasActiveFilters && (
-                        <button
-                            onClick={clearFilters}
-                            className="flex-shrink-0 text-white/60 hover:text-white text-[10px] md:text-xs font-bold uppercase tracking-wider transition-colors whitespace-nowrap"
-                        >
-                            Clear All
-                        </button>
+                        <div className="w-full md:w-auto flex justify-end md:justify-start">
+                            <button
+                                onClick={clearFilters}
+                                className="flex-shrink-0 text-white/60 hover:text-white text-[10px] md:text-xs font-bold uppercase tracking-wider transition-colors whitespace-nowrap"
+                            >
+                                Clear All
+                            </button>
+                        </div>
                     )}
                 </div>
 
