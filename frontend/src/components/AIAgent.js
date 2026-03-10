@@ -55,9 +55,17 @@ const AIAgent = () => {
     // Draggable Logic - Refactored to use offsets for reliable corner anchoring
     const [offset, setOffset] = useState(() => {
         const stored = localStorage.getItem('wormieOffset');
-        if (stored) return JSON.parse(stored);
+        if (stored) {
+            try {
+                const parsed = JSON.parse(stored);
+                // Validate structure: must have right/bottom. If it has x/y (old version), migrate it or reset.
+                if (parsed && typeof parsed.right === 'number' && typeof parsed.bottom === 'number') {
+                    return parsed;
+                }
+            } catch (e) {}
+        }
         
-        // Safe default: 20px from bottom, 20px from right
+        // Reset to corner on first load or if malformed
         return { right: 20, bottom: 20 };
     });
     const [isDragging, setIsDragging] = useState(false);
@@ -141,16 +149,20 @@ const AIAgent = () => {
     useEffect(() => {
         const checkBounds = () => {
             const padding = 10;
-            const chatWidth = window.innerWidth < 640 ? window.innerWidth * 0.92 : 420;
-            const chatHeight = window.innerWidth < 640 ? window.innerHeight * 0.75 : 550;
+            const chatWidth = window.innerWidth < 640 ? window.innerWidth * 0.95 : 420;
+            const chatHeight = window.innerWidth < 640 ? window.innerHeight * 0.85 : 550;
             
             const maxR = window.innerWidth - padding - (isOpen ? chatWidth : 80);
             const maxB = window.innerHeight - padding - (isOpen ? chatHeight : 80);
 
-            setOffset(prev => ({
-                right: Math.max(padding, Math.min(prev.right, maxR)),
-                bottom: Math.max(padding, Math.min(prev.bottom, maxB))
-            }));
+            setOffset(prev => {
+                const currentR = (typeof prev.right === 'number') ? prev.right : 20;
+                const currentB = (typeof prev.bottom === 'number') ? prev.bottom : 20;
+                return {
+                    right: Math.max(padding, Math.min(currentR, maxR)),
+                    bottom: Math.max(padding, Math.min(currentB, maxB))
+                };
+            });
         };
         window.addEventListener('resize', checkBounds);
         checkBounds();
@@ -423,15 +435,17 @@ const AIAgent = () => {
 
     return (
         <div
-            className={`fixed z-[9999] flex flex-col pointer-events-none transition-all duration-300 ${isOpen && isMobile ? 'inset-0 items-center justify-center bg-black/40 backdrop-blur-[8px]' : 'items-end'}`}
-            style={isOpen && isMobile 
+            className={`fixed z-[9999] flex flex-col pointer-events-none transition-all duration-300 ${isOpen && isMobile ? 'inset-0 items-center justify-center p-4 bg-black/40 backdrop-blur-[10px]' : 'items-end'}`}
+            style={(isOpen && isMobile)
                 ? {} 
-                : { right: offset.right, bottom: offset.bottom }
+                : { right: offset.right || 20, bottom: offset.bottom || 20 }
             }
         >
             {/* Chat Window */}
             {isOpen && (
-                <div className={`w-[96vw] max-w-[420px] ${isMobile ? 'h-[85vh] m-auto' : 'h-[550px] mb-4'} bg-white/95 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/40 overflow-hidden flex flex-col animate-slideUp pointer-events-auto cursor-default`}>
+                <div 
+                    className={`w-full max-w-[420px] ${isMobile ? 'h-[85vh]' : 'h-[550px] mb-4'} bg-white/95 backdrop-blur-3xl rounded-[2.5rem] shadow-2xl border border-white/40 overflow-hidden flex flex-col animate-slideUp pointer-events-auto cursor-default`}
+                >
                     {/* Header - Draggable Hub */}
                     <div
                         onMouseDown={handleStartDrag}

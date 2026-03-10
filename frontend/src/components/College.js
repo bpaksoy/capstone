@@ -25,7 +25,12 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
     const location = useLocation();
 
     // Prioritize backend logo_url, then fallback to dynamic Clearbit extraction
-    const [logoUrl, setLogoUrl] = useState(logo_url);
+    const [logoUrl, setLogoUrl] = useState(() => {
+        if (logo_url && (typeof logo_url === 'string') && !logo_url.startsWith('http') && !logo_url.startsWith('/') && !logo_url.startsWith('data:')) {
+            return `https://${logo_url}`;
+        }
+        return logo_url;
+    });
 
     useEffect(() => {
         if (!logoUrl && website) {
@@ -34,11 +39,12 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
                 if (domain.startsWith('www.')) domain = domain.substring(4);
                 setLogoUrl(`https://logo.clearbit.com/${domain}`);
             } catch (e) { }
-        } else if (logoUrl && (typeof logoUrl === 'string') && !logoUrl.startsWith('http') && !logoUrl.startsWith('/') && !logoUrl.startsWith('data:')) {
-            // Fix for naked domains in logo_url causing ERR_NAME_NOT_RESOLVED
-            setLogoUrl(`https://${logoUrl}`);
+        } else if (logo_url && (typeof logo_url === 'string') && !logo_url.startsWith('http') && !logo_url.startsWith('/') && !logo_url.startsWith('data:')) {
+            // Ensure state stays in sync if prop changes
+            const fixed = `https://${logo_url}`;
+            if (logoUrl !== fixed) setLogoUrl(fixed);
         }
-    }, [website, logoUrl]);
+    }, [website, logo_url, logoUrl]);
 
     // Dynamic Campus Image - Removed as primary fallback due to risk of incorrect logos/mismatches
     // const dynamicImageUrl = `https://images.unsplash.com/featured/?university,campus,architecture,building,${encodeURIComponent(name)}`;

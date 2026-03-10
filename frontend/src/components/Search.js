@@ -13,7 +13,6 @@ function Search() {
         }
     }, [urlQuery]);
 
-    console.log("query", query);
     const navigate = useNavigate();
 
     const handleSearch = (e) => {
@@ -62,8 +61,8 @@ function Search() {
                 </div>
             )}
 
-            <div className="mt-8 flex flex-wrap justify-center items-center gap-2 animate-fadeIn px-1 sm:px-8">
-                <span className="text-[10px] font-semibold text-white/50 uppercase tracking-widest mr-2">Popular:</span>
+            <div className="mt-8 flex flex-wrap justify-center items-center gap-x-3 gap-y-2 animate-fadeIn px-4 sm:px-8">
+                <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Popular:</span>
                 {['Ivy League', 'California', 'Computer Science', 'HBCU'].map((tag) => (
                     <button
                         key={tag}
