@@ -435,7 +435,7 @@ const AIAgent = () => {
 
     return (
         <div
-            className={`fixed z-[9999] flex flex-col pointer-events-none transition-all duration-300 ${isOpen && isMobile ? 'inset-0 items-center justify-center p-4 bg-black/40 backdrop-blur-[10px]' : 'items-end'}`}
+            className={`fixed z-[9999] flex flex-col transition-all duration-300 ${isOpen && isMobile ? 'inset-0 items-center justify-center p-4 bg-black/40 backdrop-blur-[10px] pointer-events-auto' : 'items-end pointer-events-none'}`}
             style={(isOpen && isMobile)
                 ? {} 
                 : { right: offset.right || 20, bottom: offset.bottom || 20 }
