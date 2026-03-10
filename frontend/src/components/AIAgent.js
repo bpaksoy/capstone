@@ -143,6 +143,45 @@ const AIAgent = () => {
         }
     }, [isOpen, position.x, position.y, chatHistory, isThinking]);
 
+    // Bounding check on window resize to ensure visibility
+    useEffect(() => {
+        const handleAutoBoundsCheck = () => {
+            const padding = 40;
+            const bubbleSize = 80;
+            const chatWidth = 360;
+            const chatHeight = 500;
+
+            let boundsAdjusted = false;
+            let currentX = position.x;
+            let currentY = position.y;
+
+            if (isOpen) {
+                const minX = chatWidth + padding;
+                const minY = chatHeight + padding;
+                if (currentX > window.innerWidth - padding) currentX = window.innerWidth - padding;
+                if (currentY > window.innerHeight - padding) currentY = window.innerHeight - padding;
+                if (currentX < minX) currentX = minX;
+                if (currentY < minY) currentY = minY;
+            } else {
+                if (currentX > window.innerWidth - padding) currentX = window.innerWidth - padding;
+                if (currentY > window.innerHeight - padding) currentY = window.innerHeight - padding;
+                if (currentX < padding) currentX = padding;
+                if (currentY < padding) currentY = padding;
+            }
+
+            if (currentX !== position.x || currentY !== position.y) {
+                setPosition({ x: currentX, y: currentY });
+                localStorage.setItem('wormiePosition', JSON.stringify({ x: currentX, y: currentY }));
+            }
+        };
+
+        window.addEventListener('resize', handleAutoBoundsCheck);
+        // Also run once on mount
+        handleAutoBoundsCheck();
+
+        return () => window.removeEventListener('resize', handleAutoBoundsCheck);
+    }, [isOpen, position.x, position.y]);
+
     const notifiedMatchesRef = useRef(new Set(
         JSON.parse(sessionStorage.getItem('notifiedMatches') || '[]')
     ));
@@ -420,7 +459,7 @@ const AIAgent = () => {
         >
             {/* Chat Window */}
             {isOpen && (
-                <div className="mb-4 w-full max-w-[420px] h-[550px] bg-white/95 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/40 overflow-hidden flex flex-col animate-slideUp pointer-events-auto cursor-default">
+                <div className="mb-4 w-[92vw] sm:w-[420px] h-[75vh] sm:h-[550px] bg-white/95 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/40 overflow-hidden flex flex-col animate-slideUp pointer-events-auto cursor-default">
                     {/* Header - Draggable Hub */}
                     <div
                         onMouseDown={handleStartDrag}
