@@ -1,8 +1,8 @@
 import React from 'react';
 
-const Loader = ({ text = "Loading Bookmarks..." }) => {
+const Loader = ({ text = "Loading Content...", fullScreen = true }) => {
     return (
-        <div className="flex justify-center items-center h-screen bg-primary">
+        <div className={`flex justify-center items-center ${fullScreen ? 'h-screen' : 'py-20'} bg-primary w-full`}>
             <div className="loader-container">
                 <div className="modern-loader">
                     <div></div>

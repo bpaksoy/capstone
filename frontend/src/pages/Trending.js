@@ -87,8 +87,12 @@ function Trending() {
     };
 
     const handleCategoryChange = (catKey) => {
-        setActiveCategory(catKey);
-        setDisplayLimit(10);
+        if (catKey !== activeCategory) {
+            setPosts([]); // Clear posts to show loading state
+            setActiveCategory(catKey);
+            setDisplayLimit(10);
+            window.scrollTo({ top: 0, behavior: 'instant' });
+        }
     };
 
     const getMixedFeed = () => {
@@ -119,10 +123,91 @@ function Trending() {
         }, 500);
     };
 
-    // Only show the global loader on the VERY first load of posts
-    if (postsLoading && posts.length === 0) {
-        return <Loader text="Uncovering the latest trends..." />;
-    }
+    // Base layout remains consistent, we only toggle the feed content
+    const renderContent = () => {
+        if (postsLoading && posts.length === 0) {
+            return (
+                <div className="w-full flex justify-center py-20">
+                    <Loader text={`Uncovering ${JOURNEY_CATEGORIES.find(c => c.key === activeCategory)?.label}...`} fullScreen={false} />
+                </div>
+            );
+        }
+
+        return (
+            <>
+                {/* Active Category Indicator */}
+                {activeCategory !== 'all' && (
+                    <div className="w-full max-w-2xl mb-4">
+                        <div className="flex items-center justify-between bg-white/10 backdrop-blur-sm rounded-2xl px-5 py-3 border border-white/10">
+                            <div className="flex items-center gap-2">
+                                <span className="text-lg">{JOURNEY_CATEGORIES.find(c => c.key === activeCategory)?.emoji}</span>
+                                <span className="text-white font-bold text-sm">
+                                    {JOURNEY_CATEGORIES.find(c => c.key === activeCategory)?.label}
+                                </span>
+                                <span className="text-white/40 text-xs ml-1">
+                                    {posts.length} {posts.length === 1 ? 'post' : 'posts'}
+                                </span>
+                            </div>
+                            <button
+                                onClick={() => handleCategoryChange('all')}
+                                className="text-white/60 hover:text-white text-xs font-bold uppercase tracking-wider transition-colors"
+                            >
+                                Clear
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                <InfiniteScroll
+                    dataLength={displayFeed.length}
+                    next={fetchMoreData}
+                    hasMore={hasMore}
+                    loader={
+                        <div className="flex justify-center items-center py-10 w-full">
+                            <div className="modern-loader">
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                            </div>
+                        </div>
+                    }
+                    endMessage={
+                        (!postsLoading && !newsLoading) ? (
+                            <p className="text-white text-center mt-8 pb-8">
+                                <b className="opacity-80">You have seen all trends!</b>
+                            </p>
+                        ) : null
+                    }
+                    scrollThreshold={0.9}
+                    style={{ overflow: 'visible' }}
+                >
+                    <PostList
+                        posts={displayFeed}
+                        onAddPost={handleAddPost}
+                        onOpenPostModal={handleOpenPostModal}
+                    />
+                </InfiniteScroll>
+
+                {/* Empty State for filtered categories */}
+                {!postsLoading && activeCategory !== 'all' && posts.length === 0 && (
+                    <div className="text-center py-16">
+                        <div className="text-5xl mb-4">{JOURNEY_CATEGORIES.find(c => c.key === activeCategory)?.emoji}</div>
+                        <h3 className="text-white font-bold text-lg mb-2">No posts in this category yet</h3>
+                        <p className="text-white/50 text-sm mb-6">Be the first to share your experience!</p>
+                        {loggedIn && (
+                            <button
+                                onClick={() => setIsPostModalOpen(true)}
+                                className="bg-white text-gray-900 font-bold px-6 py-3 rounded-xl hover:shadow-lg transition-all"
+                            >
+                                Create a Post
+                            </button>
+                        )}
+                    </div>
+                )}
+            </>
+        );
+    };
 
     return (
         <div className="bg-primary min-h-screen flex flex-col items-center justify-start py-12 px-4 sm:px-6 lg:px-8">
@@ -175,76 +260,7 @@ function Trending() {
                 />
             )}
 
-            {/* Active Category Indicator */}
-            {activeCategory !== 'all' && (
-                <div className="w-full max-w-2xl mb-4">
-                    <div className="flex items-center justify-between bg-white/10 backdrop-blur-sm rounded-2xl px-5 py-3 border border-white/10">
-                        <div className="flex items-center gap-2">
-                            <span className="text-lg">{JOURNEY_CATEGORIES.find(c => c.key === activeCategory)?.emoji}</span>
-                            <span className="text-white font-bold text-sm">
-                                {JOURNEY_CATEGORIES.find(c => c.key === activeCategory)?.label}
-                            </span>
-                            <span className="text-white/40 text-xs ml-1">
-                                {posts.length} {posts.length === 1 ? 'post' : 'posts'}
-                            </span>
-                        </div>
-                        <button
-                            onClick={() => handleCategoryChange('all')}
-                            className="text-white/60 hover:text-white text-xs font-bold uppercase tracking-wider transition-colors"
-                        >
-                            Clear
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            <InfiniteScroll
-                dataLength={displayFeed.length}
-                next={fetchMoreData}
-                hasMore={hasMore}
-                loader={
-                    <div className="flex justify-center items-center py-10 w-full">
-                        <div className="modern-loader">
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                        </div>
-                    </div>
-                }
-                endMessage={
-                    (!postsLoading && !newsLoading) ? (
-                        <p className="text-white text-center mt-8 pb-8">
-                            <b className="opacity-80">You have seen all trends!</b>
-                        </p>
-                    ) : null
-                }
-                scrollThreshold={0.9}
-                style={{ overflow: 'visible' }}
-            >
-                <PostList
-                    posts={displayFeed}
-                    onAddPost={handleAddPost}
-                    onOpenPostModal={handleOpenPostModal}
-                />
-            </InfiniteScroll>
-
-            {/* Empty State for filtered categories */}
-            {!postsLoading && activeCategory !== 'all' && posts.length === 0 && (
-                <div className="text-center py-16">
-                    <div className="text-5xl mb-4">{JOURNEY_CATEGORIES.find(c => c.key === activeCategory)?.emoji}</div>
-                    <h3 className="text-white font-bold text-lg mb-2">No posts in this category yet</h3>
-                    <p className="text-white/50 text-sm mb-6">Be the first to share your experience!</p>
-                    {loggedIn && (
-                        <button
-                            onClick={() => setIsPostModalOpen(true)}
-                            className="bg-white text-gray-900 font-bold px-6 py-3 rounded-xl hover:shadow-lg transition-all"
-                        >
-                            Create a Post
-                        </button>
-                    )}
-                </div>
-            )}
+            {renderContent()}
         </div>
     );
 }
