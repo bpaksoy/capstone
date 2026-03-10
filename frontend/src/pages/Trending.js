@@ -28,31 +28,47 @@ function Trending() {
     const [newsLoading, setNewsLoading] = useState(true);
     const [posts, setPosts] = useState([]);
     const [postsLoading, setPostsLoading] = useState(true);
-    const [displayLimit, setDisplayLimit] = useState(10);
     const [activeCategory, setActiveCategory] = useState('all');
+    const [page, setPage] = useState(1);
+    const [hasNext, setHasNext] = useState(false);
 
     // Fetch posts (with optional category filter)
-    const fetchPosts = async (category = 'all', isBackground = false) => {
-        if (!isBackground) {
+    const fetchPosts = async (category = 'all', isBackground = false, pageNum = 1) => {
+        if (!isBackground && pageNum === 1) {
             setPostsLoading(true);
         }
         try {
             const token = localStorage.getItem('access');
             const headers = (token && token !== 'null') ? { Authorization: `Bearer ${token}` } : {};
-            const categoryParam = category && category !== 'all' ? `?category=${category}` : '';
-            const response = await axios.get(`${baseUrl}api/posts/${categoryParam}`, { headers });
-            setPosts(response.data);
+            
+            // Build query params
+            const params = new URLSearchParams();
+            if (category && category !== 'all') params.append('category', category);
+            params.append('page', pageNum);
+            params.append('page_size', 10);
+
+            const response = await axios.get(`${baseUrl}api/posts/?${params.toString()}`, { headers });
+            
+            const newPosts = response.data.results || [];
+            if (pageNum === 1) {
+                setPosts(newPosts);
+            } else {
+                setPosts(prev => [...prev, ...newPosts]);
+            }
+            
+            setHasNext(response.data.has_next);
+            setPage(pageNum);
         } catch (error) {
             console.error("Error fetching posts", error);
         } finally {
-            if (!isBackground) {
+            if (!isBackground && pageNum === 1) {
                 setPostsLoading(false);
             }
         }
     };
 
     useEffect(() => {
-        fetchPosts(activeCategory);
+        fetchPosts(activeCategory, false, 1);
     }, [activeCategory]);
 
     useEffect(() => {
@@ -75,7 +91,7 @@ function Trending() {
     }, []);
 
     const handleAddPost = (scrollToTop = true) => {
-        fetchPosts(activeCategory, !scrollToTop);
+        fetchPosts(activeCategory, !scrollToTop, 1);
         if (scrollToTop) {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -90,7 +106,7 @@ function Trending() {
         if (catKey !== activeCategory) {
             setPosts([]); // Clear posts to show loading state
             setActiveCategory(catKey);
-            setDisplayLimit(10);
+            setPage(1);
             window.scrollTo({ top: 0, behavior: 'instant' });
         }
     };
@@ -102,25 +118,24 @@ function Trending() {
         // Only mix in news when viewing "all"
         const newsList = activeCategory === 'all' ? (news || []) : [];
 
+        // Simple interleaving for the current display
         while (p < postsList.length || n < newsList.length) {
             if (p < postsList.length) {
                 combined.push({ isPost: true, itemType: 'post', ...postsList[p++] });
             }
-            if (n < newsList.length) {
+            if (n < newsList.length && p % 3 === 0) { // Add news every 3 posts for variety
                 combined.push({ isNews: true, itemType: 'news', ...newsList[n++] });
             }
         }
         return combined;
     };
 
-    const fullFeed = getMixedFeed();
-    const displayFeed = fullFeed.slice(0, displayLimit);
-    const hasMore = displayLimit < fullFeed.length;
+    const displayFeed = getMixedFeed();
 
     const fetchMoreData = () => {
-        setTimeout(() => {
-            setDisplayLimit(prev => prev + 10);
-        }, 500);
+        if (hasNext && !postsLoading) {
+            fetchPosts(activeCategory, true, page + 1);
+        }
     };
 
     // Base layout remains consistent, we only toggle the feed content
@@ -161,7 +176,7 @@ function Trending() {
                 <InfiniteScroll
                     dataLength={displayFeed.length}
                     next={fetchMoreData}
-                    hasMore={hasMore}
+                    hasMore={hasNext}
                     loader={
                         <div className="flex justify-center items-center py-10 w-full">
                             <div className="modern-loader">

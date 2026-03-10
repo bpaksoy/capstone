@@ -1740,9 +1740,13 @@ class PostListView(APIView):
 
     def get(self, request):
         try:
-            from django.db.models import Q
+            from django.db.models import Q, Count
+            from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+            
             user = request.user
             college_id = request.query_params.get('college_id')
+            page = request.query_params.get('page', 1)
+            page_size = request.query_params.get('page_size', 10)
             
             # Base visibility logic:
             visibility_query = Q(author__is_private=False)
@@ -1755,24 +1759,42 @@ class PostListView(APIView):
             if college_id:
                 visibility_query |= Q(college_id=college_id, is_announcement=True)
 
-            posts = Post.objects.filter(visibility_query)
+            # Optimization: Use select_related and annotate to avoid N+1 queries
+            posts_queryset = Post.objects.filter(visibility_query).select_related('author', 'college').annotate(
+                annotated_comments_count=Count('comments', distinct=True),
+                annotated_likes_count=Count('likes', distinct=True)
+            )
 
             if college_id:
-                posts = posts.filter(college_id=college_id)
+                posts_queryset = posts_queryset.filter(college_id=college_id)
 
             # Filter by category if provided
             category = request.query_params.get('category')
             if category and category != 'all':
-                posts = posts.filter(category=category)
+                posts_queryset = posts_queryset.filter(category=category)
             
             # Pin announcements to the top if in a hub, otherwise sort by newest
             if college_id:
-                posts = posts.order_by('-is_announcement', '-created_at').distinct()
+                posts_queryset = posts_queryset.order_by('-is_announcement', '-created_at').distinct()
             else:
-                posts = posts.order_by('-created_at').distinct()
+                posts_queryset = posts_queryset.order_by('-created_at').distinct()
 
-            serializer = PostSerializer(posts, many=True, context={'request': request})
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            # Server-side pagination
+            paginator = Paginator(posts_queryset, page_size)
+            try:
+                posts_page = paginator.page(page)
+            except PageNotAnInteger:
+                posts_page = paginator.page(1)
+            except EmptyPage:
+                posts_page = paginator.page(paginator.num_pages)
+
+            serializer = PostSerializer(posts_page, many=True, context={'request': request})
+            return Response({
+                'results': serializer.data,
+                'has_next': posts_page.has_next(),
+                'total_pages': paginator.num_pages,
+                'current_page': posts_page.number
+            }, status=status.HTTP_200_OK)
         except Exception as e:
             import traceback
             print(traceback.format_exc())
@@ -1875,8 +1897,11 @@ class UserPostsView(APIView):
         if target_user.is_private and not (is_own_profile or is_friend):
             return Response({'error': 'This profile is private'}, status=status.HTTP_403_FORBIDDEN)
 
-        posts = Post.objects.filter(author_id=user_id)
-        serializer = PostSerializer(posts, many=True)
+        posts = Post.objects.filter(author_id=user_id).select_related('author', 'college').annotate(
+            annotated_comments_count=Count('comments', distinct=True),
+            annotated_likes_count=Count('likes', distinct=True)
+        ).order_by('-created_at')
+        serializer = PostSerializer(posts, many=True, context={'request': request})
         return Response(serializer.data)
 
 

@@ -104,10 +104,12 @@ class PostSerializer(serializers.ModelSerializer):
         return obj.get_category_display() if obj.category else '💬 General'
 
     def get_comments_count(self, obj):
-        return obj.comments.count()
+        # Prefer the annotated count for performance, fallback to query
+        return getattr(obj, 'annotated_comments_count', obj.comments.count())
 
     def get_likes_count(self, obj):
-        return obj.likes.count()
+        # Prefer the annotated count for performance, fallback to query
+        return getattr(obj, 'annotated_likes_count', obj.likes.count())
 
     def create(self, validated_data):
         user = self.context['request'].user
