@@ -37,6 +37,9 @@ const AIAgent = () => {
     ]);
     const [isThinking, setIsThinking] = useState(false);
     const chatEndRef = useRef(null);
+    const abortControllerRef = useRef(null);
+    const lastUserMessageRef = useRef('');
+    const [lastError, setLastError] = useState(null);
 
     const scrollToBottom = () => {
         chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -282,14 +285,53 @@ const AIAgent = () => {
         }
     };
 
-    const handleSendMessage = async (e) => {
-        e.preventDefault();
-        if (!message.trim() || isThinking) return;
+    const handleStopChat = () => {
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+            abortControllerRef.current = null;
+        }
+        setIsThinking(false);
+        setChatHistory(prev => {
+            const last = prev[prev.length - 1];
+            if (last && last.role === 'assistant' && last.content === "") {
+                return prev.slice(0, -1); // Remove empty assistant bubble if it was just starting
+            }
+            return prev;
+        });
+    };
 
-        const userMessage = message.trim();
+    const handleRetryChat = () => {
+        if (lastUserMessageRef.current) {
+            setMessage(lastUserMessageRef.current);
+            setLastError(null);
+            // We'll let the user click send or we could trigger it automatically. 
+            // The request was for a retry OPTION, so let's just populate the input 
+            // for them and they can click send, or we trigger it.
+            // Triggering it is better for UX.
+            // But handleSendMessage needs an event. Let's make a wrapper.
+        }
+    };
+
+    const handleSendMessage = async (e, retryMessage = null) => {
+        if (e) e.preventDefault();
+        
+        const messageToSend = retryMessage || message.trim();
+        if (!messageToSend || isThinking) return;
+
+        const userMessage = messageToSend;
+        lastUserMessageRef.current = userMessage;
         setMessage('');
-        setChatHistory(prev => [...prev, { role: 'user', content: userMessage }]);
+        setLastError(null);
+
+        // Only add to history if it's NOT a retry being added again (or just follow normal flow)
+        if (!retryMessage) {
+            setChatHistory(prev => [...prev, { role: 'user', content: userMessage }]);
+        }
+        
         setIsThinking(true);
+
+        // Initialize AbortController
+        abortControllerRef.current = new AbortController();
 
         try {
             const token = localStorage.getItem('access');
@@ -301,6 +343,7 @@ const AIAgent = () => {
             const response = await fetch(`${baseUrl}api/ai/chat/`, {
                 method: 'POST',
                 headers: headers,
+                signal: abortControllerRef.current.signal,
                 body: JSON.stringify({
                     message: userMessage,
                     context: {
@@ -344,17 +387,23 @@ const AIAgent = () => {
             }
 
         } catch (error) {
-            console.error('Wormie Chat Error:', error);
-            setChatHistory(prev => {
-                const newHistory = [...prev];
-                newHistory[newHistory.length - 1] = {
-                    role: 'assistant',
-                    content: `I'm having a little trouble connecting to my knowledge base (Error: ${error.message}). Please try again in a moment!`
-                };
-                return newHistory;
-            });
+            if (error.name === 'AbortError') {
+                console.log('Chat aborted');
+                setChatHistory(prev => [...prev, { role: 'assistant', content: "(Conversation stopped.)" }]);
+            } else {
+                console.error('Wormie Chat Error:', error);
+                setLastError(error.message);
+                setChatHistory(prev => {
+                    const newHistory = [...prev];
+                    return [...newHistory, {
+                        role: 'assistant',
+                        content: `I'm having a little trouble connecting to my knowledge base (Error: ${error.message}). Please try again in a moment!`
+                    }];
+                });
+            }
         } finally {
             setIsThinking(false);
+            abortControllerRef.current = null;
         }
     };
 
@@ -486,15 +535,31 @@ const AIAgent = () => {
                             </div>
                         ))}
                         {isThinking && (
-                            <div className="flex justify-start">
+                            <div className="flex flex-col items-start gap-2">
                                 <div className="bg-white border border-gray-100 p-4 rounded-3xl rounded-tl-none shadow-sm">
-                                    <div className="flex gap-1.5">
-                                        <div className="w-2 h-2 bg-purple/40 rounded-full animate-bounce"></div>
-                                        <div className="w-2 h-2 bg-purple/40 rounded-full animate-bounce [animation-delay:0.2s]"></div>
-                                        <div className="w-2 h-2 bg-purple/40 rounded-full animate-bounce [animation-delay:0.4s]"></div>
+                                    <div className="flex gap-1.5 ">
+                                        <div className="w-2 h-2 bg-[#A855F7]/40 rounded-full animate-bounce"></div>
+                                        <div className="w-2 h-2 bg-[#A855F7]/40 rounded-full animate-bounce [animation-delay:0.2s]"></div>
+                                        <div className="w-2 h-2 bg-[#A855F7]/40 rounded-full animate-bounce [animation-delay:0.4s]"></div>
                                     </div>
                                 </div>
+                                <button
+                                    onClick={handleStopChat}
+                                    className="flex items-center gap-1.5 px-4 py-2 bg-white hover:bg-red-50 text-red-500 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all border border-red-100 shadow-sm animate-fadeIn"
+                                >
+                                    <XMarkIcon className="w-4 h-4" /> Stop Thinking
+                                </button>
                             </div>
+                        )}
+                        {!isThinking && lastError && (
+                             <div className="flex justify-center py-2">
+                             <button
+                                 onClick={() => handleSendMessage(null, lastUserMessageRef.current)}
+                                 className="flex items-center gap-2 px-4 py-2 bg-purple-50 hover:bg-purple-100 text-[#A855F7] rounded-xl text-xs font-bold transition-all border border-purple-200/50"
+                             >
+                                 <ArrowPathIcon className="w-4 h-4" /> Retry Last Message
+                             </button>
+                         </div>
                         )}
                         <div ref={chatEndRef} />
                     </div>

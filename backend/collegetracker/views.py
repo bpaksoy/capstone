@@ -28,6 +28,7 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db.models import Count, Sum, Avg
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.contrib.contenttypes.models import ContentType
+import time
 from django.db.models import Q
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import chardet
@@ -2844,7 +2845,8 @@ class AIChatView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        print("DEBUG: AIChatView POST received")
+        start_time = time.time()
+        print(f"DEBUG: AIChatView POST received at {start_time}")
         user_message = request.data.get('message', '')
         context = request.data.get('context', {})
         current_path = context.get('path', '')
@@ -2885,6 +2887,7 @@ class AIChatView(APIView):
                         found_colleges_info += "\n"
             except Exception as e:
                 print(f"Vector search warning: {e}")
+            print(f"DEBUG: Vector search took {time.time() - start_time:.2f}s")
 
         # B. Fallback/Supplement: Smart college name matching from DB
         STOP_WORDS = {
@@ -3005,6 +3008,8 @@ class AIChatView(APIView):
 
                 if db_info:
                     found_colleges_info += "Database Match from IPEDS data:\n" + db_info
+            
+            print(f"DEBUG: DB search took {time.time() - start_time:.2f}s")
 
         # --- 2. GATHER USER MEMORY & RECRUITMENT INTELLIGENCE ---
         user_memory = ""
@@ -3149,7 +3154,7 @@ class AIChatView(APIView):
 
                     response = model.generate_content(full_prompt, stream=True)
                     for chunk in response:
-                        if chunk.text:
+                        if hasattr(chunk, 'text') and chunk.text:
                             full_response += chunk.text
                             yield chunk.text
                     
