@@ -1745,58 +1745,61 @@ class PostListView(APIView):
             
             user = request.user
             college_id = request.query_params.get('college_id')
-            page = request.query_params.get('page', 1)
+            page_number = request.query_params.get('page', 1)
             page_size = request.query_params.get('page_size', 10)
+            category = request.query_params.get('category')
             
-            # Base visibility logic:
-            # We want posts where author is not private OR author is the user OR author is a friend
-            visibility_query = Q(author__is_private=False) | Q(author__isnull=True)
+            # 1. Base Visibility Query
+            # Public profiles or Posts with no specific user profile (Official/System)
+            visibility = Q(author__is_private=False) | Q(author__isnull=True)
+            
             if user.is_authenticated:
-                visibility_query |= Q(author=user) | \
-                                   Q(author__friendship_user1__user2=user, author__friendship_user1__status='accepted') | \
-                                   Q(author__friendship_user2__user1=user, author__friendship_user2__status='accepted')
+                # Include own posts and posts from friends
+                visibility |= Q(author=user) | \
+                             Q(author__friendship_user1__user2=user, author__friendship_user1__status='accepted') | \
+                             Q(author__friendship_user2__user1=user, author__friendship_user2__status='accepted')
 
-            # Build the base queryset first so we can apply college filtering more clearly
-            posts_queryset = Post.objects.all()
+            # 2. Base Queryset
+            # We use distinct() because the friendship joins can cause duplicate rows
+            qs = Post.objects.all()
 
             if college_id:
-                # For hubs: 
-                # (Matches the base visibility AND matches the college hub) 
-                # OR (It is an announcement for this specific college - announcements are ALWAYS public in their hub)
-                posts_queryset = posts_queryset.filter(
-                    (visibility_query & Q(college_id=college_id)) |
+                # In a Hub: Show visible posts for this college OR official announcements
+                qs = qs.filter(
+                    (visibility & Q(college_id=college_id)) |
                     Q(college_id=college_id, is_announcement=True)
-                ).distinct()
+                )
             else:
-                posts_queryset = posts_queryset.filter(visibility_query).distinct()
+                # Global Feed: Show all visible posts
+                qs = qs.filter(visibility)
 
-            # Filter by category if provided
-            category = request.query_params.get('category')
             if category and category != 'all':
-                posts_queryset = posts_queryset.filter(category=category)
+                qs = qs.filter(category=category)
 
-            # Optimization: Use select_related and annotate to avoid N+1 queries
-            posts_queryset = posts_queryset.select_related('author', 'college').annotate(
+            # Deduplicate before annotating
+            qs = qs.distinct()
+
+            # 3. Optimization: Fetch relations and count interactions in one go
+            qs = qs.select_related('author', 'college').annotate(
                 annotated_comments_count=Count('comments', distinct=True),
                 annotated_likes_count=Count('likes', distinct=True)
             )
 
-            # Pin announcements to the top if in a hub, otherwise sort by newest
+            # 4. Ordering
             if college_id:
-                posts_queryset = posts_queryset.order_by('-is_announcement', '-created_at')
+                qs = qs.order_by('-is_announcement', '-created_at')
             else:
-                posts_queryset = posts_queryset.order_by('-created_at')
+                qs = qs.order_by('-created_at')
 
-            # Server-side pagination
-            paginator = Paginator(posts_queryset, page_size)
+            # 5. Pagination
+            paginator = Paginator(qs, page_size)
             try:
-                posts_page = paginator.page(page)
-            except PageNotAnInteger:
+                posts_page = paginator.page(page_number)
+            except (PageNotAnInteger, EmptyPage):
                 posts_page = paginator.page(1)
-            except EmptyPage:
-                posts_page = paginator.page(paginator.num_pages)
 
             serializer = PostSerializer(posts_page, many=True, context={'request': request})
+            
             return Response({
                 'results': serializer.data,
                 'has_next': posts_page.has_next(),

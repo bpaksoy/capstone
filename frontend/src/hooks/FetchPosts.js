@@ -15,17 +15,17 @@ const usePosts = () => {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const response = await axios.get(`${baseUrl}api/posts/`, {
+                const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+                const response = await axios.get(`${cleanBase}/api/posts/`, {
                     headers: {
                         'Content-Type': 'application/json',
                         ...(localStorage.getItem('access') ? { 'Authorization': `Bearer ${localStorage.getItem('access')}` } : {})
                     }
                 });
-
-                // The serializer already provides comments_count and likes_count
-                // We map them to the expected names if necessary, or just use what we have
-                setPosts(response.data.results || []);
-                console.log("Fetched posts count:", (response.data.results || []).length);
+                
+                const results = response.data?.results || [];
+                setPosts(results);
+                console.log("Fetched posts count:", results.length);
             } catch (error) {
                 console.error("Error fetching posts:", error);
                 setError(error);

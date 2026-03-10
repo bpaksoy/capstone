@@ -32,6 +32,13 @@ function Trending() {
     const [page, setPage] = useState(1);
     const [hasNext, setHasNext] = useState(false);
 
+    // URL helper to ensure no double slashes
+    const getApiUrl = (path) => {
+        const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+        const cleanPath = path.startsWith('/') ? path : `/${path}`;
+        return `${cleanBase}${cleanPath}`;
+    };
+
     // Fetch posts (with optional category filter)
     const fetchPosts = async (category = 'all', isBackground = false, pageNum = 1) => {
         if (!isBackground && pageNum === 1) {
@@ -47,19 +54,21 @@ function Trending() {
             params.append('page', pageNum);
             params.append('page_size', 10);
 
-            const response = await axios.get(`${baseUrl}api/posts/?${params.toString()}`, { headers });
+            const url = getApiUrl(`api/posts/?${params.toString()}`);
+            const response = await axios.get(url, { headers });
             
-            const newPosts = response.data.results || [];
+            const newPosts = response.data?.results || [];
             if (pageNum === 1) {
                 setPosts(newPosts);
             } else {
                 setPosts(prev => [...prev, ...newPosts]);
             }
             
-            setHasNext(response.data.has_next);
+            setHasNext(!!response.data?.has_next);
             setPage(pageNum);
         } catch (error) {
             console.error("Error fetching posts", error);
+            if (pageNum === 1) setPosts([]); // Clear to avoid perpetual loader if first page fails
         } finally {
             if (!isBackground && pageNum === 1) {
                 setPostsLoading(false);
@@ -77,10 +86,10 @@ function Trending() {
             try {
                 const token = localStorage.getItem('access');
                 const headers = (token && token !== 'null') ? { Authorization: `Bearer ${token}` } : {};
-                const response = await axios.get(`${baseUrl}api/news/`, {
+                const response = await axios.get(getApiUrl('api/news/'), {
                     headers: headers
                 });
-                setNews(response.data.results || []);
+                setNews(response.data?.results || []);
             } catch (error) {
                 console.error("Error fetching news", error);
             } finally {

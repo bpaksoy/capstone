@@ -17,10 +17,11 @@ const CollegeHub = ({ collegeId, collegeName }) => {
         try {
             const token = localStorage.getItem('access');
             const headers = token ? { Authorization: `Bearer ${token}` } : {};
-            const response = await axios.get(`${baseUrl}api/posts/?college_id=${collegeId}`, {
+            const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+            const response = await axios.get(`${cleanBase}/api/posts/?college_id=${collegeId}`, {
                 headers: headers
             });
-            setPosts(response.data.results || []);
+            setPosts(response.data?.results || []);
         } catch (error) {
             console.error("Error fetching hub posts:", error);
         } finally {
