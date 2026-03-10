@@ -72,6 +72,7 @@ const Colleges = () => {
                 {notFound && <NotFound />}
                 <div className="bg-primary min-h-screen pb-24">
                     <PromotionalHero />
+                    <div id="college-cards-section" className="scroll-mt-8"></div>
                     {showColleges ? (
                         <>
                             {viewMode === 'featured' ? (
@@ -100,7 +101,9 @@ const Colleges = () => {
                                         <button
                                             onClick={() => {
                                                 setViewMode('all');
-                                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                setTimeout(() => {
+                                                    document.getElementById('college-cards-section')?.scrollIntoView({ behavior: 'smooth' });
+                                                }, 50);
                                             }}
                                             className="group relative inline-flex items-center justify-center px-10 py-3 text-sm font-semibold text-white/80 hover:text-white transition-all duration-300 bg-white/10 hover:bg-white/20 border border-white/5 hover:border-white/20 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/50 active:scale-95"
                                         >
@@ -117,7 +120,9 @@ const Colleges = () => {
                                         <button
                                             onClick={() => {
                                                 setViewMode('featured');
-                                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                setTimeout(() => {
+                                                    document.getElementById('college-cards-section')?.scrollIntoView({ behavior: 'smooth' });
+                                                }, 50);
                                             }}
                                             className="flex items-center !text-white hover:!text-white transition-all duration-300 font-bold group bg-white/10 hover:bg-white/20 px-6 py-2.5 rounded-full border border-white/20 hover:border-white/40 backdrop-blur-md shadow-lg active:scale-95"
                                         >
