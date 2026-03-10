@@ -34,6 +34,9 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
                 if (domain.startsWith('www.')) domain = domain.substring(4);
                 setLogoUrl(`https://logo.clearbit.com/${domain}`);
             } catch (e) { }
+        } else if (logoUrl && (typeof logoUrl === 'string') && !logoUrl.startsWith('http') && !logoUrl.startsWith('/') && !logoUrl.startsWith('data:')) {
+            // Fix for naked domains in logo_url causing ERR_NAME_NOT_RESOLVED
+            setLogoUrl(`https://${logoUrl}`);
         }
     }, [website, logoUrl]);
 

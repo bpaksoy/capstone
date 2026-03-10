@@ -45,20 +45,17 @@ const AIAgent = () => {
         chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
-    // Draggable Logic
-    const [position, setPosition] = useState(() => {
-        const stored = localStorage.getItem('wormiePosition');
+    // Draggable Logic - Refactored to use offsets for reliable corner anchoring
+    const [offset, setOffset] = useState(() => {
+        const stored = localStorage.getItem('wormieOffset');
         if (stored) return JSON.parse(stored);
-
-        // Default position: Right-center
-        return {
-            x: window.innerWidth - 80,
-            y: window.innerHeight / 2 - 40
-        };
+        
+        // Safe default: 20px from bottom, 20px from right
+        return { right: 20, bottom: 20 };
     });
     const [isDragging, setIsDragging] = useState(false);
-    const dragStartPos = useRef({ x: 0, y: 0 });
-    const dragDistance = useRef(0); // Add this to track how far we've moved
+    const dragStartPos = useRef({ startX: 0, startY: 0, initialRight: 0, initialBottom: 0 });
+    const dragDistance = useRef(0);
 
     const handleStartDrag = useCallback((e) => {
         setIsDragging(true);
@@ -68,11 +65,11 @@ const AIAgent = () => {
         dragStartPos.current = {
             startX: clientX,
             startY: clientY,
-            x: clientX - position.x,
-            y: clientY - position.y
+            initialRight: offset.right,
+            initialBottom: offset.bottom
         };
         dragDistance.current = 0;
-    }, [position]);
+    }, [offset]);
 
     const handleDragMove = useCallback((e) => {
         if (!isDragging) return;
@@ -80,36 +77,41 @@ const AIAgent = () => {
         const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
         const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
 
-        // Calculate total displacement
         const dx = clientX - dragStartPos.current.startX;
         const dy = clientY - dragStartPos.current.startY;
         dragDistance.current = Math.sqrt(dx * dx + dy * dy);
 
-        // Boundary constraints
-        const padding = 20;
-        const minX = isOpen ? 360 + padding : 40 + padding;
-        const maxX = isOpen ? window.innerWidth - 60 - padding : window.innerWidth - 40 - padding;
-        const minY = isOpen ? 500 + padding : 40 + padding;
-        const maxY = isOpen ? window.innerHeight - 80 - padding : window.innerHeight - 40 - padding;
+        // Invert delta: moving left (negative dx) should increase 'right' offset
+        const newRight = dragStartPos.current.initialRight - dx;
+        const newBottom = dragStartPos.current.initialBottom - dy;
 
-        const newX = Math.max(minX, Math.min(maxX, clientX - dragStartPos.current.x));
-        const newY = Math.max(minY, Math.min(maxY, clientY - dragStartPos.current.y));
+        // Dynamic boundaries based on open state
+        const padding = 10;
+        const chatW = window.innerWidth < 640 ? window.innerWidth * 0.92 : 420;
+        const chatH = window.innerWidth < 640 ? window.innerHeight * 0.75 : 550;
+        
+        const maxR = window.innerWidth - padding - (isOpen ? chatW : 80);
+        const maxB = window.innerHeight - padding - (isOpen ? chatH : 80);
 
-        setPosition({ x: newX, y: newY });
+        setOffset({
+            right: Math.max(padding, Math.min(maxR, newRight)),
+            bottom: Math.max(padding, Math.min(maxB, newBottom))
+        });
+        
+        if (e.type === 'touchmove') e.preventDefault();
     }, [isDragging, isOpen]);
 
     const handleStopDrag = useCallback(() => {
         if (!isDragging) return;
         setIsDragging(false);
-        localStorage.setItem('wormiePosition', JSON.stringify(position));
-    }, [isDragging, position]);
-
+        localStorage.setItem('wormieOffset', JSON.stringify(offset));
+    }, [isDragging, offset]);
 
     useEffect(() => {
         if (isDragging) {
             window.addEventListener('mousemove', handleDragMove);
             window.addEventListener('mouseup', handleStopDrag);
-            window.addEventListener('touchmove', handleDragMove);
+            window.addEventListener('touchmove', handleDragMove, { passive: false });
             window.addEventListener('touchend', handleStopDrag);
         }
         return () => {
@@ -120,67 +122,33 @@ const AIAgent = () => {
         };
     }, [isDragging, handleDragMove, handleStopDrag]);
 
-
     useEffect(() => {
         if (isOpen) {
             setTimeout(() => {
                 scrollToBottom();
             }, 50);
-
-            // Auto-reposition if chat box is cut off by top or left edges
-            const padding = 20;
-            const minX = 360 + padding;
-            const minY = 500 + padding;
-
-            if (position.x < minX || position.y < minY) {
-                const newPos = {
-                    x: Math.max(minX, position.x),
-                    y: Math.max(minY, position.y)
-                };
-                setPosition(newPos);
-                localStorage.setItem('wormiePosition', JSON.stringify(newPos));
-            }
         }
-    }, [isOpen, position.x, position.y, chatHistory, isThinking]);
+    }, [isOpen, chatHistory, isThinking]);
 
-    // Bounding check on window resize to ensure visibility
+    // Keep bubble in bounds during resize
     useEffect(() => {
-        const handleAutoBoundsCheck = () => {
-            const padding = 40;
-            const bubbleSize = 80;
-            const chatWidth = 360;
-            const chatHeight = 500;
+        const checkBounds = () => {
+            const padding = 10;
+            const chatWidth = window.innerWidth < 640 ? window.innerWidth * 0.92 : 420;
+            const chatHeight = window.innerWidth < 640 ? window.innerHeight * 0.75 : 550;
+            
+            const maxR = window.innerWidth - padding - (isOpen ? chatWidth : 80);
+            const maxB = window.innerHeight - padding - (isOpen ? chatHeight : 80);
 
-            let boundsAdjusted = false;
-            let currentX = position.x;
-            let currentY = position.y;
-
-            if (isOpen) {
-                const minX = chatWidth + padding;
-                const minY = chatHeight + padding;
-                if (currentX > window.innerWidth - padding) currentX = window.innerWidth - padding;
-                if (currentY > window.innerHeight - padding) currentY = window.innerHeight - padding;
-                if (currentX < minX) currentX = minX;
-                if (currentY < minY) currentY = minY;
-            } else {
-                if (currentX > window.innerWidth - padding) currentX = window.innerWidth - padding;
-                if (currentY > window.innerHeight - padding) currentY = window.innerHeight - padding;
-                if (currentX < padding) currentX = padding;
-                if (currentY < padding) currentY = padding;
-            }
-
-            if (currentX !== position.x || currentY !== position.y) {
-                setPosition({ x: currentX, y: currentY });
-                localStorage.setItem('wormiePosition', JSON.stringify({ x: currentX, y: currentY }));
-            }
+            setOffset(prev => ({
+                right: Math.max(padding, Math.min(prev.right, maxR)),
+                bottom: Math.max(padding, Math.min(prev.bottom, maxB))
+            }));
         };
-
-        window.addEventListener('resize', handleAutoBoundsCheck);
-        // Also run once on mount
-        handleAutoBoundsCheck();
-
-        return () => window.removeEventListener('resize', handleAutoBoundsCheck);
-    }, [isOpen, position.x, position.y]);
+        window.addEventListener('resize', checkBounds);
+        checkBounds();
+        return () => window.removeEventListener('resize', checkBounds);
+    }, [isOpen]);
 
     const notifiedMatchesRef = useRef(new Set(
         JSON.parse(sessionStorage.getItem('notifiedMatches') || '[]')
@@ -450,11 +418,8 @@ const AIAgent = () => {
         <div
             className="fixed z-[9999] flex flex-col items-end pointer-events-none transition-none"
             style={{
-                left: 0,
-                top: 0,
-                transform: isOpen
-                    ? `translate(${position.x - 360}px, ${position.y - 500}px)`
-                    : `translate(${position.x - 40}px, ${position.y - 40}px)`
+                right: offset.right,
+                bottom: offset.bottom
             }}
         >
             {/* Chat Window */}

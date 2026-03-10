@@ -62,7 +62,7 @@ function Search() {
                 </div>
             )}
 
-            <div className="mt-8 flex flex-wrap justify-center items-center gap-2 animate-fadeIn px-2 sm:px-8">
+            <div className="mt-8 flex flex-wrap justify-center items-center gap-2 animate-fadeIn px-1 sm:px-8">
                 <span className="text-[10px] font-semibold text-white/50 uppercase tracking-widest mr-2">Popular:</span>
                 {['Ivy League', 'California', 'Computer Science', 'HBCU'].map((tag) => (
                     <button

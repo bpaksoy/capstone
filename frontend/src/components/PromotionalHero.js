@@ -68,7 +68,7 @@ const PromotionalHero = () => {
 
                     {/* Search Component with Glassmorphism */}
                     <div className="w-full pt-4 animate-float">
-                        <div className="max-w-2xl mx-auto backdrop-blur-md bg-white/10 p-2 rounded-2xl border border-white/20 shadow-2xl">
+                        <div className="w-[98vw] max-w-2xl mx-auto backdrop-blur-md bg-white/10 p-1 sm:p-2 rounded-2xl border border-white/20 shadow-2xl">
                             <Search />
                         </div>
                         <p className="mt-4 text-xs font-bold text-teal-400 uppercase tracking-[0.2em]">
