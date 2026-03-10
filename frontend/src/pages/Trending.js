@@ -127,13 +127,25 @@ function Trending() {
         // Only mix in news when viewing "all"
         const newsList = activeCategory === 'all' ? (news || []) : [];
 
-        // Simple interleaving for the current display
+        // Safely interleave posts and news without infinite loops
         while (p < postsList.length || n < newsList.length) {
+            let addedPost = false;
+            let addedNews = false;
+
             if (p < postsList.length) {
                 combined.push({ isPost: true, itemType: 'post', ...postsList[p++] });
+                addedPost = true;
             }
-            if (n < newsList.length && p % 3 === 0) { // Add news every 3 posts for variety
+            
+            // Add a news item every 3 posts, or just add them all if we run out of posts
+            if (n < newsList.length && (p % 3 === 0 || p >= postsList.length)) {
                 combined.push({ isNews: true, itemType: 'news', ...newsList[n++] });
+                addedNews = true;
+            }
+
+            // Failsafe: if neither incremented, we've hit an edge case and should break to prevent freezing
+            if (!addedPost && !addedNews) {
+                break;
             }
         }
         return combined;
