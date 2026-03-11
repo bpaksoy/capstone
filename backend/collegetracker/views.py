@@ -3205,7 +3205,11 @@ class AIChatView(APIView):
                     else:
                         yield f"\n[Error: {str(stream_e)}]"
 
-            return StreamingHttpResponse(event_stream(), content_type='text/plain')
+            response = StreamingHttpResponse(event_stream(), content_type='text/plain')
+            response['X-Accel-Buffering'] = 'no'
+            response['Cache-Control'] = 'no-cache'
+            response['Connection'] = 'keep-alive'
+            return response
 
         except Exception as e:
             print(f"LLM Setup Error: {e}")
