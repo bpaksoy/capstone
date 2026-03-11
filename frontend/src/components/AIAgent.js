@@ -566,12 +566,6 @@ const AIAgent = () => {
                                         <div className="w-2 h-2 bg-[#A855F7]/40 rounded-full animate-bounce [animation-delay:0.4s]"></div>
                                     </div>
                                 </div>
-                                <button
-                                    onClick={handleStopChat}
-                                    className="flex items-center gap-1.5 px-4 py-2 bg-white hover:bg-red-50 text-red-500 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all border border-red-100 shadow-sm animate-fadeIn"
-                                >
-                                    <XMarkIcon className="w-4 h-4" /> Stop Thinking
-                                </button>
                             </div>
                         )}
                         {!isThinking && lastError && (
@@ -596,12 +590,22 @@ const AIAgent = () => {
                             placeholder="Type your message..."
                             className="flex-1 bg-gray-50/80 border-none rounded-2xl px-5 py-3 text-sm focus:ring-2 focus:ring-purple/20 transition-all outline-none text-gray-700 font-medium"
                         />
+                        {isThinking && (
+                            <button
+                                type="button"
+                                onClick={handleStopChat}
+                                title="Stop generating"
+                                className="w-[44px] h-[44px] flex items-center justify-center bg-red-50 hover:bg-red-100 rounded-2xl transition-all flex-shrink-0 border border-red-200"
+                            >
+                                <div className="w-3.5 h-3.5 bg-red-500 rounded-sm"></div>
+                            </button>
+                        )}
                         <button
                             type="submit"
                             disabled={!message.trim() || isThinking}
-                            className="p-3 bg-black text-white rounded-2xl hover:bg-black/80 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 flex-shrink-0 shadow-lg shadow-black/30"
+                            className="p-3 bg-black text-white rounded-2xl hover:bg-black/80 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 flex-shrink-0 shadow-lg shadow-black/30 w-[44px] h-[44px] flex items-center justify-center"
                         >
-                            <PaperAirplaneIcon className="w-5 h-5" />
+                            <PaperAirplaneIcon className="w-5 h-5 -ml-0.5" />
                         </button>
                     </form>
                 </div>
