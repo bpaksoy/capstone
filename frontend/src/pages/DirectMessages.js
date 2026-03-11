@@ -75,6 +75,11 @@ const DirectMessages = () => {
             }
         }
 
+        // Auto-open New Chat Modal if we have a draft but no recipient
+        if (state.draftText && !targetId && !selectedUser) {
+            setIsNewChatModalOpen(true);
+        }
+
         // 2. Handle Message Draft
         if (state.draftText && location.key !== lastProcessedKeyRef.current) {
             setNewMessage(state.draftText);
