@@ -42,7 +42,7 @@ const DirectMessages = () => {
         if (!state) return;
 
         console.log("NAVIGATION STATE DETECTED:", state);
-        let targetId = state.openChatWithUserId ? String(state.openChatWithUserId) : null;
+        let targetId = (state.openChatWithUserId && state.openChatWithUserId !== 'undefined') ? String(state.openChatWithUserId) : null;
 
         // Auto-select fallback if only one convo exists and we arrived from Wormie
         if (!targetId && !selectedUser && state.draftText && conversations.length === 1) {

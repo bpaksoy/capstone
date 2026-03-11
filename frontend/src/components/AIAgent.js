@@ -509,9 +509,9 @@ const AIAgent = () => {
                                         let extractedTarget = null;
 
                                         if (isDraft) {
-                                            const targetMatch = draftContent.match(/\[TARGET_ID:\s*(\d+)\|([^\]]+)\]/);
+                                            const targetMatch = draftContent.match(/\[TARGET_ID:\s*([a-zA-Z0-9_]+)\|([^\]]+)\]/);
                                             if (targetMatch) {
-                                                extractedTarget = { id: parseInt(targetMatch[1]), name: targetMatch[2].trim() };
+                                                extractedTarget = { id: targetMatch[1], name: targetMatch[2].trim() };
                                                 draftContent = draftContent.replace(targetMatch[0], '').trim();
                                             } else {
                                                 extractedTarget = activeTargetUser;
@@ -538,7 +538,7 @@ const AIAgent = () => {
                                                             navigate('/messages', {
                                                                 state: {
                                                                     draftText: draftContent.trim(),
-                                                                    ...(extractedTarget ? {
+                                                                    ...(extractedTarget && extractedTarget.id && extractedTarget.id !== "undefined" ? {
                                                                         openChatWithUserId: extractedTarget.id,
                                                                         openChatWithUserName: extractedTarget.name
                                                                     } : {})

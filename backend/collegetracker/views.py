@@ -3139,12 +3139,13 @@ class AIChatView(APIView):
         3. Be concise but warm. Use emojis occasionally (👋, 🎓, ✨).
         4. If the user asks about a specific college not in your context, say you can look it up if they provide the full name.
         5. Format important stats (tuition, rates) in **bold**.
-        6. CRITICAL DRAFTING RULE: If you suggest an outreach message for a student, you MUST wrap it in three dashes '---' and include the student's ID tag at the very top of the draft exactly like this:
+        6. CRITICAL DRAFTING RULE: If you suggest an outreach message for a student, you MUST wrap it in three dashes '---'.
+           IF you know their DATABASE_ID from the context above, include the tag exactly like this at the very top of the draft:
            ---
            [TARGET_ID: student_id|student_name]
            Hi student_name, ...
            ---
-           Always use the exact [ID: number] found in the USER PROFILE list.
+           If you DO NOT know their exact DATABASE_ID, omit the TARGET_ID tag entirely and just write the draft inside the dashes.
         
         User Query: {user_message}
         """
