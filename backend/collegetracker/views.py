@@ -3121,8 +3121,14 @@ class AIChatView(APIView):
 
         # --- 3. CONSTRUCT SYSTEM PROMPT ---
         is_staff = request.user.is_authenticated and request.user.role == 'college_staff'
+        has_college = is_staff and request.user.associated_college is not None
         
-        goal_text = "Your goal is to help institutional representatives identify and recruit the best student matches for their college." if is_staff else "Your goal is to help students find their perfect college match."
+        if is_staff and not has_college:
+            goal_text = "Your user is an institutional representative, but they haven't verified or associated their profile with a specific college in our database yet. You should ask them which college they represent so you can look up its internal IPEDS data."
+        elif is_staff:
+            goal_text = f"Your goal is to help institutional representatives identify and recruit the best student matches for their college."
+        else:
+            goal_text = "Your goal is to help students find their perfect college match."
         
         system_prompt = f"""You are Wormie, a helpful, enthusiastic, and knowledgeable AI college counselor agent.
         {goal_text}
