@@ -1205,6 +1205,25 @@ def claim_college(request):
     })
 
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def unclaim_college(request):
+    user = request.user
+    
+    if not user.associated_college:
+        return Response({"error": "You do not have an associated college to unclaim."}, status=400)
+    
+    user.associated_college = None
+    user.is_verified = False  # Reset their verified status since they don't have a college
+    user.save()
+    
+    serializer = UserSerializer(user)
+    return Response({
+        "message": "You have successfully removed your college affiliation.",
+        "user": serializer.data
+    })
+
+
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def staff_update_college(request, pk):

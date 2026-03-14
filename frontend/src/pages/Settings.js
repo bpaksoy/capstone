@@ -82,6 +82,42 @@ const Settings = () => {
         }
     };
 
+    const handleClaimCollege = async (collegeId) => {
+        setIsUpdating(true);
+        try {
+            const token = localStorage.getItem('access');
+            await axios.post(`${baseUrl}api/colleges/claim/`, {
+                college_id: collegeId
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setUpdateMessage({ text: "Claim request submitted! Verificaton pending.", type: "success" });
+            fetchUser();
+            setSearchResults([]);
+            setCollegeSearch("");
+        } catch (err) {
+            setUpdateMessage({ text: err.response?.data?.error || "Failed to claim college", type: "error" });
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    const handleUnclaimCollege = async () => {
+        setIsUpdating(true);
+        try {
+            const token = localStorage.getItem('access');
+            await axios.post(`${baseUrl}api/colleges/unclaim/`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setUpdateMessage({ text: "Successfully removed your institution affiliation.", type: "success" });
+            fetchUser();
+        } catch (err) {
+            setUpdateMessage({ text: err.response?.data?.error || "Failed to remove affiliation", type: "error" });
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
     const togglePrivacy = async (newValue) => {
         setIsUpdating(true);
         try {
@@ -170,7 +206,7 @@ const Settings = () => {
                         <section>
                             <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                                 <AcademicCapIcon className="w-6 h-6 text-primary" />
-                                University Affiliation
+                                {djangoUser?.role === 'college_staff' ? "College Administration" : "University Affiliation"}
                                 {djangoUser?.role !== 'student' && <span className="text-[10px] bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full uppercase font-bold tracking-tighter">Preview</span>}
                             </h2>
                             <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200 shadow-sm">
@@ -198,15 +234,19 @@ const Settings = () => {
                                             )}
                                         </div>
                                         <button
-                                            onClick={() => handleApplyAmbassador(null)}
+                                            onClick={djangoUser?.role === 'college_staff' ? handleUnclaimCollege : () => handleApplyAmbassador(null)}
                                             className="text-gray-400 hover:text-red-500 text-[10px] font-extrabold uppercase tracking-tighter transition-all self-start md:self-center"
                                         >
-                                            Leave / Switch Institution
+                                            {djangoUser?.role === 'college_staff' ? "Remove Badge" : "Leave / Switch Institution"}
                                         </button>
                                     </div>
                                 ) : (
                                     <div className="space-y-4">
-                                        <p className="text-sm text-gray-600 leading-relaxed">Are you a current student? Link your college to become a <strong>Student Ambassador</strong> and help prospective students through direct messaging.</p>
+                                        {djangoUser?.role === 'college_staff' && djangoUser?.is_eligible_to_claim ? (
+                                             <p className="text-sm text-gray-600 leading-relaxed">You are authorized to manage an institution. Search and select your college below to submit a claim.</p>
+                                        ) : (
+                                            <p className="text-sm text-gray-600 leading-relaxed">Are you a current student? Link your college to become a <strong>Student Ambassador</strong> and help prospective students through direct messaging.</p>
+                                        )}
                                         <div className="relative">
                                             <div className="relative flex items-center">
                                                 <MagnifyingGlassIcon className="w-5 h-5 text-gray-400 absolute left-4" />
@@ -224,12 +264,12 @@ const Settings = () => {
                                                     {searchResults.map((c) => (
                                                         <div
                                                             key={c.id}
-                                                            onClick={() => handleApplyAmbassador(c.id)}
+                                                            onClick={() => (djangoUser?.role === 'college_staff' && djangoUser?.is_eligible_to_claim) ? handleClaimCollege(c.id) : handleApplyAmbassador(c.id)}
                                                             className="p-4 hover:bg-teal-50 cursor-pointer border-b border-gray-50 flex items-center justify-between group transition-colors"
                                                         >
                                                             <span className="font-bold text-gray-800 group-hover:text-primary transition-colors">{c.name}</span>
                                                             <div className="flex items-center gap-2">
-                                                                <span className="text-[10px] font-bold text-primary opacity-0 group-hover:opacity-100 uppercase tracking-widest transition-all translate-x-2 group-hover:translate-x-0">Apply</span>
+                                                                <span className="text-[10px] font-bold text-primary opacity-0 group-hover:opacity-100 uppercase tracking-widest transition-all translate-x-2 group-hover:translate-x-0">{(djangoUser?.role === 'college_staff' && djangoUser?.is_eligible_to_claim) ? "Claim" : "Apply"}</span>
                                                                 <AcademicCapIcon className="w-4 h-4 text-primary opacity-0 group-hover:opacity-100 transition-all" />
                                                             </div>
                                                         </div>

@@ -66,6 +66,7 @@ urlpatterns = [
     path('api/colleges/scroll/', views.colleges, name='colleges'),
     path('api/colleges/<int:id>/', views.college, name='college'),
     path('api/colleges/claim/', views.claim_college, name='claim-college'),
+    path('api/colleges/unclaim/', views.unclaim_college, name='unclaim-college'),
     path('api/colleges/<int:college_id>/analytics/', views.get_college_analytics, name='college-analytics'),
     path('api/colleges/<int:pk>/staff-update/', views.staff_update_college, name='staff-update-college'),
     path('api/colleges/<int:pk>/interested-students/', views.get_interested_students, name='get-interested-students'),
