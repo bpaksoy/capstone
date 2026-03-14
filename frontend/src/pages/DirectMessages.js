@@ -367,8 +367,8 @@ const DirectMessages = () => {
 
     return (
         <div className="bg-primary min-h-screen flex flex-col md:pt-12 md:pb-12 pt-0 pb-0">
-            <div className="max-w-6xl w-full mx-auto md:px-4 flex flex-col h-screen md:h-[calc(100vh-120px)] min-h-[500px]">
-                <div className="bg-white md:rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] md:border border-white/10 overflow-hidden flex flex-row flex-1">
+            <div className="max-w-6xl w-full mx-auto md:px-4 flex flex-col h-fit max-h-screen md:h-[calc(100vh-120px)]">
+                <div className="bg-white md:rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] md:border border-white/10 overflow-hidden flex flex-row h-fit md:flex-1">
                     {/* Conversations List */}
                     <div className={`w-full md:w-80 border-r border-gray-100 flex flex-col bg-gray-50/30 ${selectedUser ? 'hidden md:flex' : 'flex'}`}>
                         <div className="p-6 border-b border-gray-100 bg-white flex justify-between items-center">
@@ -432,7 +432,7 @@ const DirectMessages = () => {
                     </div>
 
                     {/* Chat Area */}
-                    <div className={`flex-1 flex flex-col bg-white ${selectedUser ? 'flex' : 'hidden md:flex'}`}>
+                    <div className={`flex-1 flex flex-col bg-white h-fit max-h-[100dvh] ${selectedUser ? 'flex' : 'hidden md:flex'}`}>
                         {selectedUser ? (
                             <>
                                 <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-10">
@@ -453,7 +453,7 @@ const DirectMessages = () => {
                                     </div>
                                 </div>
 
-                                <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 custom-scrollbar bg-gray-50/10">
+                                <div className="flex-auto min-h-0 overflow-y-auto p-4 md:p-6 space-y-4 custom-scrollbar bg-gray-50/10">
                                     {messages.map((m, idx) => {
                                         const isMine = String(m.sender_id) === String(user?.id);
                                         return (
