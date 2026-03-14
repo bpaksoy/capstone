@@ -104,10 +104,10 @@ const PublicProfile = () => {
                                     <div className="pb-2">
                                         <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 flex items-center gap-2">
                                             {otherUserData?.username}
-                                            {otherUserData?.role === 'college_staff' && otherUserData?.is_verified && (
+                                            {otherUserData?.is_verified && (
                                                 <div className="flex items-center gap-1 bg-teal-50 text-teal-600 text-[10px] uppercase tracking-widest px-2 py-1 rounded-lg border border-teal-100 shadow-sm">
                                                     <CheckBadgeIcon className="w-3.5 h-3.5" />
-                                                    <span>Verified</span>
+                                                    <span>{otherUserData?.role === 'college_staff' ? "Verified Representative" : "Verified Ambassador"}</span>
                                                 </div>
                                             )}
                                         </h1>

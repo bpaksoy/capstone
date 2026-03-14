@@ -308,10 +308,10 @@ const Profile = () => {
                                 <div className="flex flex-col items-center justify-center mb-2">
                                     <h3 className="text-4xl font-semibold leading-normal text-gray-800 flex flex-col md:flex-row items-center justify-center gap-2 md:gap-3">
                                         {user?.first_name || user?.last_name ? `${user?.first_name || ''} ${user?.last_name || ''}`.trim() : user?.username}
-                                        {user?.role === 'college_staff' && user?.is_verified && (
+                                        {user?.is_verified && (
                                             <div className="flex items-center gap-1 bg-teal-50 text-teal-600 text-[10px] uppercase tracking-widest px-2 py-1 rounded-lg border border-teal-100 shadow-sm md:ml-2">
                                                 <CheckBadgeIcon className="w-4 h-4" />
-                                                <span>Verified Representative</span>
+                                                <span>{user?.role === 'college_staff' ? "Verified Representative" : "Verified Ambassador"}</span>
                                             </div>
                                         )}
                                     </h3>
