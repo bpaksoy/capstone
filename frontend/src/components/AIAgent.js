@@ -23,6 +23,7 @@ const AIAgent = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
+    const [showTooltip, setShowTooltip] = useState(true);
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 640);
@@ -614,19 +615,30 @@ const AIAgent = () => {
             {/* Floating Open Button - Only shows when closed */}
             {!isOpen && (
                 <div className="relative group">
-                    {/* Unread thought bubble */}
-                    {unreadWormieMessage && (
+                    {/* Unread thought bubble or descriptive tooltip */}
+                    {(unreadWormieMessage || showTooltip) && (
                         <div className="absolute right-full mr-4 top-1/2 -translate-y-1/2 transform transition-all duration-300 pointer-events-auto">
                             <div
                                 onClick={() => {
                                     setIsOpen(true);
                                     setUnreadWormieMessage(null);
+                                    setShowTooltip(false);
                                 }}
-                                className="bg-white px-4 py-3 rounded-2xl rounded-tr-sm shadow-xl border border-gray-100 min-w-[200px] max-w-[280px] cursor-pointer hover:bg-gray-50 transition-colors animate-[pulse_3s_ease-in-out_infinite]"
+                                className="bg-white px-4 py-3 rounded-2xl rounded-tr-sm shadow-xl border border-gray-100 min-w-[140px] max-w-[280px] cursor-pointer hover:bg-gray-50 transition-colors animate-[pulse_3s_ease-in-out_infinite] group-hover:scale-105"
                             >
-                                <p className="text-sm font-medium text-gray-800 line-clamp-3">
-                                    {unreadWormieMessage}
-                                </p>
+                                <div className="flex items-center gap-2">
+                                    <div className="p-1 bg-purple/10 rounded-lg">
+                                        <SparklesIcon className="w-4 h-4 text-purple" />
+                                    </div>
+                                    <p className="text-sm font-bold text-gray-800 whitespace-nowrap">
+                                        {unreadWormieMessage ? "Message from Wormie" : "Ask Wormie anything!"}
+                                    </p>
+                                </div>
+                                {unreadWormieMessage && (
+                                    <p className="text-xs text-gray-500 mt-1 line-clamp-2 font-medium">
+                                        {unreadWormieMessage}
+                                    </p>
+                                )}
                                 {/* Triangle pointer */}
                                 <div className="absolute top-1/2 right-[-6px] -translate-y-1/2 w-3 h-3 bg-white border-r border-t border-gray-100 rotate-45"></div>
                             </div>
@@ -641,6 +653,7 @@ const AIAgent = () => {
                             if (dragDistance.current < 10) {
                                 setIsOpen(true);
                                 setUnreadWormieMessage(null);
+                                setShowTooltip(false);
                             }
                         }}
                         className={`group relative p-5 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 active:scale-90 flex items-center justify-center pointer-events-auto bg-[#A855F7] text-white border border-white/10 ${unreadWormieMessage ? 'animate-[bounce_2s_infinite]' : ''} ${isDragging ? 'cursor-grabbing scale-110' : 'cursor-grab'}`}
