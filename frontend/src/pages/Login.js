@@ -70,19 +70,20 @@ export default function Login() {
     };
 
     return (
-        <div className="py-16">
-            <div className="flex bg-white rounded-lg shadow-lg mx-auto max-w-sm lg:max-w-4xl min-h-[500px]">
+        <div className="py-10 bg-[#17717d] min-h-screen flex items-center justify-center p-4">
+            <div className="flex bg-white rounded-3xl shadow-2xl mx-auto max-w-lg lg:max-w-4xl w-full overflow-hidden h-auto my-8 transition-all">
                 <div
                     className="hidden lg:block lg:w-1/2 bg-cover bg-center rounded-l-lg"
                     style={{ backgroundImage: `url(${graduation})` }}
                 />
 
-                <div className="w-full p-8 lg:w-1/2 flex flex-col justify-center">
-                    <div className="flex flex-col items-center mb-6">
-                        <div className="bg-purple p-4 rounded-full shadow-xl mb-3">
+                <div className="w-full p-8 sm:p-12 lg:w-1/2 flex flex-col justify-center">
+                    <div className="flex flex-col items-center mb-10">
+                        <div className="bg-[#A855F7] p-5 rounded-[2.5rem] shadow-xl mb-4 transform hover:scale-105 transition-transform flex items-center justify-center">
                             <img src="/wormie-logo.svg" alt="" className="h-10 w-10" />
                         </div>
-                        <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Worm</h1>
+                        <h1 className="text-4xl font-black text-gray-900 tracking-tight text-center">Worm</h1>
+                        <p className="text-[#17717d] font-bold mt-2 uppercase tracking-[0.3em] text-[10px] bg-[#17717d]/10 px-4 py-1.5 rounded-full">Sign In</p>
                     </div>
                     <h2 className="text-xl font-bold text-gray-800 text-center mb-2">
                         Share your academic progress, build your application, and find your dream school.

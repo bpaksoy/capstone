@@ -19,6 +19,7 @@ export default function Register() {
     const [code, setCode] = useState("");
     const [error, setError] = useState(null);
     const [isSigningUp, setIsSigningUp] = useState(false);
+    const [role, setRole] = useState("student");
 
     // If already logged in, redirect
     if (loggedIn) {
@@ -53,6 +54,7 @@ export default function Register() {
                 emailAddress: emailAddress.trim(),
                 password,
                 username: username.trim(),
+                unsafeMetadata: { role }
             });
 
             // Start email verification
@@ -97,23 +99,29 @@ export default function Register() {
     };
 
     return (
-        <div className="py-16">
-            <div className="flex bg-white rounded-lg shadow-lg mx-auto max-w-sm lg:max-w-4xl min-h-[600px]">
+        <div className="py-10 bg-[#17717d] min-h-screen flex items-center justify-center p-4">
+            <div className="flex bg-white rounded-3xl shadow-2xl mx-auto max-w-lg lg:max-w-4xl w-full overflow-hidden h-auto my-8 transition-all">
                 <div
                     className="hidden lg:block lg:w-1/2 bg-cover bg-center rounded-l-lg"
                     style={{ backgroundImage: `url(${graduation})` }}
                 />
 
-                <div className="w-full p-8 lg:w-1/2">
-                    <div className="flex flex-col items-center mb-6">
-                        <div className="bg-purple p-4 rounded-full shadow-xl mb-3">
+                <div className="w-full p-8 sm:p-12 lg:w-1/2 overflow-y-auto flex flex-col justify-center">
+                    <div className="flex flex-col items-center mb-10">
+                        <div className="bg-[#A855F7] p-5 rounded-[2.5rem] shadow-xl mb-4 transform hover:scale-105 transition-transform flex items-center justify-center">
                             <img src="/wormie-logo.svg" alt="" className="h-10 w-10" />
                         </div>
-                        <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Worm</h1>
+                        <h1 className="text-4xl font-black text-gray-900 tracking-tight text-center">Worm</h1>
+                        <p className="text-[#17717d] font-bold mt-2 uppercase tracking-[0.3em] text-[10px] bg-[#17717d]/10 px-4 py-1.5 rounded-full">
+                            {verifying ? "Verify Email" : "Create Account"}
+                        </p>
                     </div>
-                    <p className="text-xl text-gray-600 text-center">
-                        {verifying ? "Verify your email" : "Join Our Community"}
-                    </p>
+
+                    {verifying && (
+                         <div className="flex flex-col items-center mb-6">
+                            <p className="text-gray-500 text-sm">Check your inbox for a code</p>
+                         </div>
+                    )}
 
                     {error && (
                         <div className="p-4 mt-4 text-sm text-red-800 rounded-lg bg-red-50 border border-red-200" role="alert">
@@ -145,7 +153,51 @@ export default function Register() {
                                 <span className="border-b w-1/5 lg:w-1/4"></span>
                             </div>
 
-                            <form className="mt-4" onSubmit={handleSubmit}>
+                            <div className="mt-8">
+                                <label className="block text-gray-400 text-[10px] font-black mb-4 text-center uppercase tracking-[0.2em]">Select Your Account Type</label>
+                                <div className="grid grid-cols-3 gap-2 sm:gap-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setRole("student")}
+                                        className={`py-4 px-1 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 group ${role === 'student' 
+                                            ? 'border-purple bg-purple/5 text-purple shadow-lg shadow-purple-500/10' 
+                                            : 'border-gray-50 text-gray-300 hover:border-gray-200 hover:text-gray-400'}`}
+                                    >
+                                        <div className={`p-2 rounded-xl transition-colors ${role === 'student' ? 'bg-purple/10' : 'bg-gray-50 group-hover:bg-gray-100'}`}>
+                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" /></svg>
+                                        </div>
+                                        <span className="text-[10px] font-black uppercase tracking-tighter">Student</span>
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setRole("advisor")}
+                                        className={`py-4 px-1 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 group ${role === 'advisor' 
+                                            ? 'border-[#17717d] bg-[#17717d]/5 text-[#17717d] shadow-lg shadow-teal-500/10' 
+                                            : 'border-gray-50 text-gray-300 hover:border-gray-200 hover:text-gray-400'}`}
+                                    >
+                                        <div className={`p-2 rounded-xl transition-colors ${role === 'advisor' ? 'bg-[#17717d]/10' : 'bg-gray-50 group-hover:bg-gray-100'}`}>
+                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                                        </div>
+                                        <span className="text-[10px] font-black uppercase tracking-tighter">Advisor</span>
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setRole("college_staff")}
+                                        className={`py-4 px-1 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 group ${role === 'college_staff' 
+                                            ? 'border-amber-500 bg-amber-50 text-amber-600 shadow-lg shadow-amber-500/10' 
+                                            : 'border-gray-50 text-gray-300 hover:border-gray-200 hover:text-gray-400'}`}
+                                    >
+                                        <div className={`p-2 rounded-xl transition-colors ${role === 'college_staff' ? 'bg-amber-100' : 'bg-gray-50 group-hover:bg-gray-100'}`}>
+                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                                        </div>
+                                        <span className="text-[10px] font-black uppercase tracking-tighter leading-none text-center">College Rep</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <form className="mt-6" onSubmit={handleSubmit}>
                                 <div className="mt-4">
                                     <label htmlFor="email" className="block text-gray-700 text-sm font-bold mb-2">Email Address</label>
                                     <input

@@ -3,7 +3,7 @@ import { useCurrentUser } from '../UserProvider/UserProvider';
 import { useUser } from '@clerk/clerk-react';
 import axios from 'axios';
 import { baseUrl } from '../shared';
-import { LockClosedIcon, GlobeAltIcon, ShieldCheckIcon, XMarkIcon, UserIcon, AcademicCapIcon, CheckBadgeIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { LockClosedIcon, GlobeAltIcon, ShieldCheckIcon, XMarkIcon, UserIcon, AcademicCapIcon, CheckBadgeIcon, MagnifyingGlassIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
 
 const Settings = () => {
@@ -15,6 +15,11 @@ const Settings = () => {
     const [collegeSearch, setCollegeSearch] = useState("");
     const [searchResults, setSearchResults] = useState([]);
     const [isSearching, setIsSearching] = useState(false);
+    const [advisorData, setAdvisorData] = useState({
+        specialization: "",
+        hourly_rate: "",
+        advisor_bio: ""
+    });
     const navigate = useNavigate();
 
     // Sync local state when Clerk loads
@@ -23,6 +28,39 @@ const Settings = () => {
             setUsername(clerkUser.username);
         }
     }, [isClerkLoaded, clerkUser]);
+
+    React.useEffect(() => {
+        if (djangoUser) {
+            setAdvisorData({
+                specialization: djangoUser.specialization || "",
+                hourly_rate: djangoUser.hourly_rate || "",
+                advisor_bio: djangoUser.advisor_bio || ""
+            });
+        }
+    }, [djangoUser]);
+
+    const handleUpdateAdvisorData = async () => {
+        setIsUpdating(true);
+        setUpdateMessage({ text: "", type: "" });
+        try {
+            await axios.patch(
+                `${baseUrl}api/user/update/`,
+                advisorData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('access')}`,
+                    },
+                }
+            );
+            setUpdateMessage({ text: "Advisor profile updated successfully!", type: "success" });
+            fetchUser();
+        } catch (error) {
+            console.error('Error updating advisor profile:', error);
+            setUpdateMessage({ text: 'Failed to update advisor profile.', type: "error" });
+        } finally {
+            setIsUpdating(false);
+        }
+    };
 
     const handleUpdateUsername = async (e) => {
         e.preventDefault();
@@ -201,6 +239,67 @@ const Settings = () => {
                                 </form>
                             </div>
                         </section>
+
+                        {/* Advisor Services Section */}
+                        {djangoUser?.role === 'advisor' && (
+                            <section>
+                                <div className="flex items-center justify-between mb-6">
+                                    <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                                        <SparklesIcon className="w-6 h-6 text-primary" />
+                                        Advisor Services Profile
+                                    </h2>
+                                    <span className="text-[10px] bg-teal-100 text-primary px-2 py-1 rounded-full uppercase font-bold tracking-wider">Marketplace Active</span>
+                                </div>
+                                <div className="bg-gray-50 rounded-3xl p-6 border border-gray-200 shadow-sm space-y-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Primary Specialization</label>
+                                            <select 
+                                                value={advisorData.specialization}
+                                                onChange={(e) => setAdvisorData({...advisorData, specialization: e.target.value})}
+                                                className="w-full bg-white border border-gray-300 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary outline-none transition-all shadow-sm appearance-none"
+                                            >
+                                                <option value="">Select Specialization</option>
+                                                <option value="Ivy League prep">Ivy League Prep</option>
+                                                <option value="Financial Aid & Scholarship">Financial Aid & Scholarship</option>
+                                                <option value="STEM Applications">STEM Applications</option>
+                                                <option value="Public Universities">Public Universities</option>
+                                                <option value="Essay Polishing">Essay Polishing</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Hourly Consultation Fee ($)</label>
+                                            <div className="relative">
+                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">$</span>
+                                                <input 
+                                                    type="number"
+                                                    value={advisorData.hourly_rate}
+                                                    onChange={(e) => setAdvisorData({...advisorData, hourly_rate: e.target.value})}
+                                                    className="w-full bg-white border border-gray-300 rounded-xl py-3 pl-8 pr-4 focus:ring-2 focus:ring-primary outline-none transition-all shadow-sm"
+                                                    placeholder="e.g. 75"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Professional Advisor Bio</label>
+                                        <textarea 
+                                            value={advisorData.advisor_bio}
+                                            onChange={(e) => setAdvisorData({...advisorData, advisor_bio: e.target.value})}
+                                            className="w-full bg-white border border-gray-300 rounded-2xl py-3 px-4 focus:ring-2 focus:ring-primary outline-none transition-all h-32 shadow-sm"
+                                            placeholder="Describe your background and how you help students find their dream college..."
+                                        />
+                                    </div>
+                                    <button
+                                        onClick={handleUpdateAdvisorData}
+                                        disabled={isUpdating}
+                                        className="w-full bg-primary text-white font-bold py-4 rounded-2xl hover:bg-teal-700 disabled:opacity-50 transition-all shadow-lg shadow-teal-500/20 active:scale-[0.98]"
+                                    >
+                                        {isUpdating ? "Processing..." : "Sync to Marketplace"}
+                                    </button>
+                                </div>
+                            </section>
+                        )}
 
                         {/* University Affiliation */}
                         <section>

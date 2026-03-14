@@ -8,6 +8,7 @@ import Search from '../components/Search';
 import { useCurrentUser } from '../UserProvider/UserProvider';
 import ScrollToTop from '../components/ScrollToTop';
 import PromotionalHero from '../components/PromotionalHero';
+import { ExclamationTriangleIcon, CheckBadgeIcon } from '@heroicons/react/24/outline';
 
 const Colleges = () => {
     const { user, loading, loggedIn } = useCurrentUser();
@@ -72,6 +73,44 @@ const Colleges = () => {
                 {notFound && <NotFound />}
                 <div className="bg-primary min-h-screen pb-24">
                     <PromotionalHero />
+                    
+                    {loggedIn && user?.role === 'college_staff' && !user?.is_verified && (
+                        <div className="max-w-7xl mx-auto px-6 mt-8">
+                            <div className="bg-amber-50 border-l-4 border-amber-400 p-6 rounded-2xl shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
+                                <div className="flex items-start gap-4">
+                                    <div className="bg-amber-100 p-2 rounded-xl">
+                                        <ExclamationTriangleIcon className="h-6 w-6 text-amber-600" aria-hidden="true" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className="text-lg font-bold text-amber-800">Account Pending Verification</h3>
+                                        <p className="mt-1 text-sm text-amber-700 leading-relaxed">
+                                            Welcome to the Worm community! Your application as a College Representative is currently being reviewed by our team. 
+                                            You will receive an email once your account is verified and you can access the full College Portal features.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {loggedIn && user?.is_verified && user?.role === 'college_staff' && (
+                         <div className="max-w-7xl mx-auto px-6 mt-8">
+                            <div className="bg-teal-50 border-l-4 border-teal-500 p-6 rounded-2xl shadow-sm">
+                                <div className="flex items-start gap-4">
+                                    <div className="bg-teal-100 p-2 rounded-xl">
+                                        <CheckBadgeIcon className="h-6 w-6 text-teal-600" aria-hidden="true" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className="text-lg font-bold text-teal-900">Verified Representative</h3>
+                                        <p className="mt-1 text-sm text-teal-700">
+                                            Your account is fully verified. You can now manage your institution from the <a href="/college/portal" className="font-bold underline">College Portal</a>.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     <div id="college-cards-section" className="scroll-mt-8"></div>
                     {showColleges ? (
                         <>

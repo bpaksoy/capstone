@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { baseUrl } from '../shared';
-import { icons } from '../constants';
 
 function EditPostModal({ onAddPost, post, isOpen, onClose }) {
     const [title, setTitle] = useState('');

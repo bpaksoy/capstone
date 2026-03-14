@@ -15,6 +15,7 @@ from django.utils.text import slugify
 USER_ROLES = [
     ('student', 'Student'),
     ('college_staff', 'College Staff'),
+    ('advisor', 'College Advisor'),
     ('admin', 'Administrator'),
 ]
 
@@ -35,7 +36,14 @@ class User(AbstractUser):
     gpa = models.FloatField(blank=True, null=True)
     sat_score = models.IntegerField(blank=True, null=True)
     is_private = models.BooleanField(default=False)
+    has_selected_role = models.BooleanField(default=False)
     last_active = models.DateTimeField(null=True, blank=True)
+
+    # Advisor specific fields
+    hourly_rate = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    specialization = models.CharField(max_length=255, blank=True, null=True)
+    advisor_bio = models.TextField(blank=True, null=True)
+    rating = models.FloatField(default=0.0)
 
     # Friendships - Many-to-many relationship, symmetrical (friend = mutual)
     friends = models.ManyToManyField(

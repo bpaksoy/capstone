@@ -15,6 +15,7 @@ const navigation = [
     { name: 'Profile', href: '/profile', current: false },
     { name: 'Messages', href: '/messages', current: false },
     { name: 'Advanced', href: '/detailed-search', current: false },
+    { name: 'Advisors', href: '/advisors', current: false },
 
 ]
 

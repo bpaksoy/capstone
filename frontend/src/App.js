@@ -23,6 +23,7 @@ import Footer from "./components/Footer";
 import AIAgent from "./components/AIAgent";
 import Friends from "./pages/Friends";
 import ForgotPassword from "./pages/ForgotPassword";
+import Advisors from "./pages/Advisors";
 import CollegePortal from "./pages/CollegePortal";
 import DirectMessages from "./pages/DirectMessages";
 import StaffVerification from "./pages/StaffVerification";
@@ -41,6 +42,7 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Colleges />} />
           <Route path="/trending" element={<Trending />} />
+          <Route path="/advisors" element={<Advisors />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />

@@ -7,7 +7,7 @@ import { icons, images } from '../constants';
 import { baseUrl } from '../shared';
 import useFetch from '../hooks/FetchData';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { CheckBadgeIcon } from '@heroicons/react/24/solid';
+import { CheckBadgeIcon, SparklesIcon } from '@heroicons/react/24/solid';
 import PostList from '../components/PostList';
 
 const Profile = () => {
@@ -311,7 +311,7 @@ const Profile = () => {
                                         {user?.is_verified && (
                                             <div className="flex items-center gap-1 bg-teal-50 text-teal-600 text-[10px] uppercase tracking-widest px-2 py-1 rounded-lg border border-teal-100 shadow-sm md:ml-2">
                                                 <CheckBadgeIcon className="w-4 h-4" />
-                                                <span>{user?.role === 'college_staff' ? "Verified Representative" : "Verified Ambassador"}</span>
+                                                <span>{user?.role === 'college_staff' ? "Verified Representative" : user?.role === 'advisor' ? "Verified Advisor" : "Verified Ambassador"}</span>
                                             </div>
                                         )}
                                     </h3>
@@ -426,6 +426,36 @@ const Profile = () => {
                                             {user?.bio ? user.bio : <span className="text-gray-400">No bio added yet.</span>}
                                         </p>
                                         <AddBioModal initialValues={user} fetchUser={fetchUser} />
+
+                                        {user?.role === 'advisor' && (
+                                            <div className="mt-12 p-8 bg-[#17717d]/5 rounded-[2.5rem] border border-[#17717d]/10 text-left shadow-inner relative overflow-hidden group">
+                                                 <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
+                                                    <SparklesIcon className="w-24 h-24 text-[#17717d]" />
+                                                 </div>
+                                                 <div className="relative z-10">
+                                                    <div className="flex items-center gap-2 mb-4">
+                                                        <SparklesIcon className="w-5 h-5 text-[#17717d]" />
+                                                        <span className="text-sm font-black uppercase tracking-widest text-[#17717d]">Professional Advisor Profile</span>
+                                                    </div>
+                                                    <h4 className="text-2xl font-black text-gray-900 mb-2">{user?.specialization || 'Generalist Advisor'}</h4>
+                                                    <p className="text-gray-600 leading-relaxed italic text-lg mb-8">"{user?.advisor_bio || 'Professional advisor profile is being prepared.'}"</p>
+                                                    <div className="flex items-center gap-8 p-6 bg-white rounded-2xl border border-[#17717d]/20 shadow-sm">
+                                                        <div>
+                                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Consultation Fee</span>
+                                                            <p className="text-3xl font-black text-[#17717d]">${parseFloat(user?.hourly_rate || 75).toFixed(0)} <span className="text-base font-medium text-gray-400">/ hr</span></p>
+                                                        </div>
+                                                        <div className="h-10 w-px bg-gray-100"></div>
+                                                        <div>
+                                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Marketplace Status</span>
+                                                            <span className="flex items-center gap-2 text-green-600 font-black mt-1 uppercase tracking-tighter text-sm">
+                                                                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                                                Live & Active
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                 </div>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
 

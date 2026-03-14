@@ -172,7 +172,19 @@ class ClerkLoginView(APIView):
 
             if created:
                 user.set_unusable_password()
+                # Sync role from Clerk metadata if available during creation
+                clerk_role = user_info.get('unsafe_metadata', {}).get('role')
+                if clerk_role in [role[0] for role in USER_ROLES]:
+                    user.role = clerk_role
+                    user.has_selected_role = True
                 user.save()
+            else:
+                # Optional: Update role if it exists in metadata but differs in DB
+                clerk_role = user_info.get('unsafe_metadata', {}).get('role')
+                if clerk_role and clerk_role in [role[0] for role in USER_ROLES] and user.role != clerk_role:
+                    user.role = clerk_role
+                    user.has_selected_role = True
+                    user.save()
 
             # 7. Issue SimpleJWT Tokens
             refresh = RefreshToken.for_user(user)
@@ -1385,6 +1397,10 @@ def list_unverified_staff(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def verify_staff(request):
+    """
+    Endpoint for admins to verify college staff members. 
+    Sends an approval email upon successful verification.
+    """
     if not request.user.is_staff:
         return Response({"error": "Admin access required"}, status=403)
     
@@ -1399,7 +1415,49 @@ def verify_staff(request):
     if action == 'approve':
         target_user.is_verified = True
         target_user.save()
-        return Response({"message": f"User {target_user.username} verified successfully."})
+
+        # Send Approval Email
+        try:
+            from django.core.mail import EmailMessage
+            from django.template.loader import render_to_string
+            from django.utils.html import strip_tags
+            
+            subject = 'Congratulations! Your College Representative account is verified'
+            html_message = f"""
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <img src="https://hischolar-49a2a.web.app/wormie-logo.svg" alt="Wormie" style="width: 64px;">
+                </div>
+                <h2 style="color: #17717d;">Account Verified!</h2>
+                <p>Hello {target_user.first_name or target_user.username},</p>
+                <p>We are excited to inform you that your application as a verified representative for <strong>{target_user.associated_college.name if target_user.associated_college else "your institution"}</strong> has been approved.</p>
+                <p>You now have full access to your College Portal where you can:</p>
+                <ul>
+                    <li>Post official announcements</li>
+                    <li>Message prospective students directly</li>
+                    <li>Manage your institution's profile</li>
+                </ul>
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="https://hischolar-49a2a.web.app/college/portal" style="background-color: #17717d; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold;">Enter College Portal</a>
+                </div>
+                <p style="margin-top: 30px; font-size: 12px; color: #999;">If you have any questions, feel free to reply to this email.</p>
+            </div>
+            """
+            
+            # Using console backend for demonstration if real SMTP is not configured
+            from django.core import mail
+            with mail.get_connection('django.core.mail.backends.console.EmailBackend') as connection:
+                mail.EmailMessage(
+                    subject,
+                    html_message,
+                    'verified@wormie.app',
+                    [target_user.email],
+                    connection=connection,
+                ).send()
+        except Exception as e:
+            print(f"Failed to send verification email: {e}")
+            
+        return Response({"message": f"User {target_user.username} verified successfully. Approval email sent."})
     elif action == 'deny':
         target_user.role = 'student'
         target_user.associated_college = None
@@ -3242,3 +3300,26 @@ class AIChatView(APIView):
             import traceback
             traceback.print_exc()
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class AdvisorListView(APIView):
+    permission_classes = []  # Publicly viewable marketplace
+
+    def get(self, request):
+        search_query = request.query_params.get('search', '')
+        specialization = request.query_params.get('specialization', '')
+
+        advisors = User.objects.filter(role='advisor')
+
+        if search_query:
+            advisors = advisors.filter(
+                models.Q(first_name__icontains=search_query) |
+                models.Q(last_name__icontains=search_query) |
+                models.Q(username__icontains=search_query)
+            )
+
+        if specialization:
+            advisors = advisors.filter(specialization__icontains=specialization)
+
+        serializer = UserSerializer(advisors, many=True)
+        return Response(serializer.data)

@@ -6,7 +6,7 @@ import { images } from '../constants';
 import useFetch from '../hooks/FetchData';
 import { useCurrentUser } from '../UserProvider/UserProvider';
 import PostList from '../components/PostList';
-import { LockClosedIcon, ChatBubbleLeftRightIcon, Squares2X2Icon, CheckBadgeIcon } from '@heroicons/react/24/outline';
+import { LockClosedIcon, ChatBubbleLeftRightIcon, Squares2X2Icon, CheckBadgeIcon, SparklesIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline';
 
 const PublicProfile = () => {
     const location = useLocation();
@@ -107,7 +107,7 @@ const PublicProfile = () => {
                                             {otherUserData?.is_verified && (
                                                 <div className="flex items-center gap-1 bg-teal-50 text-teal-600 text-[10px] uppercase tracking-widest px-2 py-1 rounded-lg border border-teal-100 shadow-sm">
                                                     <CheckBadgeIcon className="w-3.5 h-3.5" />
-                                                    <span>{otherUserData?.role === 'college_staff' ? "Verified Representative" : "Verified Ambassador"}</span>
+                                                    <span>{otherUserData?.role === 'college_staff' ? "Verified Representative" : otherUserData?.role === 'advisor' ? "Verified Advisor" : "Verified Ambassador"}</span>
                                                 </div>
                                             )}
                                         </h1>
@@ -145,6 +145,47 @@ const PublicProfile = () => {
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 border-t border-gray-100 pt-10">
                                 {/* Sidebar Info */}
+                                {otherUserData?.role === 'advisor' && (
+                                    <div className="mb-8 p-6 bg-gradient-to-br from-gray-50 to-white rounded-3xl border border-gray-100 shadow-sm">
+                                        <div className="flex items-center gap-2 mb-4">
+                                            <SparklesIcon className="w-5 h-5 text-primary" />
+                                            <span className="text-sm font-extrabold uppercase tracking-widest text-gray-400">Professional Profile</span>
+                                        </div>
+                                        <h4 className="text-xl font-bold text-gray-900 mb-2">{otherUserData?.specialization || 'Generalist Advisor'}</h4>
+                                        <p className="text-gray-600 leading-relaxed italic mb-6">"{otherUserData?.advisor_bio || 'Professional admissions advisor ready to help.'}"</p>
+                                        
+                                        <div className="pt-6 border-t border-gray-100 flex items-center justify-between">
+                                            <div>
+                                                <span className="text-[10px] font-bold text-gray-400 uppercase block mb-1">Standard Rate</span>
+                                                <div className="flex items-center gap-1">
+                                                    <CurrencyDollarIcon className="w-5 h-5 text-green-600" />
+                                                    <span className="text-2xl font-black text-gray-900">{otherUserData?.hourly_rate ? parseFloat(otherUserData.hourly_rate).toFixed(0) : '75'}</span>
+                                                    <span className="text-sm text-gray-400 font-medium">/ hr</span>
+                                                </div>
+                                            </div>
+                                            <button 
+                                                onClick={() => {
+                                                    if (!loggedIn) {
+                                                        navigate('/login');
+                                                        return;
+                                                    }
+                                                    navigate('/messages', { 
+                                                        state: { 
+                                                            openChatWithUserId: otherUserData.id,
+                                                            openChatWithUserName: otherUserData.username,
+                                                            draftText: `Hi ${otherUserData.first_name || otherUserData.username}, I'm interested in booking a consultation with you!` 
+                                                        } 
+                                                    });
+                                                }}
+                                                className="bg-primary text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-teal-500/10 hover:shadow-teal-500/20 active:scale-95 transition-all flex items-center gap-2"
+                                            >
+                                                <ChatBubbleLeftRightIcon className="w-5 h-5" />
+                                                Book Consultation
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
                                 <div className="space-y-8">
                                     <div>
                                         <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest mb-4">About</h3>
