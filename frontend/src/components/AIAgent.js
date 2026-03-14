@@ -624,8 +624,21 @@ const AIAgent = () => {
                                     setUnreadWormieMessage(null);
                                     setShowTooltip(false);
                                 }}
-                                className="bg-white px-4 py-3 rounded-2xl rounded-tr-sm shadow-xl border border-gray-100 min-w-[140px] max-w-[280px] cursor-pointer hover:bg-gray-50 transition-colors animate-[pulse_3s_ease-in-out_infinite] group-hover:scale-105"
+                                className="bg-white px-4 py-3 rounded-2xl rounded-tr-sm shadow-xl border border-gray-100 min-w-[140px] max-w-[280px] cursor-pointer hover:bg-gray-50 transition-colors animate-[pulse_3s_ease-in-out_infinite] group-hover:scale-105 relative"
                             >
+                                {/* Dismiss Button */}
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setShowTooltip(false);
+                                        setUnreadWormieMessage(null);
+                                    }}
+                                    className="absolute -top-2 -left-2 w-5 h-5 bg-gray-100 hover:bg-gray-200 text-gray-400 hover:text-gray-600 rounded-full flex items-center justify-center shadow-sm border border-gray-200 transition-colors z-20"
+                                    title="Dismiss"
+                                >
+                                    <XMarkIcon className="w-3 h-3" />
+                                </button>
+
                                 <div className="flex items-center gap-2">
                                     <div className="p-1 bg-purple/10 rounded-lg">
                                         <SparklesIcon className="w-4 h-4 text-purple" />
