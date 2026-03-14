@@ -401,3 +401,17 @@ class DirectMessage(models.Model):
 
     def __str__(self):
         return f"From {self.sender.username} to {self.recipient.username}"
+
+
+class Review(models.Model):
+    advisor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews_received')
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews_written')
+    rating = models.IntegerField(default=5)
+    comment = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('advisor', 'student')
+
+    def __str__(self):
+        return f"Review for {self.advisor.username} by {self.student.username}"

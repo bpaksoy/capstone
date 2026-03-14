@@ -11,6 +11,7 @@ import {
     ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline';
 import ScrollToTop from '../components/ScrollToTop';
+import ReviewModal from '../utils/ReviewModal';
 
 const Advisors = () => {
     const { user, loggedIn } = useCurrentUser();
@@ -19,6 +20,8 @@ const Advisors = () => {
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [specialization, setSpecialization] = useState('');
+    const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+    const [selectedAdvisor, setSelectedAdvisor] = useState(null);
 
     useEffect(() => {
         const timeoutId = setTimeout(() => {
@@ -48,9 +51,9 @@ const Advisors = () => {
             <div className="bg-[#f8fafc] min-h-screen pt-24 pb-20">
                 {/* Hero Section */}
                 <div className="max-w-7xl mx-auto px-6 mb-12">
-                    <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-[3rem] p-8 md:p-12 text-white relative overflow-hidden shadow-2xl">
-                        <div className="absolute top-0 right-0 w-96 h-96 bg-purple-500/10 rounded-full blur-[100px] -mr-48 -mt-48"></div>
-                        <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-500/10 rounded-full blur-[100px] -ml-48 -mb-48"></div>
+                    <div className="bg-gradient-to-br from-[#17717d] via-[#135f69] to-[#0d4b53] rounded-[3rem] p-8 md:p-12 text-white relative overflow-hidden shadow-2xl">
+                        <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-[100px] -mr-48 -mt-48"></div>
+                        <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#24adbf]/20 rounded-full blur-[100px] -ml-48 -mb-48"></div>
                         
                         <div className="relative z-10 max-w-2xl">
                             <div className="flex items-center gap-2 mb-6">
@@ -59,11 +62,13 @@ const Advisors = () => {
                                 </div>
                                 <span className="text-sm font-bold tracking-widest uppercase text-white/50">Wormie Advisor Marketplace</span>
                             </div>
-                            <h1 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight leading-tight">
+                            <h1 className="text-4xl md:text-6xl font-black mb-6 tracking-tight leading-[1.1]">
                                 Find Your Perfect <br />
-                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">Admissions Advisor</span>
+                                <span className="bg-gradient-to-r from-white via-[#aaf0d1] to-white bg-clip-text text-transparent drop-shadow-md">
+                                    Admissions Advisor
+                                </span>
                             </h1>
-                            <p className="text-lg text-white/70 leading-relaxed mb-8">
+                            <p className="text-xl text-white font-medium leading-relaxed mb-8 max-w-xl">
                                 Connect with verified experts who can help you navigate college applications, 
                                 financial aid, and essay polishing. Personalized guidance starts here.
                             </p>
@@ -142,10 +147,20 @@ const Advisors = () => {
                                                     {advisor.first_name} {advisor.last_name || advisor.username}
                                                 </h3>
                                                 <p className="text-sm text-gray-500 font-medium mb-2 truncate">{advisor.specialization || 'Generalist Advisor'}</p>
-                                                <div className="flex items-center gap-1">
-                                                    <StarIcon className="w-4 h-4 text-yellow-500 fill-current" />
-                                                    <span className="text-sm font-bold text-gray-900">{advisor.rating || '5.0'}</span>
-                                                    <span className="text-xs text-gray-400 font-medium ml-1">Verified</span>
+                                                <div 
+                                                    className="flex items-center gap-1 group/rating cursor-pointer hover:bg-gray-50 px-2 py-1 rounded-lg transition-colors"
+                                                    onClick={() => {
+                                                        if (!loggedIn) {
+                                                            navigate('/login');
+                                                            return;
+                                                        }
+                                                        setSelectedAdvisor(advisor);
+                                                        setIsReviewModalOpen(true);
+                                                    }}
+                                                >
+                                                    <StarIcon className="w-4 h-4 text-yellow-500 fill-current group-hover/rating:scale-110 transition-transform" />
+                                                    <span className="text-sm font-bold text-gray-900">{parseFloat(advisor.rating).toFixed(1) || '5.0'}</span>
+                                                    <span className="text-xs text-gray-400 font-medium ml-1">({advisor.reviews_count || 0} reviews)</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -202,6 +217,14 @@ const Advisors = () => {
                     )}
                 </div>
             </div>
+            {selectedAdvisor && (
+                <ReviewModal 
+                    isOpen={isReviewModalOpen}
+                    onClose={() => setIsReviewModalOpen(false)}
+                    advisor={selectedAdvisor}
+                    onReviewSubmitted={fetchAdvisors}
+                />
+            )}
         </>
     );
 };

@@ -153,6 +153,8 @@ urlpatterns = [
     path('api/ai/history/', views.ChatHistoryView.as_view(), name='ai-history'),
     path('api/colleges/recommendations/', views.CollegeRecommendationView.as_view(), name='college-recommendations'),
     path('api/advisors/', views.AdvisorListView.as_view(), name='advisor-list'),
+    path('api/advisors/<int:advisor_id>/reviews/', views.AdvisorReviewListView.as_view(), name='advisor-reviews'),
+    path('api/reviews/create/', views.CreateReviewView.as_view(), name='review-create'),
     path('upload4/', views.UploadApiView4.as_view(), name='upload_file4'),
 ]
 

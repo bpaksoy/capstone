@@ -3,10 +3,10 @@ import json
 import jwt
 import difflib
 from goose3 import Goose
-from .models import User, College, Comment, Post, Bookmark, Reply, Like, Friendship, SmartCollege, CollegeProgram, Article, Notification, ChatMessage, DirectMessage, LeadStatus
+from .models import User, College, Comment, Post, Bookmark, Reply, Like, Friendship, SmartCollege, CollegeProgram, Article, Notification, ChatMessage, DirectMessage, LeadStatus, Review
 from django.http import JsonResponse, Http404
 from django.db import IntegrityError
-from .serializers import CollegeSerializer, UserSerializer, UploadFileSerializer, LoginSerializer, CommentSerializer, PostSerializer, BookmarkSerializer, ReplySerializer, LikeSerializer, FriendshipSerializer, SmartCollegeSerializer, CollegeProgramSerializer, ArticleSerializer, NotificationSerializer, ChatMessageSerializer, LeadStatusSerializer
+from .serializers import CollegeSerializer, UserSerializer, UploadFileSerializer, LoginSerializer, CommentSerializer, PostSerializer, BookmarkSerializer, ReplySerializer, LikeSerializer, FriendshipSerializer, SmartCollegeSerializer, CollegeProgramSerializer, ArticleSerializer, NotificationSerializer, ChatMessageSerializer, LeadStatusSerializer, ReviewSerializer
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -3323,3 +3323,47 @@ class AdvisorListView(APIView):
 
         serializer = UserSerializer(advisors, many=True)
         return Response(serializer.data)
+
+
+class AdvisorReviewListView(generics.ListAPIView):
+    serializer_class = ReviewSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        advisor_id = self.kwargs.get('advisor_id')
+        return Review.objects.filter(advisor_id=advisor_id).order_by('-created_at')
+
+
+class CreateReviewView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        advisor_id = request.data.get('advisor_id')
+        rating = int(request.data.get('rating', 5))
+        comment = request.data.get('comment', '')
+
+        if not advisor_id:
+            return Response({'error': 'Advisor ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            advisor = User.objects.get(pk=advisor_id, role='advisor')
+        except User.DoesNotExist:
+            return Response({'error': 'Advisor not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if advisor == request.user:
+            return Response({'error': 'You cannot review yourself'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Create or update review
+        review, created = Review.objects.update_or_create(
+            advisor=advisor,
+            student=request.user,
+            defaults={'rating': rating, 'comment': comment}
+        )
+
+        # Update advisor's average rating
+        avg_rating = Review.objects.filter(advisor=advisor).aggregate(Avg('rating'))['rating__avg']
+        advisor.rating = avg_rating or 0.0
+        advisor.save()
+
+        serializer = ReviewSerializer(review)
+        return Response(serializer.data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)

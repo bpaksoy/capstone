@@ -11,6 +11,7 @@ const OnboardingModal = () => {
     const [currentStep, setCurrentStep] = useState(0);
     const [selectedRole, setSelectedRole] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const hasClosedThisSession = React.useRef(false); // Ref to track if they closed it since last refresh
 
     const baseSteps = [
         {
@@ -42,7 +43,14 @@ const OnboardingModal = () => {
     const [steps, setSteps] = useState(baseSteps);
 
     useEffect(() => {
-        if (loggedIn && user && !user.has_selected_role) {
+        // Stop if already closed this session or not logged in/loaded
+        if (hasClosedThisSession.current || !loggedIn || !user) {
+            return;
+        }
+
+        const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding') === 'true';
+
+        if (!user.has_selected_role) {
             const roleStep = {
                 id: 'role',
                 title: "Complete Your Profile",
@@ -51,15 +59,15 @@ const OnboardingModal = () => {
                 isRoleSelection: true
             };
             setSteps([roleStep, ...baseSteps]);
-            setIsOpen(true);
-        } else {
+            if (!isOpen) setIsOpen(true);
+        } else if (!hasSeenOnboarding) {
             setSteps(baseSteps);
-            const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
-            if (!hasSeenOnboarding && loggedIn) {
-                setIsOpen(true);
-            }
+            if (!isOpen) setIsOpen(true);
+        } else {
+            // They have a role and they've seen onboarding
+            if (isOpen) setIsOpen(false);
         }
-    }, [user, loggedIn]);
+    }, [user?.has_selected_role, loggedIn, isOpen]);
 
     const handleRoleSelection = async (role) => {
         setIsSubmitting(true);
@@ -90,13 +98,15 @@ const OnboardingModal = () => {
 
     const handleClose = () => {
         localStorage.setItem('hasSeenOnboarding', 'true');
+        hasClosedThisSession.current = true;
         setIsOpen(false);
+        setCurrentStep(0);
     };
 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 sm:p-6 transition-opacity">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 sm:p-6 transition-opacity">
             <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col transform transition-all animate-slideUp">
 
                 {/* Header Graphic */}

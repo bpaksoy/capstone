@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import College
 from django.contrib.auth import authenticate
-from .models import Comment, Post, Bookmark, Reply, User, Like, Friendship, SmartCollege, CollegeProgram, Article, Notification, ChatMessage, LeadStatus
+from .models import Comment, Post, Bookmark, Reply, User, Like, Friendship, SmartCollege, CollegeProgram, Article, Notification, ChatMessage, LeadStatus, Review
 from django.contrib.contenttypes.models import ContentType
 from rest_framework.validators import UniqueTogetherValidator
 
@@ -41,12 +41,17 @@ class UserSerializer(serializers.ModelSerializer):
     friends = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     password = serializers.CharField(write_only=True)
 
+    reviews_count = serializers.SerializerMethodField()
+
     class Meta:
         model = User
         fields = ('id', 'username', 'email', 'password', 'first_name', 'last_name',
                   'city', 'state', 'country', 'major', 'education', 'gpa', 'sat_score', 
                   'bio', 'image', 'friends', 'is_private', 'role', 'associated_college', 'is_verified', 'has_selected_role',
-                  'hourly_rate', 'specialization', 'advisor_bio', 'rating')
+                  'hourly_rate', 'specialization', 'advisor_bio', 'rating', 'reviews_count')
+
+    def get_reviews_count(self, obj):
+        return obj.reviews_received.count()
 
     def create(self, validated_data):
         password = validated_data.pop('password', None)
@@ -218,3 +223,12 @@ class ChatMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatMessage
         fields = ('id', 'role', 'content', 'created_at')
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    student = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Review
+        fields = '__all__'
+
