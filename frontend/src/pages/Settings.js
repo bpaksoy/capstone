@@ -221,7 +221,7 @@ const Settings = () => {
                                                 {djangoUser.is_verified ? (
                                                     <span className="flex items-center gap-1 text-[10px] bg-teal-100 text-primary px-2 py-0.5 rounded-full uppercase tracking-wider font-bold border border-primary/20">
                                                         <CheckBadgeIcon className="w-3 h-3 text-primary" />
-                                                        Verified Ambassador
+                                                        {djangoUser?.role === 'college_staff' ? "Verified Representative" : "Verified Ambassador"}
                                                     </span>
                                                 ) : (
                                                     <span className="text-[10px] bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full uppercase tracking-wider font-bold border border-amber-200">
