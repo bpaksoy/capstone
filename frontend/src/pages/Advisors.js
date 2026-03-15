@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { baseUrl } from '../shared';
+import { baseUrl, getApiUrl } from '../shared';
 import { useCurrentUser } from '../UserProvider/UserProvider';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -25,6 +25,17 @@ const Advisors = () => {
     const [specialization, setSpecialization] = useState('');
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
     const [selectedAdvisor, setSelectedAdvisor] = useState(null);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [errorMsg, setErrorMsg] = useState(null);
+
+    const specializations = [
+        { value: "", label: "All Specializations" },
+        { value: "Ivy League", label: "Ivy League Prep" },
+        { value: "Financial Aid", label: "Financial Aid & Scholarship" },
+        { value: "STEM", label: "STEM Applications" },
+        { value: "Public Universities", label: "Public Universities" },
+        { value: "Essay Polishing", label: "Essay Polishing" },
+    ];
 
     useEffect(() => {
         const timeoutId = setTimeout(() => {
@@ -35,14 +46,19 @@ const Advisors = () => {
 
     const fetchAdvisors = async () => {
         setLoading(true);
+        setErrorMsg(null);
         try {
-            const response = await fetch(`${baseUrl}api/advisors/?search=${search}&specialization=${specialization}`);
+            const url = getApiUrl(`api/advisors/?search=${search}&specialization=${specialization}`);
+            const response = await fetch(url);
             if (response.ok) {
                 const data = await response.json();
                 setAdvisors(data);
+            } else {
+                setErrorMsg("Failed to load advisors. Please try again later.");
             }
         } catch (error) {
             console.error("Error fetching advisors:", error);
+            setErrorMsg("Network error. Please check your connection.");
         } finally {
             setLoading(false);
         }
@@ -88,32 +104,71 @@ const Advisors = () => {
                                         className="w-full bg-white/10 border border-white/20 rounded-2xl py-4 pl-12 pr-4 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all backdrop-blur-md"
                                     />
                                 </div>
-                                <div className="md:w-64 relative group">
-                                    <AcademicCapIcon className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-purple-400" />
-                                    <select 
-                                        value={specialization}
-                                        onChange={(e) => setSpecialization(e.target.value)}
-                                        className="w-full bg-white/10 border border-white/20 rounded-2xl py-4 pl-12 pr-8 text-white appearance-none focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all backdrop-blur-md"
+                                <div className="md:w-72 relative">
+                                    <button 
+                                        type="button"
+                                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                        className={`w-full bg-white/10 border ${isDropdownOpen ? 'border-purple-400 ring-2 ring-purple-500/50' : 'border-white/20'} rounded-2xl py-4 pl-12 pr-10 text-white text-left transition-all backdrop-blur-md relative group`}
                                     >
-                                        <option value="" className="text-gray-900 bg-white">All Specializations</option>
-                                        <option value="Ivy League" className="text-gray-900 bg-white">Ivy League Prep</option>
-                                        <option value="Financial Aid" className="text-gray-900 bg-white">Financial Aid & Scholarship</option>
-                                        <option value="STEM" className="text-gray-900 bg-white">STEM Applications</option>
-                                        <option value="Public Universities" className="text-gray-900 bg-white">Public Universities</option>
-                                        <option value="Essay Polishing" className="text-gray-900 bg-white">Essay Polishing</option>
-                                    </select>
-                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-white/40">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
-                                    </div>
+                                        <AcademicCapIcon className={`w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${isDropdownOpen ? 'text-purple-400' : 'text-gray-400'}`} />
+                                        <span className="block truncate">
+                                            {specializations.find(s => s.value === specialization)?.label || "Select Specialization"}
+                                        </span>
+                                        <div className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180 text-purple-400' : 'text-white/40'}`}>
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                                        </div>
+                                    </button>
+
+                                    {isDropdownOpen && (
+                                        <>
+                                            <div 
+                                                className="fixed inset-0 z-10" 
+                                                onClick={() => setIsDropdownOpen(false)}
+                                            ></div>
+                                            <div className="absolute z-20 mt-2 w-full bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden backdrop-blur-xl py-2 animate-in fade-in zoom-in duration-200">
+                                                {specializations.map((spec) => (
+                                                    <button
+                                                        key={spec.value}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setSpecialization(spec.value);
+                                                            setIsDropdownOpen(false);
+                                                        }}
+                                                        className={`w-full text-left px-6 py-3 text-sm font-medium transition-all flex items-center justify-between
+                                                            ${specialization === spec.value 
+                                                                ? 'bg-purple-500 text-white' 
+                                                                : 'text-gray-700 hover:bg-purple-50 hover:text-purple-600'
+                                                            }`}
+                                                    >
+                                                        {spec.label}
+                                                        {specialization === spec.value && (
+                                                            <div className="w-2 h-2 bg-white rounded-full"></div>
+                                                        )}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Advisors Grid */}
                 <div className="max-w-7xl mx-auto px-6">
-                    {loading ? (
+                    {errorMsg ? (
+                        <div className="py-20 text-center">
+                            <div className="p-10 bg-red-50 rounded-[3rem] border border-red-100 inline-block">
+                                <h3 className="text-xl font-bold text-red-900 mb-2">{errorMsg}</h3>
+                                <button 
+                                    onClick={fetchAdvisors}
+                                    className="text-red-600 font-bold hover:underline"
+                                >
+                                    Try again
+                                </button>
+                            </div>
+                        </div>
+                    ) : loading ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {[1, 2, 3].map(i => (
                                 <div key={i} className="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100 animate-pulse">
