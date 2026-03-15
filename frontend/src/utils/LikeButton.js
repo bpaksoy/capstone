@@ -21,10 +21,14 @@ const LikeButton = ({ contentType, objectId, onLikeStatusChange, refetchComments
         }
     }, [isLiked, count, objectId, onLikeStatusChange]);
 
-    if (loading) return <div>Loading...</div>;
-    if (error) return <div>Error: {error.message}</div>;
-
+    if (loading) return null;
     const buttonClass = className || "underline decoration-solid rounded hover:bg-gray-300 p-2";
+
+    if (error) return (
+        <button type="button" disabled className={`${buttonClass} opacity-50 cursor-not-allowed`}>
+            {children ? children : 'Like'}
+        </button>
+    );
 
     return (
         <button type="button" onClick={handleClick} className={buttonClass}>
