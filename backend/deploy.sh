@@ -20,9 +20,16 @@ REGION="us-central1"
 SERVICE_NAME="collegetracker-api"
 CLOUD_SQL_INSTANCE="$PROJECT_ID:$REGION:collegetracker-db"
 PROXY_PORT=5433
-DB_NAME="collegetracker"
-DB_USER="ctuser"
-DB_PASSWORD="CTdbPass2026x"
+
+# Load credentials from .env file (which is gitignored)
+ENV_FILE="$(dirname "$0")/.env"
+if [ -f "$ENV_FILE" ]; then
+    export $(grep -v '^#' "$ENV_FILE" | xargs)
+fi
+
+DB_NAME="${DB_NAME:-collegetracker}"
+DB_USER="${DB_USER:-ctuser}"
+DB_PASSWORD="${DB_PASSWORD:?ERROR: DB_PASSWORD not set. Add it to backend/.env}"
 
 # Colors for output
 RED='\033[0;31m'
