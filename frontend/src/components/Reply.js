@@ -3,8 +3,12 @@ import AddReplyModal from '../utils/AddReplyModal';
 import axios from 'axios';
 import { baseUrl } from '../shared';
 import { images } from '../constants';
+import { useCurrentUser } from '../UserProvider/UserProvider';
 
-function Reply({ commentId, lastUpdatedReply, onAddPost, user }) {
+function Reply({ commentId, lastUpdatedReply, onAddPost, user: userProp }) {
+    // Always get user from context for reliability
+    const { user: contextUser } = useCurrentUser();
+    const user = contextUser || userProp;
     const [replies, setReplies] = useState([]);
     // console.log("replies", replies);
     const [isLoading, setIsLoading] = useState(false);

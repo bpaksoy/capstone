@@ -7,8 +7,12 @@ import { baseUrl } from '../shared';
 import LikeButton from '../utils/LikeButton';
 import EditDeleteModal from '../utils/EditDeleteModal';
 import EditCommentModal from '../utils/EditCommentModal';
+import { useCurrentUser } from '../UserProvider/UserProvider';
 
-function Comment({ postId, lastUpdatedComment, onAddPost, user }) {
+function Comment({ postId, lastUpdatedComment, onAddPost, user: userProp }) {
+    // Always get user from context for reliability — prop is kept for backward compat
+    const { user: contextUser } = useCurrentUser();
+    const user = contextUser || userProp;
 
     const [comments, setComments] = useState([]);
     //console.log("comments", comments);
