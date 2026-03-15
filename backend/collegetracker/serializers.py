@@ -36,6 +36,18 @@ class CollegeProgramSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class ServiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Service
+        fields = '__all__'
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = '__all__'
+
+
 class UserSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(required=False, allow_null=True)
     friends = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
@@ -143,7 +155,6 @@ class PostSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     author = UserSerializer(read_only=True)
-    post = PostSerializer(read_only=True)
     replies_count = serializers.SerializerMethodField()
     likes_count = serializers.SerializerMethodField()
 
@@ -151,7 +162,6 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ('id', 'post', 'author', 'content', 'created_at',
                   'updated_at', 'replies_count', 'likes_count')
-        depth = 1
 
     def get_replies_count(self, obj):
         return obj.replies.count()
@@ -229,22 +239,6 @@ class ChatMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatMessage
         fields = ('id', 'role', 'content', 'created_at')
-
-
-class ReviewSerializer(serializers.ModelSerializer):
-    student = UserSerializer(read_only=True)
-
-    class Meta:
-        model = Review
-        fields = '__all__'
-
-
-class ServiceSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Service
-        fields = '__all__'
-
-
 class MeetingSerializer(serializers.ModelSerializer):
     advisor = UserSerializer(read_only=True)
     student = UserSerializer(read_only=True)
@@ -253,5 +247,4 @@ class MeetingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Meeting
         fields = '__all__'
-
 

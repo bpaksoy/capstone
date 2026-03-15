@@ -234,8 +234,12 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
                                         navigate('/profile/')
                                     }
                                 }}>
-                                    <img
-                                        src={post.author?.image ? (post.author.image.startsWith('http') ? post.author.image : `${baseUrl}${post.author.image.startsWith('/') ? post.author.image.substring(1) : post.author.image}`) : images.profile}
+                                    <img src={(() => {
+                                        const postAuthorImage = post.author?.image;
+                                        if (!postAuthorImage) return images.profile;
+                                        if (postAuthorImage.startsWith('http')) return postAuthorImage;
+                                        return `${baseUrl}${postAuthorImage.startsWith('/') ? postAuthorImage.substring(1) : postAuthorImage}`;
+                                    })()}
                                         alt="User Avatar"
                                         className="w-10 h-10 rounded-full object-cover border border-gray-100 shadow-sm"
                                     />

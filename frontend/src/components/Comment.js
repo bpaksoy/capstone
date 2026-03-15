@@ -45,14 +45,17 @@ function Comment({ postId, lastUpdatedComment, onAddPost, user }) {
         const fetchComments = async () => {
             try {
                 const token = localStorage.getItem('access');
-                const headers = token ? { Authorization: `Bearer ${token}` } : {};
+                const headers = (token && token !== 'null') ? { Authorization: `Bearer ${token}` } : {};
                 const response = await axios.get(`${baseUrl}api/posts/${postId}/comments/`, {
                     headers: headers,
                 });
-                setComments(response.data);
+                setComments(Array.isArray(response.data) ? response.data : []);
                 setLoading(false);
             } catch (error) {
+                console.error("Error fetching comments:", error);
                 setError(error);
+                setComments([]);
+                setLoading(false);
             }
         };
         fetchComments();
@@ -134,7 +137,12 @@ function Comment({ postId, lastUpdatedComment, onAddPost, user }) {
                                     <div className="pb-3">
                                         <div className="flex justify-between items-start">
                                             <div className="flex items-start space-x-3">
-                                                <img src={comment.author?.image ? (comment.author.image.startsWith('http') ? comment.author.image : `${baseUrl}${comment.author.image.startsWith('/') ? comment.author.image.substring(1) : comment.author.image}`) : images.avatar} alt="User Avatar" className="w-6 h-6 rounded-full mt-1 ring-2 ring-primary/30 bg-primary/5 p-0.5 object-cover opacity-80" />
+                                                <img src={(() => {
+                                                    const authorImage = comment.author?.image;
+                                                    if (!authorImage) return images.avatar;
+                                                    if (authorImage.startsWith('http')) return authorImage;
+                                                    return `${baseUrl}${authorImage.startsWith('/') ? authorImage.substring(1) : authorImage}`;
+                                                })()} alt="User Avatar" className="w-6 h-6 rounded-full mt-1 ring-2 ring-primary/30 bg-primary/5 p-0.5 object-cover opacity-80" />
                                                 <div>
                                                     <div className="bg-white px-4 py-2 rounded-2xl shadow-sm inline-block">
                                                         <div className="flex items-center gap-1.5 mb-0.5">

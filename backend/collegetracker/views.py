@@ -2004,7 +2004,7 @@ class CommentListView(APIView):
             post = Post.objects.get(pk=post_pk)
         except Post.DoesNotExist:
             return Response({'error': 'Post not found'}, status=status.HTTP_404_NOT_FOUND)
-        comments = post.comments.all()
+        comments = post.comments.all().select_related('author')
         serializer = CommentSerializer(comments, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -2144,11 +2144,11 @@ class ReplyListView(generics.ListAPIView):
     def get(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
 
-        if queryset:
+        if queryset.exists():
             serializer = self.get_serializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
-            return Response({'message': 'No replies found for this comment.'}, status=status.HTTP_204_NO_CONTENT)
+            return Response([], status=status.HTTP_200_OK)
 
 
 class ReplyCreateView(generics.CreateAPIView):
@@ -2268,7 +2268,7 @@ class FriendRequestDeleteView(APIView):
             friendship = Friendship.objects.get(
                 user1=request.user, user2=friend)
             friendship.delete()
-            return Response({'message': 'Friend request deleted'}, status=status.HTTP_204_NO_CONTENT)
+            return Response({'message': 'Friend request deleted'}, status=status.HTTP_200_OK)
         except Friendship.DoesNotExist:
             return Response({'error': 'Friend request not found'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
@@ -2304,7 +2304,7 @@ class FriendRequestRespondView(APIView):
                 return Response({'message': 'Friend request accepted'}, status=status.HTTP_200_OK)
             elif action == 'reject':
                 friendship.delete()
-                return Response({'message': 'Friend request rejected'}, status=status.HTTP_204_NO_CONTENT)
+                return Response({'message': 'Friend request rejected'}, status=status.HTTP_200_OK)
             else:
                 return Response({'error': 'Invalid action'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
@@ -2419,7 +2419,7 @@ class UnfriendView(APIView):
 
             if friendships.exists():
                 friendships.delete()
-                return Response({'message': 'Friend removed'}, status=status.HTTP_204_NO_CONTENT)
+                return Response({'message': 'Friend removed'}, status=status.HTTP_200_OK)
             else:
                 return Response({'error': 'Friendship not found'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
