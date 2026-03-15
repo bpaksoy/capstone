@@ -23,21 +23,28 @@ const LikeButton = ({ contentType, objectId, onLikeStatusChange, refetchComments
 
     const buttonClass = className || "underline decoration-solid rounded hover:bg-gray-300 p-2";
 
+    const renderContent = () => {
+        if (typeof children === 'function') {
+            return children({ isLiked, count, loading, error });
+        }
+        return children ? children : (isLiked ? 'Unlike' : 'Like');
+    };
+
     if (loading) return (
         <button type="button" disabled className={`${buttonClass} opacity-50 cursor-wait`}>
-            {children ? children : 'Like'}
+            {renderContent()}
         </button>
     );
 
     if (error) return (
         <button type="button" disabled className={`${buttonClass} opacity-50 cursor-not-allowed`}>
-            {children ? children : 'Like'}
+            {renderContent()}
         </button>
     );
 
     return (
         <button type="button" onClick={handleClick} className={buttonClass}>
-            {children ? children : (isLiked ? 'Unlike' : 'Like')}
+            {renderContent()}
         </button>
     );
 };

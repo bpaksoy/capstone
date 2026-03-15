@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { icons } from "../constants";
 import axios from 'axios';
-import { baseUrl } from '../shared';
+import { baseUrl, getApiUrl } from '../shared';
 
 import { useCurrentUser } from '../UserProvider/UserProvider';
 import { images } from "../constants";
@@ -89,7 +89,7 @@ function AddPostModal({ onAddPost, isOpen: externalIsOpen, onClose: externalOnCl
             }
             formData.append('category', category);
 
-            const response = await axios.post(`${baseUrl}api/posts/`, formData, { // Send FormData
+            const response = await axios.post(getApiUrl('api/posts/'), formData, { // Send FormData
                 headers: {
                     'Content-Type': 'multipart/form-data', // Important: Set the correct header
                     'Authorization': `Bearer ${accessToken}`,
@@ -125,7 +125,7 @@ function AddPostModal({ onAddPost, isOpen: externalIsOpen, onClose: externalOnCl
             >
                 <div className="flex items-center gap-3">
                     <img
-                        src={user?.image ? (user.image.startsWith('http') ? user.image : baseUrl + user.image) : images.profile}
+                        src={user?.image ? (user.image.startsWith('http') ? user.image : getApiUrl(user.image)) : images.profile}
                         alt={user?.username || "User"}
                         className="w-10 h-10 rounded-full object-cover border border-gray-100"
                         onError={(e) => { e.target.onerror = null; e.target.src = images.profile; }}
@@ -189,7 +189,7 @@ function AddPostModal({ onAddPost, isOpen: externalIsOpen, onClose: externalOnCl
                                     {/* User Info */}
                                     <div className="flex items-center gap-3 mb-4">
                                         <img
-                                            src={user?.image ? (user.image.startsWith('http') ? user.image : baseUrl + user.image) : images.profile}
+                                            src={user?.image ? (user.image.startsWith('http') ? user.image : getApiUrl(user.image)) : images.profile}
                                             alt={user?.username}
                                             className="h-10 w-10 rounded-full object-cover"
                                             onError={(e) => { e.target.onerror = null; e.target.src = images.profile; }}

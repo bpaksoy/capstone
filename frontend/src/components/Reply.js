@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import AddReplyModal from '../utils/AddReplyModal';
 import axios from 'axios';
-import { baseUrl } from '../shared';
+import { baseUrl, getApiUrl } from '../shared';
 import { images } from '../constants';
 import { useCurrentUser } from '../UserProvider/UserProvider';
+import LikeButton from '../utils/LikeButton';
 
 function Reply({ commentId, lastUpdatedReply, onAddPost, user: userProp }) {
     // Always get user from context for reliability
@@ -16,10 +17,10 @@ function Reply({ commentId, lastUpdatedReply, onAddPost, user: userProp }) {
     const [lastUpdated, setLastUpdated] = useState(null);
     const [showReplies, setShowReplies] = useState(false);
 
-    const updateReplies = (time) => {
+    const updateReplies = useCallback((time) => {
         setLastUpdated(time);
         onAddPost(false); //update the number of comments
-    };
+    }, [onAddPost]);
 
     useEffect(() => {
         const fetchReplies = async () => {
@@ -27,7 +28,7 @@ function Reply({ commentId, lastUpdatedReply, onAddPost, user: userProp }) {
                 const token = localStorage.getItem('access');
                 const headers = (token && token !== 'null') ? { Authorization: `Bearer ${token}` } : {};
                 const response = await axios.get(
-                    `${baseUrl}api/comments/${commentId}/replies/`,
+                    getApiUrl(`api/comments/${commentId}/replies/`),
                     { headers }
                 );
                 setReplies(Array.isArray(response.data) ? response.data : []);
@@ -74,7 +75,7 @@ function Reply({ commentId, lastUpdatedReply, onAddPost, user: userProp }) {
                                     const replyAuthorImage = reply.author?.image;
                                     if (!replyAuthorImage) return images.avatar;
                                     if (replyAuthorImage.startsWith('http')) return replyAuthorImage;
-                                    return `${baseUrl}${replyAuthorImage.startsWith('/') ? replyAuthorImage.substring(1) : replyAuthorImage}`;
+                                    return getApiUrl(replyAuthorImage);
                                 })()} alt="User Avatar" className="w-5 h-5 rounded-full mt-1 object-cover opacity-70" />
                                 <div className="flex-1">
                                     <div className="bg-gray-50 px-3 py-2 rounded-2xl inline-block">
@@ -82,6 +83,17 @@ function Reply({ commentId, lastUpdatedReply, onAddPost, user: userProp }) {
                                         <p className="text-gray-700 text-sm whitespace-pre-wrap">{reply.content}</p>
                                     </div>
                                     <div className="flex items-center gap-4 mt-0.5 px-1">
+                                        <LikeButton
+                                            contentType="reply"
+                                            objectId={reply.id}
+                                            className="text-[10px] font-bold text-gray-400 hover:text-primary transition-colors uppercase tracking-tight"
+                                        >
+                                            {({ isLiked }) => (
+                                                <span className={isLiked ? 'text-primary' : ''}>
+                                                    {isLiked ? 'Liked' : 'Like'}
+                                                </span>
+                                            )}
+                                        </LikeButton>
                                         {/* Reply-to-reply button */}
                                         {user && <AddReplyModal commentId={commentId} onAddReply={updateReplies} />}
                                     </div>

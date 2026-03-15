@@ -162,6 +162,7 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ('id', 'post', 'author', 'content', 'created_at',
                   'updated_at', 'replies_count', 'likes_count')
+        read_only_fields = ('post',)
 
     def get_replies_count(self, obj):
         return obj.replies.count()

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
-import { baseUrl } from '../shared';
+import { baseUrl, getApiUrl } from '../shared';
 import { useUser, useAuth } from '@clerk/clerk-react';
 
 const UserContext = createContext();
@@ -36,7 +36,7 @@ export const UserProvider = ({ children }) => {
     useEffect(() => {
         const token = initialToken.current;
         if (token) {
-            axios.get(`${baseUrl}api/user/`, {
+            axios.get(getApiUrl('api/user/'), {
                 headers: { Authorization: `Bearer ${token}` },
             }).then(res => {
                 setUser(res.data);
@@ -62,14 +62,14 @@ export const UserProvider = ({ children }) => {
                 setLoading(true);
                 try {
                     const token = await getTokenRef.current();
-                    const response = await axios.post(`${baseUrl}api/login/clerk/`, { token });
+                    const response = await axios.post(getApiUrl('api/login/clerk/'), { token });
 
                     if (response.data.access) {
                         localStorage.setItem('access', response.data.access);
                         localStorage.setItem('refresh', response.data.refresh);
                         setLoggedIn(true);
 
-                        const userResponse = await axios.get(`${baseUrl}api/user/`, {
+                        const userResponse = await axios.get(getApiUrl('api/user/'), {
                             headers: { Authorization: `Bearer ${response.data.access}` },
                         });
                         setUser(userResponse.data);
@@ -156,7 +156,7 @@ export const UserProvider = ({ children }) => {
     const fetchUser = useCallback(async () => {
         const token = localStorage.getItem('access');
         if (token) {
-            const response = await axios.get(`${baseUrl}api/user/`, {
+            const response = await axios.get(getApiUrl('api/user/'), {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setUser(response.data);
@@ -167,7 +167,7 @@ export const UserProvider = ({ children }) => {
         const token = localStorage.getItem('access');
         if (!token) return;
         try {
-            const response = await axios.get(`${baseUrl}api/friend-requests/`, {
+            const response = await axios.get(getApiUrl('api/friend-requests/'), {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setFriendRequests(response.data);
@@ -182,8 +182,8 @@ export const UserProvider = ({ children }) => {
         try {
             const config = { headers: { Authorization: `Bearer ${token}` } };
             const [notifsRes, countRes] = await Promise.all([
-                axios.get(`${baseUrl}api/notifications/`, config),
-                axios.get(`${baseUrl}api/notifications/count/`, config)
+                axios.get(getApiUrl('api/notifications/'), config),
+                axios.get(getApiUrl('api/notifications/count/'), config)
             ]);
 
             setNotifications(notifsRes.data);

@@ -6,7 +6,7 @@ import EditDeleteModal from '../utils/EditDeleteModal';
 import LikeButton from '../utils/LikeButton';
 import timeSince from '../utils/TimeStamp';
 import { useCurrentUser } from '../UserProvider/UserProvider';
-import { baseUrl } from '../shared';
+import { baseUrl, getApiUrl } from '../shared';
 import axios from 'axios';
 import EditPostModal from '../utils/EditPostModal';
 import ShareModal from '../utils/ShareModal';
@@ -111,10 +111,10 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
 
     const [lastUpdatedComment, setLastUpdatedComment] = useState(null);
 
-    const updateComments = (time) => {
+    const updateComments = useCallback((time) => {
         setLastUpdatedComment(time);
         onAddPost(false); // Update the post list when a comment is added
-    };
+    }, [onAddPost]);
 
 
 
@@ -238,7 +238,7 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
                                         const postAuthorImage = post.author?.image;
                                         if (!postAuthorImage) return images.profile;
                                         if (postAuthorImage.startsWith('http')) return postAuthorImage;
-                                        return `${baseUrl}${postAuthorImage.startsWith('/') ? postAuthorImage.substring(1) : postAuthorImage}`;
+                                        return getApiUrl(postAuthorImage);
                                     })()}
                                         alt="User Avatar"
                                         className="w-10 h-10 rounded-full object-cover border border-gray-100 shadow-sm"

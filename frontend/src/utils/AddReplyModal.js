@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { baseUrl } from '../shared';
+import { baseUrl, getApiUrl } from '../shared';
 import usePosts from '../hooks/FetchPosts';
 
 function AddReplyModal({ commentId, onAddReply }) {
@@ -17,7 +17,7 @@ function AddReplyModal({ commentId, onAddReply }) {
         const accessToken = localStorage.getItem('access');
 
         try {
-            await axios.post(`${baseUrl}api/comments/${commentId}/replies/create/`, {
+            await axios.post(getApiUrl(`api/comments/${commentId}/replies/create/`), {
                 content,
             }, {
                 headers: {

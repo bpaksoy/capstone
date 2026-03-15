@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import PostList from '../components/PostList';
 import PostModal from '../utils/PostModal';
 import { useCurrentUser } from '../UserProvider/UserProvider';
-import { baseUrl } from '../shared';
+import { baseUrl, getApiUrl } from '../shared';
 import axios from 'axios';
 import Loader from '../components/Loader';
 
@@ -32,15 +32,10 @@ function Trending() {
     const [page, setPage] = useState(1);
     const [hasNext, setHasNext] = useState(false);
 
-    // URL helper to ensure no double slashes
-    const getApiUrl = (path) => {
-        const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-        const cleanPath = path.startsWith('/') ? path : `/${path}`;
-        return `${cleanBase}${cleanPath}`;
-    };
+
 
     // Fetch posts (with optional category filter)
-    const fetchPosts = async (category = 'all', isBackground = false, pageNum = 1) => {
+    const fetchPosts = useCallback(async (category = 'all', isBackground = false, pageNum = 1) => {
         if (!isBackground && pageNum === 1) {
             setPostsLoading(true);
         }
@@ -52,7 +47,7 @@ function Trending() {
             const params = new URLSearchParams();
             if (category && category !== 'all') params.append('category', category);
             params.append('page', pageNum);
-            params.append('page_size', 10);
+            params.append('page_size', 20);
 
             const url = getApiUrl(`api/posts/?${params.toString()}`);
             const response = await axios.get(url, { headers });
@@ -74,7 +69,7 @@ function Trending() {
                 setPostsLoading(false);
             }
         }
-    };
+    }, [baseUrl]); // baseUrl is stable as it's defined outside or in shared.js
 
     useEffect(() => {
         fetchPosts(activeCategory, false, 1);
@@ -99,12 +94,12 @@ function Trending() {
         fetchNews();
     }, []);
 
-    const handleAddPost = (scrollToTop = true) => {
+    const handleAddPost = useCallback((scrollToTop = true) => {
         fetchPosts(activeCategory, !scrollToTop, 1);
         if (scrollToTop) {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
-    };
+    }, [activeCategory, fetchPosts]);
 
     const handleOpenPostModal = (content = '') => {
         setPostModalInitialContent(content);

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { baseUrl as globalBaseUrl } from '../shared';
+import { baseUrl as globalBaseUrl, getApiUrl } from '../shared';
 import { useCurrentUser } from '../UserProvider/UserProvider';
 
 const useLike = (contentType, objectId, token, refetchComments) => {
@@ -15,13 +15,13 @@ const useLike = (contentType, objectId, token, refetchComments) => {
     const [isLiked, setIsLiked] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const apiBaseUrl = globalBaseUrl + 'api/';
+
 
     const checkLike = async () => {
         if (user?.id) { //Only run if user.id is available
             try {
                 setLoading(true);
-                const response = await axios.get(`${apiBaseUrl}likes/`, {
+                const response = await axios.get(getApiUrl('api/likes/'), {
                     params: {
                         content_type: contentType,
                         object_id: objectId,
@@ -48,7 +48,7 @@ const useLike = (contentType, objectId, token, refetchComments) => {
     const handleLike = async () => {
         try {
             setLoading(true);
-            await axios.post(`${apiBaseUrl}likes/create/`, { content_type: contentType, object_id: objectId }, {
+            await axios.post(getApiUrl('api/likes/create/'), { content_type: contentType, object_id: objectId }, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -68,7 +68,7 @@ const useLike = (contentType, objectId, token, refetchComments) => {
     const handleUnlike = async () => {
         try {
             setLoading(true);
-            const response = await axios.get(`${apiBaseUrl}likes/`, {
+            const response = await axios.get(getApiUrl('api/likes/'), {
                 params: {
                     content_type: contentType,
                     object_id: objectId,
@@ -86,7 +86,7 @@ const useLike = (contentType, objectId, token, refetchComments) => {
                 return;
             }
 
-            await axios.delete(`${apiBaseUrl}likes/${likeId}/`, {
+            await axios.delete(getApiUrl(`api/likes/${likeId}/`), {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },

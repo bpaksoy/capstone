@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { icons } from "../constants";
 import axios from 'axios';
-import { baseUrl } from '../shared';
+import { baseUrl, getApiUrl } from '../shared';
 import usePosts from '../hooks/FetchPosts';
 
 
@@ -18,7 +18,7 @@ function AddCommentModal({ postId, onAddComment }) {
         const accessToken = localStorage.getItem('access');
 
         try {
-            await axios.post(`${baseUrl}api/posts/${postId}/comments/`, {
+            await axios.post(getApiUrl(`api/posts/${postId}/comments/`), {
                 content,
             }, {
                 headers: {

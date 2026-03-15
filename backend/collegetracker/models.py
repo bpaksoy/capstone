@@ -306,6 +306,7 @@ class Reply(models.Model):
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    likes = GenericRelation('Like', related_query_name='replies')
 
     def __str__(self):
         return f"{self.author.username} replied to {self.comment}"

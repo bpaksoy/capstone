@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { images } from '../constants';
 import Reply from './Reply';
 import AddReplyModal from '../utils/AddReplyModal';
 import axios from 'axios';
-import { baseUrl } from '../shared';
+import { baseUrl, getApiUrl } from '../shared';
 import LikeButton from '../utils/LikeButton';
 import EditDeleteModal from '../utils/EditDeleteModal';
 import EditCommentModal from '../utils/EditCommentModal';
@@ -25,17 +25,17 @@ function Comment({ postId, lastUpdatedComment, onAddPost, user: userProp }) {
     const [loading, setLoading] = useState(true);
     const [visibleCount, setVisibleCount] = useState(10);
 
-    const updateLikeStatus = (commentId, isLiked) => {
+    const updateLikeStatus = useCallback((commentId, isLiked) => {
         setCommentLikes((prevCommentLikes) => ({ ...prevCommentLikes, [commentId]: isLiked }));
-        onAddPost(false); // Update the post list when a like status changes
-    };
+        // onAddPost(false); // Disabled global refresh to avoid loops, state is local
+    }, []);
 
 
     const refetchComments = async () => {
         try {
             const token = localStorage.getItem('access');
             const headers = token ? { Authorization: `Bearer ${token}` } : {};
-            const response = await axios.get(`${baseUrl}api/posts/${postId}/comments/`, {
+            const response = await axios.get(getApiUrl(`api/posts/${postId}/comments/`), {
                 headers: headers,
             });
             setComments(response.data);
@@ -50,7 +50,7 @@ function Comment({ postId, lastUpdatedComment, onAddPost, user: userProp }) {
             try {
                 const token = localStorage.getItem('access');
                 const headers = (token && token !== 'null') ? { Authorization: `Bearer ${token}` } : {};
-                const response = await axios.get(`${baseUrl}api/posts/${postId}/comments/`, {
+                const response = await axios.get(getApiUrl(`api/posts/${postId}/comments/`), {
                     headers: headers,
                 });
                 setComments(Array.isArray(response.data) ? response.data : []);
@@ -68,10 +68,10 @@ function Comment({ postId, lastUpdatedComment, onAddPost, user: userProp }) {
 
     const [lastUpdatedReply, setLastUpdatedReply] = useState(null);
 
-    const updateReplies = (time) => {
+    const updateReplies = useCallback((time) => {
         setLastUpdatedReply(time);
         onAddPost(false);
-    };
+    }, [onAddPost]);
 
     const handleOpenModal = (commentId) => {
         setModalIsOpen(commentId);
@@ -85,7 +85,7 @@ function Comment({ postId, lastUpdatedComment, onAddPost, user: userProp }) {
     const handleEditComment = async (commentId) => {
         console.log('Editing comment:', commentId);
         try {
-            const response = await axios.get(`${baseUrl}api/comments/${commentId}/`, {
+            const response = await axios.get(getApiUrl(`api/comments/${commentId}/`), {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('access')}`,
                 },
@@ -105,7 +105,7 @@ function Comment({ postId, lastUpdatedComment, onAddPost, user: userProp }) {
 
     const handleConfirmDelete = async () => {
         try {
-            await axios.delete(`${baseUrl}api/comments/${commentIdToDelete}/delete/`, {
+            await axios.delete(getApiUrl(`api/comments/${commentIdToDelete}/delete/`), {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('access')}`,
                 },
@@ -125,7 +125,19 @@ function Comment({ postId, lastUpdatedComment, onAddPost, user: userProp }) {
     }
 
     if (error) {
-        return <div>Error loading comments: {error.message}</div>;
+        return (
+            <div className="space-y-4">
+                <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm border border-red-100 flex items-center justify-between">
+                    <span>Failed to load comments.</span>
+                    <button 
+                        onClick={() => { setError(null); refetchComments(); }}
+                        className="px-3 py-1 bg-white border border-red-200 rounded-md hover:bg-red-50 transition-colors font-medium"
+                    >
+                        Retry
+                    </button>
+                </div>
+            </div>
+        );
     }
 
 
@@ -145,7 +157,7 @@ function Comment({ postId, lastUpdatedComment, onAddPost, user: userProp }) {
                                                     const authorImage = comment.author?.image;
                                                     if (!authorImage) return images.avatar;
                                                     if (authorImage.startsWith('http')) return authorImage;
-                                                    return `${baseUrl}${authorImage.startsWith('/') ? authorImage.substring(1) : authorImage}`;
+                                                    return getApiUrl(authorImage);
                                                 })()} alt="User Avatar" className="w-6 h-6 rounded-full mt-1 ring-2 ring-primary/30 bg-primary/5 p-0.5 object-cover opacity-80" />
                                                 <div>
                                                     <div className="bg-white px-4 py-2 rounded-2xl shadow-sm inline-block">

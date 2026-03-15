@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { baseUrl } from '../shared';
+import { baseUrl, getApiUrl } from '../shared';
 import axios from 'axios';
 import { useCurrentUser } from '../UserProvider/UserProvider';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
@@ -59,7 +59,7 @@ const NewsFeed = () => {
             try {
                 const token = localStorage.getItem('access');
                 const headers = token ? { Authorization: `Bearer ${token}` } : {};
-                const response = await axios.get(`${baseUrl}api/news/`, {
+                const response = await axios.get(getApiUrl('api/news/'), {
                     headers: headers
                 });
                 if (response.status === 404) {
