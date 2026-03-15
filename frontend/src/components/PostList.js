@@ -225,6 +225,9 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
                                 <div className="flex items-center space-x-3 cursor-pointer" onClick={() => {
                                     if (!user) {
                                         navigate('/login');
+                                    } else if (!post.author) {
+                                        // System posts don't have a profile to navigate to
+                                        return;
                                     } else if (post.author.id !== user.id) {
                                         handleNavigateToProfile(post.author.id)
                                     } else {
@@ -232,14 +235,14 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
                                     }
                                 }}>
                                     <img
-                                        src={post.author.image ? (post.author.image.startsWith('http') ? post.author.image : `${baseUrl}${post.author.image.startsWith('/') ? post.author.image.substring(1) : post.author.image}`) : images.profile}
+                                        src={post.author?.image ? (post.author.image.startsWith('http') ? post.author.image : `${baseUrl}${post.author.image.startsWith('/') ? post.author.image.substring(1) : post.author.image}`) : images.profile}
                                         alt="User Avatar"
                                         className="w-10 h-10 rounded-full object-cover border border-gray-100 shadow-sm"
                                     />
                                     <div>
                                         <div className="flex items-center gap-1.5">
-                                            <p className="text-gray-900 font-semibold text-sm hover:underline">{post.author.username}</p>
-                                            {post.author.role === 'college_staff' && post.author.is_verified && (
+                                            <p className="text-gray-900 font-semibold text-sm hover:underline">{post.author?.username || 'Official'}</p>
+                                            {post.author?.role === 'college_staff' && post.author?.is_verified && (
                                                 <span className="flex items-center gap-0.5 bg-teal-50 text-primary text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-teal-100 uppercase tracking-tighter">
                                                     <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24"><path d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 12c0 3.839 2.302 7.144 5.575 8.556a12.017 12.017 0 0 0 12.85 0c3.273-1.412 5.575-4.717 5.575-8.556 0-3.14-1.382-5.957-3.598-7.882M12 21V10.332" /></svg>
                                                     Verified Institution
@@ -263,7 +266,7 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
                                     </div>
                                 </div>
                                 <div className="text-gray-400 cursor-pointer relative">
-                                    {post.author.id === user?.id && (
+                                    {post.author?.id === user?.id && user && (
                                         <button type="button" onClick={(e) => { e.stopPropagation(); handleOpenModal(post.id); }} className="hover:bg-gray-100 rounded-full p-2 transition-colors">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                 <circle cx="12" cy="7" r="1" />

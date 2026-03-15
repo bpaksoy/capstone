@@ -260,7 +260,8 @@ class Post(models.Model):
     #     return self.author.username
 
     def __str__(self):
-        return f"{self.id}, {self.title}, {self.content}, {self.created_at}, {self.author}, {self.author.username}"
+        author_name = self.author.username if self.author else "Official"
+        return f"{self.id}, {self.title}, {self.content[:20]}, {self.created_at}, {author_name}"
 
     class Meta:
         ordering = ['-created_at']

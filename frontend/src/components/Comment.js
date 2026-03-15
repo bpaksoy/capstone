@@ -134,12 +134,12 @@ function Comment({ postId, lastUpdatedComment, onAddPost, user }) {
                                     <div className="pb-3">
                                         <div className="flex justify-between items-start">
                                             <div className="flex items-start space-x-3">
-                                                <img src={comment.author.image ? (comment.author.image.startsWith('http') ? comment.author.image : `${baseUrl}${comment.author.image.startsWith('/') ? comment.author.image.substring(1) : comment.author.image}`) : images.avatar} alt="User Avatar" className="w-6 h-6 rounded-full mt-1 ring-2 ring-primary/30 bg-primary/5 p-0.5 object-cover opacity-80" />
+                                                <img src={comment.author?.image ? (comment.author.image.startsWith('http') ? comment.author.image : `${baseUrl}${comment.author.image.startsWith('/') ? comment.author.image.substring(1) : comment.author.image}`) : images.avatar} alt="User Avatar" className="w-6 h-6 rounded-full mt-1 ring-2 ring-primary/30 bg-primary/5 p-0.5 object-cover opacity-80" />
                                                 <div>
                                                     <div className="bg-white px-4 py-2 rounded-2xl shadow-sm inline-block">
                                                         <div className="flex items-center gap-1.5 mb-0.5">
-                                                            <p className="text-gray-900 font-semibold text-sm">{comment.author.username}</p>
-                                                            {comment.author.role === 'college_staff' && comment.author.is_verified && (
+                                                            <p className="text-gray-900 font-semibold text-sm">{comment.author?.username || 'Official'}</p>
+                                                            {comment.author?.role === 'college_staff' && comment.author?.is_verified && (
                                                                 <span className="flex items-center gap-0.5 text-primary text-[8px] font-extrabold uppercase bg-teal-50 px-1 py-0.25 rounded border border-teal-100">
                                                                     Verified
                                                                 </span>
@@ -165,7 +165,7 @@ function Comment({ postId, lastUpdatedComment, onAddPost, user }) {
 
                                             {/* Edit/Delete Menu */}
                                             <div className="text-gray-400 cursor-pointer relative mt-2">
-                                                {comment.author.id === user?.id && (
+                                                {comment.author?.id === user?.id && user && (
                                                     <button type="button" onClick={(e) => { e.stopPropagation(); handleOpenModal(comment.id); }} className="hover:bg-gray-200 rounded-full p-1 transition-colors">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                             <circle cx="12" cy="12" r="1" />
