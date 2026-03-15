@@ -3,10 +3,10 @@ import json
 import jwt
 import difflib
 from goose3 import Goose
-from .models import User, College, Comment, Post, Bookmark, Reply, Like, Friendship, SmartCollege, CollegeProgram, Article, Notification, ChatMessage, DirectMessage, LeadStatus, Review
+from .models import User, College, Comment, Post, Bookmark, Reply, Like, Friendship, SmartCollege, CollegeProgram, Article, Notification, ChatMessage, DirectMessage, LeadStatus, Review, Service, Meeting
 from django.http import JsonResponse, Http404
 from django.db import IntegrityError
-from .serializers import CollegeSerializer, UserSerializer, UploadFileSerializer, LoginSerializer, CommentSerializer, PostSerializer, BookmarkSerializer, ReplySerializer, LikeSerializer, FriendshipSerializer, SmartCollegeSerializer, CollegeProgramSerializer, ArticleSerializer, NotificationSerializer, ChatMessageSerializer, LeadStatusSerializer, ReviewSerializer
+from .serializers import CollegeSerializer, UserSerializer, UploadFileSerializer, LoginSerializer, CommentSerializer, PostSerializer, BookmarkSerializer, ReplySerializer, LikeSerializer, FriendshipSerializer, SmartCollegeSerializer, CollegeProgramSerializer, ArticleSerializer, NotificationSerializer, ChatMessageSerializer, LeadStatusSerializer, ReviewSerializer, ServiceSerializer, MeetingSerializer
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -3367,3 +3367,49 @@ class CreateReviewView(APIView):
 
         serializer = ReviewSerializer(review)
         return Response(serializer.data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+
+
+class CreateServiceView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if request.user.role != 'advisor':
+            return Response({'error': 'Only advisors can create services'}, status=status.HTTP_403_FORBIDDEN)
+        
+        serializer = ServiceSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(advisor=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class BookMeetingView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        service_id = request.data.get('service_id')
+        scheduled_at = request.data.get('scheduled_at')
+
+        try:
+            service = Service.objects.get(pk=service_id)
+        except Service.DoesNotExist:
+            return Response({'error': 'Service not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        meeting = Meeting.objects.create(
+            advisor=service.advisor,
+            student=request.user,
+            service=service,
+            scheduled_at=scheduled_at
+        )
+        
+        # Automatically create a notification for the advisor
+        Notification.objects.create(
+            recipient=service.advisor,
+            sender=request.user,
+            notification_type='accepted_request', # Re-using type for demo simplicity
+            content_type=ContentType.objects.get_for_model(Meeting),
+            object_id=meeting.id
+        )
+
+        serializer = MeetingSerializer(meeting)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)

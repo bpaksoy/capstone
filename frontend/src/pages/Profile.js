@@ -4,6 +4,7 @@ import AddInfoModal from '../utils/AddInfoModal';
 import AddBioModal from '../utils/AddBioModal';
 import { useCurrentUser } from '../UserProvider/UserProvider';
 import { icons, images } from '../constants';
+import ManageServicesModal from '../utils/ManageServicesModal';
 import { baseUrl } from '../shared';
 import useFetch from '../hooks/FetchData';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -22,6 +23,7 @@ const Profile = () => {
     const otherUser = location.state?.otherUser;
     const [pendingRequests, setPendingRequests] = useState([]);
     const [activeTab, setActiveTab] = useState('about');
+    const [isServicesModalOpen, setIsServicesModalOpen] = useState(false);
     const tabsRef = useRef(null);
 
 
@@ -452,12 +454,27 @@ const Profile = () => {
                                                                 Live & Active
                                                             </span>
                                                         </div>
+                                                        <div className="ml-auto">
+                                                            <button 
+                                                                onClick={() => setIsServicesModalOpen(true)}
+                                                                className="bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm hover:shadow-lg transition-all active:scale-95"
+                                                            >
+                                                                Manage Packages
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                  </div>
                                             </div>
                                         )}
                                     </div>
                                 )}
+
+                                <ManageServicesModal 
+                                    isOpen={isServicesModalOpen}
+                                    onClose={() => setIsServicesModalOpen(false)}
+                                    services={user?.services}
+                                    onUpdate={fetchUser}
+                                />
 
                                 {activeTab === 'posts' && (
                                     <div className="w-full max-w-2xl mx-auto -mx-4 sm:mx-auto animate-in fade-in duration-300">

@@ -28,6 +28,7 @@ import CollegePortal from "./pages/CollegePortal";
 import DirectMessages from "./pages/DirectMessages";
 import StaffVerification from "./pages/StaffVerification";
 import OnboardingModal from "./components/OnboardingModal";
+import VideoCall from "./pages/VideoCall";
 
 import ScrollToTopOnNavigate from "./utils/ScrollToTopOnNavigate";
 
@@ -62,6 +63,7 @@ const App = () => {
             <Route path="/settings" element={<Settings />} />
             <Route path="/college/portal" element={<CollegePortal />} />
             <Route path="/messages" element={<DirectMessages />} />
+            <Route path="/video/:roomName" element={<VideoCall />} />
             <Route path="/404" element={<NotFound />} />
             <Route path="*" element={<NotFound />} />
           </Route>

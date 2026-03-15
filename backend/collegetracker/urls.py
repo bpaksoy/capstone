@@ -155,6 +155,8 @@ urlpatterns = [
     path('api/advisors/', views.AdvisorListView.as_view(), name='advisor-list'),
     path('api/advisors/<int:advisor_id>/reviews/', views.AdvisorReviewListView.as_view(), name='advisor-reviews'),
     path('api/reviews/create/', views.CreateReviewView.as_view(), name='review-create'),
+    path('api/services/create/', views.CreateServiceView.as_view(), name='service-create'),
+    path('api/meetings/book/', views.BookMeetingView.as_view(), name='meeting-book'),
     path('upload4/', views.UploadApiView4.as_view(), name='upload_file4'),
 ]
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { baseUrl } from '../shared';
 import { useCurrentUser } from '../UserProvider/UserProvider';
-import { ChatBubbleLeftRightIcon, PaperAirplaneIcon, UsersIcon, PaperClipIcon, ArrowDownTrayIcon, DocumentIcon, XMarkIcon, PencilIcon, PlusIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { ChatBubbleLeftRightIcon, PaperAirplaneIcon, UsersIcon, PaperClipIcon, ArrowDownTrayIcon, DocumentIcon, XMarkIcon, PencilIcon, PlusIcon, ArrowLeftIcon, VideoCameraIcon } from '@heroicons/react/24/outline';
 import { Link, useLocation } from 'react-router-dom';
 import NewChatModal from '../components/NewChatModal';
 
@@ -318,6 +318,29 @@ const DirectMessages = () => {
         }
     };
 
+    const handleStartVideoCall = async () => {
+        if (!selectedUser) return;
+        
+        const roomName = `wormie-${Math.random().toString(36).substring(2, 12)}`;
+        const videoMessage = `WORMIE_VIDEO_CALL:${roomName}`;
+        
+        const formData = new FormData();
+        formData.append('recipient_id', selectedUser.id);
+        formData.append('content', videoMessage);
+
+        try {
+            const token = localStorage.getItem('access');
+            await axios.post(`${baseUrl}api/messages/send/`, formData, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            await fetchChatMessages(selectedUser.id);
+            // Also open for current user
+            window.open(`/video/${roomName}`, '_blank');
+        } catch (err) {
+            console.error("Error starting video call:", err);
+        }
+    };
+
     const renderAttachment = (m) => {
         if (!m.attachment_url) return null;
 
@@ -451,6 +474,16 @@ const DirectMessages = () => {
                                             <Link to={`/profile/${selectedUser.id}`} className="text-[10px] text-primary font-bold uppercase hover:underline">View Profile</Link>
                                         </div>
                                     </div>
+
+                                    <div className="flex items-center gap-2">
+                                        <button 
+                                            onClick={handleStartVideoCall}
+                                            className="p-2.5 bg-teal-50 text-primary hover:bg-primary hover:text-white rounded-xl transition-all shadow-sm"
+                                            title="Start Video Consultation"
+                                        >
+                                            <VideoCameraIcon className="w-5 h-5" />
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <div className="flex-auto min-h-0 overflow-y-auto p-4 md:p-6 space-y-4 custom-scrollbar bg-gray-50/10">
@@ -475,6 +508,27 @@ const DirectMessages = () => {
                                                                 <button onClick={handleCancelEdit} className="text-white/70 hover:text-white">Cancel</button>
                                                                 <button onClick={(e) => handleEditSubmit(e, m.id)} className="bg-white text-primary px-2 py-1 rounded">Save</button>
                                                             </div>
+                                                        </div>
+                                                    ) : m.content && m.content.startsWith('WORMIE_VIDEO_CALL:') ? (
+                                                        <div className="flex flex-col gap-3 py-2 min-w-[240px]">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="p-2 bg-white/20 rounded-lg">
+                                                                    <VideoCameraIcon className="w-6 h-6 text-white" />
+                                                                </div>
+                                                                <div>
+                                                                    <p className="font-bold text-sm">Video Consultation</p>
+                                                                    <p className="text-[10px] opacity-80">Join the embedded video session</p>
+                                                                </div>
+                                                            </div>
+                                                            <Link 
+                                                                to={`/video/${m.content.split(':')[1]}`}
+                                                                target="_blank"
+                                                                className={`w-full py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all ${
+                                                                    isMine ? 'bg-white text-primary hover:bg-gray-50' : 'bg-primary text-white hover:bg-teal-700'
+                                                                }`}
+                                                            >
+                                                                Join Call Now
+                                                            </Link>
                                                         </div>
                                                     ) : (
                                                         <>

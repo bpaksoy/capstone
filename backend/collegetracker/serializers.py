@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import College
 from django.contrib.auth import authenticate
-from .models import Comment, Post, Bookmark, Reply, User, Like, Friendship, SmartCollege, CollegeProgram, Article, Notification, ChatMessage, LeadStatus, Review
+from .models import Comment, Post, Bookmark, Reply, User, Like, Friendship, SmartCollege, CollegeProgram, Article, Notification, ChatMessage, LeadStatus, Review, Service, Meeting
 from django.contrib.contenttypes.models import ContentType
 from rest_framework.validators import UniqueTogetherValidator
 
@@ -42,16 +42,22 @@ class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 
     reviews_count = serializers.SerializerMethodField()
+    services = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = ('id', 'username', 'email', 'password', 'first_name', 'last_name',
                   'city', 'state', 'country', 'major', 'education', 'gpa', 'sat_score', 
                   'bio', 'image', 'friends', 'is_private', 'role', 'associated_college', 'is_verified', 'has_selected_role',
-                  'hourly_rate', 'specialization', 'advisor_bio', 'rating', 'reviews_count')
+                  'hourly_rate', 'specialization', 'advisor_bio', 'rating', 'reviews_count', 'services')
 
     def get_reviews_count(self, obj):
         return obj.reviews_received.count()
+
+    def get_services(self, obj):
+        if obj.role == 'advisor':
+            return ServiceSerializer(obj.services.all(), many=True).data
+        return []
 
     def create(self, validated_data):
         password = validated_data.pop('password', None)
@@ -231,4 +237,21 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = '__all__'
+
+
+class ServiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Service
+        fields = '__all__'
+
+
+class MeetingSerializer(serializers.ModelSerializer):
+    advisor = UserSerializer(read_only=True)
+    student = UserSerializer(read_only=True)
+    service = ServiceSerializer(read_only=True)
+
+    class Meta:
+        model = Meeting
+        fields = '__all__'
+
 
