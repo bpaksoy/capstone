@@ -86,7 +86,7 @@ class College(models.Model):
     ft_faculty_rate = models.FloatField(null=True, blank=True)
     enrollment_all = models.IntegerField(null=True, blank=True)
     UNITID = models.CharField(
-        max_length=255, unique=True, null=True, blank=True)
+        max_length=255, unique=True, null=True, blank=True, db_index=True)
     application_deadline = models.CharField(max_length=100, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     image = models.ImageField(upload_to='college_images/', blank=True, null=True)
@@ -109,6 +109,10 @@ class College(models.Model):
     retention_rate = models.FloatField(null=True, blank=True)
     student_faculty_ratio = models.IntegerField(null=True, blank=True)
     loan_rate = models.FloatField(null=True, blank=True)
+    
+    # --- 2026 Scorecard Updates ---
+    median_earnings_4yr = models.IntegerField(null=True, blank=True, help_text="Median earnings 4 years after graduation")
+    lower_earnings_indicator = models.BooleanField(default=False, help_text="Flag for institutions where grads earn less than HS grads")
 
     # --- New Metadata from IPEDS ---
     carnegie_classification = models.IntegerField(null=True, blank=True)
@@ -185,10 +189,14 @@ class SmartCollege(models.Model):
 class CollegeProgram(models.Model):
     college = models.ForeignKey(
         College, on_delete=models.CASCADE, related_name='programs')
-    cipcode = models.CharField(max_length=20)
+    cipcode = models.CharField(max_length=20, db_index=True)
     cipdesc = models.TextField()
-    creddesc = models.CharField(max_length=255, null=True, blank=True)
-    UNITID = models.CharField(max_length=255, null=True, blank=True)
+    creddesc = models.CharField(max_length=255, null=True, blank=True, db_index=True)
+    UNITID = models.CharField(max_length=255, null=True, blank=True, db_index=True)
+    
+    # --- 2026 Scorecard Updates ---
+    median_earnings = models.IntegerField(null=True, blank=True, help_text="Median earnings for this program 4 years after graduation")
+    national_median = models.IntegerField(null=True, blank=True, help_text="National median earnings for this field of study")
 
     def __str__(self):
         return f"{self.college.name} - {self.cipdesc}"

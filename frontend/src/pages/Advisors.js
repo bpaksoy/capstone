@@ -69,25 +69,28 @@ const Advisors = () => {
             <ScrollToTop />
             <div className="bg-[#f8fafc] min-h-screen pt-24 pb-20">
                 {/* Hero Section */}
-                <div className="max-w-7xl mx-auto px-6 mb-12">
-                    <div className="bg-gradient-to-br from-[#17717d] via-[#135f69] to-[#0d4b53] rounded-[3rem] p-8 md:p-12 text-white relative overflow-hidden shadow-2xl">
-                        <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-[100px] -mr-48 -mt-48"></div>
-                        <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#24adbf]/20 rounded-full blur-[100px] -ml-48 -mb-48"></div>
+                <div className="max-w-7xl mx-auto px-4 md:px-6 mb-8 md:mb-12">
+                    <div className="bg-gradient-to-br from-[#17717d] via-[#135f69] to-[#0d4b53] rounded-[2.5rem] md:rounded-[3rem] p-6 md:p-12 text-white relative shadow-2xl overflow-visible">
+                        {/* decorative background circles - clipped to rounded corners */}
+                        <div className="absolute inset-0 overflow-hidden rounded-[2.5rem] md:rounded-[3rem] pointer-events-none">
+                            <div className="absolute top-0 right-0 w-64 md:w-96 h-64 md:h-96 bg-white/10 rounded-full blur-[80px] md:blur-[100px] -mr-32 md:-mr-48 -mt-32 md:-mt-48"></div>
+                            <div className="absolute bottom-0 left-0 w-64 md:w-96 h-64 md:h-96 bg-[#24adbf]/20 rounded-full blur-[80px] md:blur-[100px] -ml-32 md:-ml-48 -mb-32 md:-mb-48"></div>
+                        </div>
                         
                         <div className="relative z-10 max-w-2xl">
-                            <div className="flex items-center gap-2 mb-6">
-                                <div className="p-2 bg-white/10 rounded-xl backdrop-blur-md">
-                                    <SparklesIcon className="w-5 h-5 text-purple-400" />
+                            <div className="flex items-center gap-2 mb-4 md:mb-6">
+                                <div className="p-1.5 md:p-2 bg-white/10 rounded-xl backdrop-blur-md">
+                                    <SparklesIcon className="w-4 h-4 md:w-5 md:h-5 text-purple" />
                                 </div>
-                                <span className="text-sm font-bold tracking-widest uppercase text-white/50">Wormie Advisor Marketplace</span>
+                                <span className="text-xs md:text-sm font-bold tracking-widest uppercase text-white/50">Wormie Advisor Marketplace</span>
                             </div>
-                            <h1 className="text-4xl md:text-6xl font-black mb-6 tracking-tight leading-[1.1]">
-                                Find Your Perfect <br />
+                            <h1 className="text-3xl md:text-6xl font-black mb-4 md:mb-6 tracking-tight leading-[1.1]">
+                                Find Your Perfect <br className="hidden md:block" />
                                 <span className="bg-gradient-to-r from-white via-[#aaf0d1] to-white bg-clip-text text-transparent drop-shadow-md">
                                     Admissions Advisor
                                 </span>
                             </h1>
-                            <p className="text-xl text-white font-medium leading-relaxed mb-8 max-w-xl">
+                            <p className="text-lg md:text-xl text-white font-medium leading-relaxed mb-6 md:mb-8 max-w-xl">
                                 Connect with verified experts who can help you navigate college applications, 
                                 financial aid, and essay polishing. Personalized guidance starts here.
                             </p>
@@ -95,26 +98,26 @@ const Advisors = () => {
                             {/* Search Bar */}
                             <div className="flex flex-col md:flex-row gap-4">
                                 <div className="flex-1 relative group">
-                                    <MagnifyingGlassIcon className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-purple-400" />
+                                    <MagnifyingGlassIcon className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-purple" />
                                     <input 
                                         type="text" 
                                         placeholder="Search by name..."
                                         value={search}
                                         onChange={(e) => setSearch(e.target.value)}
-                                        className="w-full bg-white/10 border border-white/20 rounded-2xl py-4 pl-12 pr-4 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all backdrop-blur-md"
+                                        className="w-full bg-white/10 border border-white/20 rounded-2xl py-4 pl-12 pr-4 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple/50 transition-all backdrop-blur-md"
                                     />
                                 </div>
                                 <div className="md:w-72 relative">
                                     <button 
                                         type="button"
                                         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                                        className={`w-full bg-white/10 border ${isDropdownOpen ? 'border-purple-400 ring-2 ring-purple-500/50' : 'border-white/20'} rounded-2xl py-4 pl-12 pr-10 text-white text-left transition-all backdrop-blur-md relative group`}
+                                        className={`w-full bg-white/10 border ${isDropdownOpen ? 'border-purple/50 ring-2 ring-purple/50' : 'border-white/20'} rounded-2xl py-4 pl-12 pr-10 text-white text-left transition-all backdrop-blur-md relative group focus:outline-none focus:ring-2 focus:ring-purple/50`}
                                     >
-                                        <AcademicCapIcon className={`w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${isDropdownOpen ? 'text-purple-400' : 'text-gray-400'}`} />
+                                        <AcademicCapIcon className={`w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${isDropdownOpen ? 'text-purple' : 'text-gray-400'}`} />
                                         <span className="block truncate">
                                             {specializations.find(s => s.value === specialization)?.label || "Select Specialization"}
                                         </span>
-                                        <div className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180 text-purple-400' : 'text-white/40'}`}>
+                                        <div className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180 text-purple' : 'text-white/40'}`}>
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
                                         </div>
                                     </button>
@@ -125,7 +128,7 @@ const Advisors = () => {
                                                 className="fixed inset-0 z-10" 
                                                 onClick={() => setIsDropdownOpen(false)}
                                             ></div>
-                                            <div className="absolute z-20 mt-2 w-full bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden backdrop-blur-xl py-2 animate-in fade-in zoom-in duration-200">
+                                            <div className="absolute z-[100] mt-3 w-full bg-white/95 backdrop-blur-2xl rounded-[1.5rem] md:rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-white/20 overflow-hidden py-2 animate-in fade-in slide-in-from-top-2 duration-300">
                                                 {specializations.map((spec) => (
                                                     <button
                                                         key={spec.value}
@@ -134,15 +137,18 @@ const Advisors = () => {
                                                             setSpecialization(spec.value);
                                                             setIsDropdownOpen(false);
                                                         }}
-                                                        className={`w-full text-left px-6 py-3 text-sm font-medium transition-all flex items-center justify-between
+                                                        className={`w-full text-left px-4 md:px-6 py-3 md:py-4 text-sm font-semibold transition-all flex items-center gap-3
                                                             ${specialization === spec.value 
-                                                                ? 'bg-purple-500 text-white' 
-                                                                : 'text-gray-700 hover:bg-purple-50 hover:text-purple-600'
+                                                                ? 'bg-purple text-white' 
+                                                                : 'text-gray-700 hover:bg-purple/10 hover:text-purple'
                                                             }`}
                                                     >
-                                                        {spec.label}
+                                                        <div className={`p-1.5 rounded-lg ${specialization === spec.value ? 'bg-white/20' : 'bg-gray-100 transition-colors'}`}>
+                                                            <AcademicCapIcon className="w-4 h-4" />
+                                                        </div>
+                                                        <span className="flex-1 truncate">{spec.label}</span>
                                                         {specialization === spec.value && (
-                                                            <div className="w-2 h-2 bg-white rounded-full"></div>
+                                                            <div className="w-1.5 h-1.5 bg-white rounded-full shadow-[0_0_8px_rgba(255,255,255,0.8)]"></div>
                                                         )}
                                                     </button>
                                                 ))}

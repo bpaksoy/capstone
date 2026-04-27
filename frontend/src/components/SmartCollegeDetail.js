@@ -219,6 +219,33 @@ const SmartCollegeDetail = () => {
                                     )}
                                 </div>
 
+                                {college.median_earnings_4yr && (
+                                    <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-6 mt-8">
+                                        <h3 className="text-xl font-bold text-emerald-900 mb-4 flex items-center gap-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                            </svg>
+                                            Outcome & Post-Grad Earnings
+                                        </h3>
+                                        <p className="text-emerald-700 text-sm mb-4">
+                                            Recent graduates four years after completing their degree at {college.name} reported the following median earnings.
+                                        </p>
+                                        <div className="text-4xl font-black text-emerald-600">
+                                            {formatter.format(college.median_earnings_4yr).replace(/(\.|,)00$/g, '')}
+                                        </div>
+                                        {college.lower_earnings_indicator && (
+                                            <div className="mt-4 flex items-start gap-2 bg-amber-50 border border-amber-100 p-3 rounded-xl">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-amber-600 mt-0.5">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                                                </svg>
+                                                <p className="text-xs text-amber-700 leading-tight">
+                                                    <strong>Transparency Note:</strong> Recent Scorecard data indicates that graduates from this institution may earn less than the typical high school graduate. 
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
                                 {announcements && announcements.length > 0 && (
                                     <div className="mt-8 pt-8 border-t border-gray-100">
                                         <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
@@ -261,15 +288,35 @@ const SmartCollegeDetail = () => {
                                 )}
 
                                 {programs && programs.length > 0 && (
-                                    <div className="mt-4">
-                                        <h3 className="text-xl font-semibold mb-2">Programs Offered</h3>
-                                        <ul>
+                                    <div className="mt-8">
+                                        <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                                            <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5" />
+                                                </svg>
+                                            </div>
+                                            Programs & Program-Specific Earnings
+                                        </h3>
+                                        <div className="space-y-3">
                                             {programs.map(program => (
-                                                <li key={program.id} className="ml-4 list-disc">
-                                                    {program.cipdesc}
-                                                </li>
+                                                <div key={program.id} className="bg-gray-50 rounded-xl p-4 flex justify-between items-center group hover:bg-violet-50 transition-colors border border-gray-100">
+                                                    <div>
+                                                        <span className="font-bold text-gray-900 block">{program.cipdesc}</span>
+                                                        <span className="text-[10px] text-gray-400 uppercase tracking-widest font-black">{program.creddesc}</span>
+                                                    </div>
+                                                    {program.median_earnings && (
+                                                        <div className="text-right">
+                                                            <span className="block font-black text-violet-600">{formatter.format(program.median_earnings).replace(/(\.|,)00$/g, '')}</span>
+                                                            {program.national_median && (
+                                                                <span className="text-[10px] text-gray-400 font-bold block">
+                                                                    Nat. Median: {formatter.format(program.national_median).replace(/(\.|,)00$/g, '')}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
                                             ))}
-                                        </ul>
+                                        </div>
                                     </div>
                                 )}
 

@@ -3,7 +3,7 @@ import pandas as pd
 from collegetracker.models import College
 
 class Command(BaseCommand):
-    help = 'Updates college data (deadlines, descriptions) from a CSV file. Expects columns: "name", "deadline", "description" (optional).'
+    help = 'Updates college data from a CSV file. Supports name-matching and updates fields like deadlines, descriptions, and 2026 Scorecard metrics.'
 
     def add_arguments(self, parser):
         parser.add_argument('csv_file', type=str, help='Path to the CSV file')
@@ -48,6 +48,21 @@ class Command(BaseCommand):
                     
                     if 'description' in df.columns and pd.notna(row['description']):
                         college.description = str(row['description'])
+                        changed = True
+
+                    # 2026 Scorecard Fields
+                    earnings_col = next((c for c in df.columns if c in ['earnings', 'median_earnings_4yr', 'md_earn_wne_4yr']), None)
+                    if earnings_col and pd.notna(row[earnings_col]):
+                        try:
+                            college.median_earnings_4yr = int(float(row[earnings_col]))
+                            changed = True
+                        except (ValueError, TypeError):
+                            pass
+
+                    indicator_col = next((c for c in df.columns if c in ['lower_earnings', 'lower_earnings_indicator', 'lower_earn_flag']), None)
+                    if indicator_col and pd.notna(row[indicator_col]):
+                        val = str(row[indicator_col]).lower().strip()
+                        college.lower_earnings_indicator = val in ['true', '1', 'yes', 't']
                         changed = True
                         
                     if changed:
