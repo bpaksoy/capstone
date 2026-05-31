@@ -279,7 +279,7 @@ function Trending() {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                     
                     {/* Left Column: Sticky Filters / Category Navigation (Desktop only) */}
-                    <div className="lg:col-span-3 sticky top-24 bg-white/5 backdrop-blur-md rounded-[2.5rem] border border-white/10 p-6 hidden lg:block">
+                    <div className="lg:col-span-3 sticky top-24 bg-white/5 backdrop-blur-md rounded-[2.5rem] border border-white/10 p-6 hidden lg:block lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto custom-scrollbar pr-2">
                         <div className="flex items-center gap-2 mb-4 pb-3 border-b border-white/10">
                             <span className="text-sm">⚡</span>
                             <span className="text-white font-black text-xs uppercase tracking-widest">Categories</span>
@@ -328,7 +328,7 @@ function Trending() {
                     </div>
 
                     {/* Right Column: Sponsored Content & Marketplace Ads */}
-                    <div className="col-span-1 lg:col-span-3 space-y-6 lg:sticky lg:top-24 w-full">
+                    <div className="col-span-1 lg:col-span-3 space-y-6 lg:sticky lg:top-24 w-full lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto custom-scrollbar pr-2">
                         
                         {/* Title / Section Header */}
                         <div className="flex items-center gap-2 mb-2 px-2">
