@@ -525,57 +525,95 @@ const AIAgent = () => {
                                     ? 'bg-[#A855F7] text-white rounded-tr-none shadow-lg shadow-purple-500/20'
                                     : 'bg-white text-gray-800 rounded-tl-none border border-gray-200 shadow-sm'
                                     }`}>
-                                    {chat.content.split('---').map((block, blockIndex) => {
-                                        const isDraft = blockIndex % 2 !== 0;
-                                        let draftContent = block;
-                                        let extractedTarget = null;
-
-                                        if (isDraft) {
-                                            const targetMatch = draftContent.match(/\[TARGET_ID:\s*([a-zA-Z0-9_]+)\|([^\]]+)\]/);
-                                            if (targetMatch) {
-                                                extractedTarget = { id: targetMatch[1], name: targetMatch[2].trim() };
-                                                draftContent = draftContent.replace(targetMatch[0], '').trim();
-                                            } else {
-                                                extractedTarget = activeTargetUser;
-                                            }
+                                    {(() => {
+                                        // Parse and extract any action tags
+                                        const actionRegex = /\[\[ACTION:\s*(\w+),\s*College:\s*([^\]]+)\]\]/gi;
+                                        const actions = [];
+                                        let match;
+                                        let cleanContent = chat.content;
+                                        
+                                        // Store all actions
+                                        while ((match = actionRegex.exec(chat.content)) !== null) {
+                                            actions.push({ type: match[1].toUpperCase(), college: match[2].trim() });
                                         }
+                                        
+                                        // Strip the actions from text output so they are hidden from user
+                                        cleanContent = cleanContent.replace(actionRegex, '').trim();
 
                                         return (
-                                            <div key={blockIndex} className={isDraft ? "my-3 p-3 bg-purple-50/50 border border-purple-200/60 rounded-xl relative" : ""}>
-                                                {draftContent.split('\n').map((line, i) => (
-                                                    <React.Fragment key={i}>
-                                                        {line.split(/(\*\*.*?\*\*)/g).map((part, j) => {
-                                                            if (part.startsWith('**') && part.endsWith('**')) {
-                                                                return <strong key={j} className="font-bold">{part.slice(2, -2)}</strong>;
+                                            <div className="space-y-3">
+                                                <div>
+                                                    {cleanContent.split('---').map((block, blockIndex) => {
+                                                        const isDraft = blockIndex % 2 !== 0;
+                                                        let draftContent = block;
+                                                        let extractedTarget = null;
+
+                                                        if (isDraft) {
+                                                            const targetMatch = draftContent.match(/\[TARGET_ID:\s*([a-zA-Z0-9_]+)\|([^\]]+)\]/);
+                                                            if (targetMatch) {
+                                                                extractedTarget = { id: targetMatch[1], name: targetMatch[2].trim() };
+                                                                draftContent = draftContent.replace(targetMatch[0], '').trim();
+                                                            } else {
+                                                                extractedTarget = activeTargetUser;
                                                             }
-                                                            return <span key={j}>{part}</span>;
-                                                        })}
-                                                        {i < draftContent.split('\n').length - 1 && <br />}
-                                                    </React.Fragment>
-                                                ))}
-                                                {isDraft && (
-                                                    <button
-                                                        onClick={() => {
-                                                            setIsOpen(false);
-                                                            navigate('/messages', {
-                                                                state: {
-                                                                    draftText: draftContent.trim(),
-                                                                    ...(extractedTarget && extractedTarget.id && extractedTarget.id !== "undefined" ? {
-                                                                        openChatWithUserId: extractedTarget.id,
-                                                                        openChatWithUserName: extractedTarget.name
-                                                                    } : {})
-                                                                }
-                                                            });
-                                                        }}
-                                                        className="mt-3 w-full bg-[#A855F7] hover:bg-purple-600 text-white font-bold py-2 rounded-lg text-xs shadow-md transition-all flex items-center justify-center gap-2"
-                                                    >
-                                                        <ChatBubbleLeftRightIcon className="w-4 h-4" />
-                                                        Open in Direct Messages
-                                                    </button>
+                                                        }
+
+                                                        return (
+                                                            <div key={blockIndex} className={isDraft ? "my-3 p-3 bg-purple-50/50 border border-purple-200/60 rounded-xl relative" : ""}>
+                                                                {draftContent.split('\n').map((line, i) => (
+                                                                    <React.Fragment key={i}>
+                                                                        {line.split(/(\*\*.*?\*\*)/g).map((part, j) => {
+                                                                            if (part.startsWith('**') && part.endsWith('**')) {
+                                                                                return <strong key={j} className="font-bold">{part.slice(2, -2)}</strong>;
+                                                                            }
+                                                                            return <span key={j}>{part}</span>;
+                                                                        })}
+                                                                        {i < draftContent.split('\n').length - 1 && <br />}
+                                                                    </React.Fragment>
+                                                                ))}
+                                                                {isDraft && (
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            setIsOpen(false);
+                                                                            navigate('/messages', {
+                                                                                state: {
+                                                                                    draftText: draftContent.trim(),
+                                                                                    ...(extractedTarget && extractedTarget.id && extractedTarget.id !== "undefined" ? {
+                                                                                        openChatWithUserId: extractedTarget.id,
+                                                                                        openChatWithUserName: extractedTarget.name
+                                                                                    } : {})
+                                                                                }
+                                                                            });
+                                                                        }}
+                                                                        className="mt-3 w-full bg-[#A855F7] hover:bg-purple-600 text-white font-bold py-2 rounded-lg text-xs shadow-md transition-all flex items-center justify-center gap-2"
+                                                                    >
+                                                                        <ChatBubbleLeftRightIcon className="w-4 h-4" />
+                                                                        Open in Direct Messages
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                                
+                                                {/* Render action badges below content */}
+                                                {actions.length > 0 && (
+                                                    <div className="space-y-1.5 mt-2 pt-2 border-t border-gray-100">
+                                                        {actions.map((act, i) => (
+                                                            <div key={i} className="flex items-center gap-2 bg-emerald-50 text-emerald-700 p-2.5 rounded-xl text-xs font-bold border border-emerald-200">
+                                                                <span>{act.type === 'BOOKMARK' ? '🎓' : '📢'}</span>
+                                                                <span>
+                                                                    {act.type === 'BOOKMARK' 
+                                                                        ? `Added ${act.college} to your Bookmarks!` 
+                                                                        : `Submitted recruitment profile to ${act.college}!`}
+                                                                </span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
                                                 )}
                                             </div>
                                         );
-                                    })}
+                                    })()}
                                 </div>
                             </div>
                         ))}

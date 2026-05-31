@@ -3257,6 +3257,13 @@ class AIChatView(APIView):
            Hi student_name, ...
            ---
            If you DO NOT know their exact DATABASE_ID, omit the TARGET_ID tag entirely and just write the draft inside the dashes.
+        7. AGENTIC ACTION RULES (CRITICAL):
+           - You can take actions on behalf of the student by appending special tags to your text output when the user asks or confirms they want to do so:
+             - To bookmark a college: [[ACTION: BOOKMARK, College: <College Name>]]
+             - To submit their profile as a recruiter lead to a college: [[ACTION: SUBMIT_LEAD, College: <College Name>]]
+           - Only output these actions if the user explicitly asks you to bookmark a college or submit their profile/lead to a college.
+           - Ensure the college name inside the tag matches the official name from your context.
+           - Example response: "I've added Boston University to your bookmarks! [[ACTION: BOOKMARK, College: Boston University]]"
         
         User Query: {user_message}
         """
@@ -3311,6 +3318,34 @@ class AIChatView(APIView):
                     # Save AI response once done
                     if request.user.is_authenticated and full_response:
                         ChatMessage.objects.create(user=request.user, role='model', content=full_response)
+                        
+                        # Parse and execute agentic actions
+                        import re
+                        from collegetracker.models import College, Bookmark, LeadStatus
+                        
+                        # A. Bookmark Action
+                        bookmark_matches = re.findall(r'\[\[ACTION:\s*BOOKMARK,\s*College:\s*([^\]]+)\]\]', full_response, re.IGNORECASE)
+                        for col_name in bookmark_matches:
+                            col_name = col_name.strip()
+                            try:
+                                college_obj = College.objects.filter(name__icontains=col_name).first()
+                                if college_obj:
+                                    Bookmark.objects.get_or_create(user=request.user, college=college_obj)
+                                    print(f"Agentic Action: Bookmarked {college_obj.name} for {request.user.username}")
+                            except Exception as act_e:
+                                print(f"Agentic Action Error: Failed to bookmark {col_name}: {act_e}")
+
+                        # B. Submit Recruiter Lead Action
+                        lead_matches = re.findall(r'\[\[ACTION:\s*SUBMIT_LEAD,\s*College:\s*([^\]]+)\]\]', full_response, re.IGNORECASE)
+                        for col_name in lead_matches:
+                            col_name = col_name.strip()
+                            try:
+                                college_obj = College.objects.filter(name__icontains=col_name).first()
+                                if college_obj:
+                                    LeadStatus.objects.get_or_create(college=college_obj, student=request.user, defaults={'status': 'new'})
+                                    print(f"Agentic Action: Created Lead for {college_obj.name} / student {request.user.username}")
+                            except Exception as act_e:
+                                print(f"Agentic Action Error: Failed to submit lead to {col_name}: {act_e}")
 
                 except Exception as stream_e:
                     success = False
