@@ -3605,8 +3605,9 @@ class VerifyStripePaymentView(APIView):
                 'meeting_id': transaction.meeting.id,
                 'room_name': transaction.meeting.room_name,
                 'advisor_name': transaction.advisor.first_name or transaction.advisor.username,
-                'scheduled_at': transaction.meeting.scheduled_at.isoformat()
+                'scheduled_at': transaction.meeting.scheduled_at.isoformat() if hasattr(transaction.meeting.scheduled_at, 'isoformat') else transaction.meeting.scheduled_at
             })
+
         else:
             transaction.status = 'failed'
             transaction.save()
