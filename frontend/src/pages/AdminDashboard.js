@@ -20,6 +20,98 @@ const AdminDashboard = () => {
     const [simulating, setSimulating] = useState(false);
     const [activeTab, setActiveTab] = useState('telemetry'); // 'telemetry' or 'revenue'
 
+    const [ads, setAds] = useState([]);
+    const [adsLoading, setAdsLoading] = useState(false);
+
+    // Form fields
+    const [sponsorName, setSponsorName] = useState('');
+    const [adTitle, setAdTitle] = useState('');
+    const [adDesc, setAdDesc] = useState('');
+    const [imageUrl, setImageUrl] = useState('');
+    const [targetUrl, setTargetUrl] = useState('');
+    const [adType, setAdType] = useState('university_spotlight');
+    const [pricingModel, setPricingModel] = useState('flat_rate');
+    const [adPrice, setAdPrice] = useState('150.00');
+    const [acceptanceRate, setAcceptanceRate] = useState('');
+    const [satRange, setSatRange] = useState('');
+
+    const fetchAds = async () => {
+        setAdsLoading(true);
+        const token = localStorage.getItem('access');
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+        try {
+            const res = await axios.get(getApiUrl('api/admin/advertisements/'), config);
+            setAds(res.data || []);
+        } catch (error) {
+            console.error("Error loading ads:", error);
+        } finally {
+            setAdsLoading(false);
+        }
+    };
+
+    const handleCreateAd = async (e) => {
+        e.preventDefault();
+        const token = localStorage.getItem('access');
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+        try {
+            await axios.post(getApiUrl('api/admin/advertisements/'), {
+                sponsor_name: sponsorName,
+                title: adTitle,
+                description: adDesc,
+                image_url: imageUrl,
+                target_url: targetUrl,
+                ad_type: adType,
+                pricing_model: pricingModel,
+                price: parseFloat(adPrice) || 0.00,
+                metric_acceptance_rate: acceptanceRate || null,
+                metric_sat_range: satRange || null,
+                is_active: true
+            }, config);
+            
+            // Reset form
+            setSponsorName('');
+            setAdTitle('');
+            setAdDesc('');
+            setImageUrl('');
+            setTargetUrl('');
+            setAcceptanceRate('');
+            setSatRange('');
+            
+            alert("Advertisement successfully created!");
+            fetchStats();
+        } catch (error) {
+            console.error("Error creating ad:", error);
+            alert("Failed to create ad. Check console.");
+        }
+    };
+
+    const handleToggleAdActive = async (adId, currentStatus) => {
+        const token = localStorage.getItem('access');
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+        try {
+            await axios.patch(getApiUrl(`api/admin/advertisements/${adId}/`), {
+                is_active: !currentStatus
+            }, config);
+            fetchStats();
+        } catch (error) {
+            console.error("Error toggling ad status:", error);
+            alert("Failed to toggle status.");
+        }
+    };
+
+    const handleDeleteAd = async (adId) => {
+        if (!window.confirm("Are you sure you want to delete this advertisement?")) return;
+        const token = localStorage.getItem('access');
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+        try {
+            await axios.delete(getApiUrl(`api/admin/advertisements/${adId}/`), config);
+            fetchStats();
+        } catch (error) {
+            console.error("Error deleting ad:", error);
+            alert("Failed to delete ad.");
+        }
+    };
+
     const fetchStats = async () => {
         setLoading(true);
         const token = localStorage.getItem('access');
@@ -31,6 +123,7 @@ const AdminDashboard = () => {
             ]);
             setTelemetry(telemetryRes.data);
             setRevenue(revenueRes.data);
+            await fetchAds();
         } catch (error) {
             console.error("Error loading dashboard data:", error);
         } finally {
@@ -155,7 +248,6 @@ const AdminDashboard = () => {
                         🔄 Refresh Data
                     </button>
                 </div>
-
                 {/* Tabs */}
                 <div className="flex border-b border-slate-800 mb-8">
                     <button
@@ -177,6 +269,16 @@ const AdminDashboard = () => {
                         }`}
                     >
                         💰 Business Viability & Revenue
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('ads')}
+                        className={`py-3 px-6 text-sm font-bold border-b-2 transition ${
+                            activeTab === 'ads'
+                                ? 'border-indigo-500 text-white'
+                                : 'border-transparent text-slate-400 hover:text-slate-200'
+                        }`}
+                    >
+                        📢 Manage Advertisements
                     </button>
                 </div>
 
@@ -265,15 +367,22 @@ const AdminDashboard = () => {
                             </div>
                         </div>
                     </div>
-                ) : (
+                ) : activeTab === 'revenue' ? (
                     <div>
                         {/* Financial Metrics */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                             <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 backdrop-blur-sm">
-                                <h3 className="text-sm font-medium text-slate-400">Total Transactional Revenue</h3>
+                                <h3 className="text-sm font-medium text-slate-400">Total Revenue (All Streams)</h3>
                                 <div className="mt-2 flex items-baseline justify-between">
                                     <span className="text-3xl font-black text-white">${revenue.total_revenue.toFixed(2)}</span>
                                     <span className="text-indigo-400 text-xs font-semibold">May - Aug 2026</span>
+                                </div>
+                            </div>
+                            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 backdrop-blur-sm">
+                                <h3 className="text-sm font-medium text-slate-400">Sponsored Ad Revenue</h3>
+                                <div className="mt-2 flex items-baseline justify-between">
+                                    <span className="text-3xl font-black text-emerald-400">${(revenue.ad_revenue || 0).toFixed(2)}</span>
+                                    <span className="text-slate-500 text-xs">Dynamic Tracking</span>
                                 </div>
                             </div>
                             <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 backdrop-blur-sm">
@@ -286,7 +395,7 @@ const AdminDashboard = () => {
                             <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 backdrop-blur-sm">
                                 <h3 className="text-sm font-medium text-slate-400">Net Profit Margin</h3>
                                 <div className="mt-2 flex items-baseline justify-between">
-                                    <span className="text-3xl font-black text-emerald-400">
+                                    <span className="text-3xl font-black text-indigo-400">
                                         {revenue.total_revenue > 0 
                                             ? (((revenue.total_revenue - revenue.total_costs) / revenue.total_revenue) * 100).toFixed(1)
                                             : '0.0'}%
@@ -372,6 +481,258 @@ const AdminDashboard = () => {
                                     </div>
                                     <p className="text-xs text-slate-500 mt-2">Calculated at standard rate of 2.9% + $0.30 per checkout event.</p>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div>
+                        {/* Ads Management Panel */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            {/* Advertisements List */}
+                            <div className="lg:col-span-2 bg-slate-900/40 border border-slate-800 rounded-xl overflow-hidden flex flex-col">
+                                <div className="px-6 py-4 border-b border-slate-800 bg-slate-900/80">
+                                    <h2 className="text-lg font-bold text-white">Active Campaigns</h2>
+                                    <p className="text-xs text-slate-400">Configure sponsorships, check real-time telemetry impressions/clicks, and view earnings.</p>
+                                </div>
+
+                                <div className="overflow-x-auto flex-grow">
+                                    {adsLoading ? (
+                                        <div className="p-8 text-center text-slate-400">
+                                            <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                                            Loading campaigns...
+                                        </div>
+                                    ) : (
+                                        <table className="w-full text-left border-collapse text-sm">
+                                            <thead>
+                                                <tr className="border-b border-slate-800 bg-slate-950/60 text-slate-400">
+                                                    <th className="p-4 font-semibold">Ad Info</th>
+                                                    <th className="p-4 font-semibold">Pricing Model</th>
+                                                    <th className="p-4 font-semibold">Telemetry</th>
+                                                    <th className="p-4 font-semibold">Earnings</th>
+                                                    <th className="p-4 font-semibold text-center">Status</th>
+                                                    <th className="p-4 font-semibold text-center">Delete</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-800">
+                                                {ads.length === 0 ? (
+                                                    <tr>
+                                                        <td colSpan="6" className="p-8 text-center text-slate-500">
+                                                            No advertisements configured. Create your first campaign using the form on the right!
+                                                        </td>
+                                                    </tr>
+                                                ) : (
+                                                    ads.map((ad) => {
+                                                        const calculateAdEarnings = (item) => {
+                                                            if (item.pricing_model === 'flat_rate') {
+                                                                return item.price;
+                                                            } else if (item.pricing_model === 'cpc') {
+                                                                return item.clicks * item.price;
+                                                            } else if (item.pricing_model === 'cpm') {
+                                                                return (item.impressions / 1000) * item.price;
+                                                            }
+                                                            return 0;
+                                                        };
+                                                        return (
+                                                            <tr key={ad.id} className="hover:bg-slate-900/20 transition">
+                                                                <td className="p-4">
+                                                                    <div className="font-bold text-white">{ad.title}</div>
+                                                                    <div className="text-xs text-slate-400">
+                                                                        {ad.sponsor_name} • <span className="capitalize text-indigo-400">{ad.ad_type?.replace('_', ' ')}</span>
+                                                                    </div>
+                                                                    {ad.target_url && (
+                                                                        <a
+                                                                            href={ad.target_url}
+                                                                            target="_blank"
+                                                                            rel="noopener noreferrer"
+                                                                            className="text-[10px] text-teal-400 hover:underline mt-1 block truncate max-w-[180px]"
+                                                                        >
+                                                                            🔗 {ad.target_url}
+                                                                        </a>
+                                                                    )}
+                                                                </td>
+                                                                <td className="p-4 font-mono text-slate-300 text-xs">
+                                                                    <div className="capitalize font-semibold">{ad.pricing_model?.replace('_', ' ')}</div>
+                                                                    <div className="text-slate-500">${ad.price.toFixed(2)}</div>
+                                                                </td>
+                                                                <td className="p-4 text-slate-300 font-mono text-xs space-y-1">
+                                                                    <div>👁️ {ad.impressions} <span className="text-[10px] text-slate-500">views</span></div>
+                                                                    <div>🖱️ {ad.clicks} <span className="text-[10px] text-slate-500">clicks</span></div>
+                                                                </td>
+                                                                <td className="p-4 font-bold text-emerald-400 font-mono">
+                                                                    ${calculateAdEarnings(ad).toFixed(2)}
+                                                                </td>
+                                                                <td className="p-4 text-center">
+                                                                    <button
+                                                                        onClick={() => handleToggleAdActive(ad.id, ad.is_active)}
+                                                                        className={`px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase transition ${
+                                                                            ad.is_active
+                                                                                ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20'
+                                                                                : 'bg-slate-800 text-slate-400 hover:bg-slate-700 border border-slate-700'
+                                                                        }`}
+                                                                    >
+                                                                        {ad.is_active ? 'Active' : 'Inactive'}
+                                                                    </button>
+                                                                </td>
+                                                                <td className="p-4 text-center">
+                                                                    <button
+                                                                        onClick={() => handleDeleteAd(ad.id)}
+                                                                        className="text-rose-500 hover:text-rose-400 p-2 transition hover:bg-rose-500/10 rounded-lg active:scale-95"
+                                                                        title="Delete campaign"
+                                                                    >
+                                                                        🗑️
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Create New Ad Form */}
+                            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 backdrop-blur-sm self-start">
+                                <h3 className="text-lg font-bold text-white mb-4">Create Campaign</h3>
+                                <form onSubmit={handleCreateAd} className="space-y-4">
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Sponsor Name</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            value={sponsorName}
+                                            onChange={(e) => setSponsorName(e.target.value)}
+                                            placeholder="e.g. Stanford University"
+                                            className="w-full bg-slate-950/80 border border-slate-800 focus:border-indigo-500 rounded-lg p-2.5 text-sm text-slate-100 placeholder-slate-500 focus:ring-1 focus:ring-indigo-500 transition duration-150"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Ad Title</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            value={adTitle}
+                                            onChange={(e) => setAdTitle(e.target.value)}
+                                            placeholder="e.g. Explore the Farm"
+                                            className="w-full bg-slate-950/80 border border-slate-800 focus:border-indigo-500 rounded-lg p-2.5 text-sm text-slate-100 placeholder-slate-500 focus:ring-1 focus:ring-indigo-500 transition duration-150"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Description</label>
+                                        <textarea
+                                            required
+                                            rows="3"
+                                            value={adDesc}
+                                            onChange={(e) => setAdDesc(e.target.value)}
+                                            placeholder="Introduce the sponsorship details or call-to-action details..."
+                                            className="w-full bg-slate-950/80 border border-slate-800 focus:border-indigo-500 rounded-lg p-2.5 text-sm text-slate-100 placeholder-slate-500 focus:ring-1 focus:ring-indigo-500 transition duration-150 resize-none"
+                                        ></textarea>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Campaign Type</label>
+                                            <select
+                                                value={adType}
+                                                onChange={(e) => setAdType(e.target.value)}
+                                                className="w-full bg-slate-950/80 border border-slate-800 focus:border-indigo-500 rounded-lg p-2.5 text-sm text-slate-100 focus:ring-1 focus:ring-indigo-500 transition duration-150"
+                                            >
+                                                <option value="university_spotlight">University Spotlight</option>
+                                                <option value="advisor_showcase">Advisor Showcase</option>
+                                                <option value="other">Other Ad</option>
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Pricing Model</label>
+                                            <select
+                                                value={pricingModel}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    setPricingModel(val);
+                                                    if (val === 'flat_rate') setAdPrice('150.00');
+                                                    else if (val === 'cpc') setAdPrice('1.50');
+                                                    else if (val === 'cpm') setAdPrice('10.00');
+                                                }}
+                                                className="w-full bg-slate-950/80 border border-slate-800 focus:border-indigo-500 rounded-lg p-2.5 text-sm text-slate-100 focus:ring-1 focus:ring-indigo-500 transition duration-150"
+                                            >
+                                                <option value="flat_rate">Flat Rate</option>
+                                                <option value="cpc">CPC (Cost Per Click)</option>
+                                                <option value="cpm">CPM (Per 1k views)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                                            Price / Rate ($)
+                                        </label>
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            required
+                                            value={adPrice}
+                                            onChange={(e) => setAdPrice(e.target.value)}
+                                            className="w-full bg-slate-950/80 border border-slate-800 focus:border-indigo-500 rounded-lg p-2.5 text-sm text-slate-100 placeholder-slate-500 focus:ring-1 focus:ring-indigo-500 transition duration-150 font-mono"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Image URL</label>
+                                        <input
+                                            type="text"
+                                            value={imageUrl}
+                                            onChange={(e) => setImageUrl(e.target.value)}
+                                            placeholder="e.g. https://images.unsplash.com/... (optional)"
+                                            className="w-full bg-slate-950/80 border border-slate-800 focus:border-indigo-500 rounded-lg p-2.5 text-sm text-slate-100 placeholder-slate-500 focus:ring-1 focus:ring-indigo-500 transition duration-150"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Target URL</label>
+                                        <input
+                                            type="text"
+                                            value={targetUrl}
+                                            onChange={(e) => setTargetUrl(e.target.value)}
+                                            placeholder="e.g. https://university.edu/apply (optional)"
+                                            className="w-full bg-slate-950/80 border border-slate-800 focus:border-indigo-500 rounded-lg p-2.5 text-sm text-slate-100 placeholder-slate-500 focus:ring-1 focus:ring-indigo-500 transition duration-150"
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Acceptance Rate</label>
+                                            <input
+                                                type="text"
+                                                value={acceptanceRate}
+                                                onChange={(e) => setAcceptanceRate(e.target.value)}
+                                                placeholder="e.g. 4.3% (optional)"
+                                                className="w-full bg-slate-950/80 border border-slate-800 focus:border-indigo-500 rounded-lg p-2.5 text-sm text-slate-100 placeholder-slate-500 focus:ring-1 focus:ring-indigo-500 transition duration-150"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">SAT Range</label>
+                                            <input
+                                                type="text"
+                                                value={satRange}
+                                                onChange={(e) => setSatRange(e.target.value)}
+                                                placeholder="e.g. 1500-1570 (optional)"
+                                                className="w-full bg-slate-950/80 border border-slate-800 focus:border-indigo-500 rounded-lg p-2.5 text-sm text-slate-100 placeholder-slate-500 focus:ring-1 focus:ring-indigo-500 transition duration-150"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        type="submit"
+                                        className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white text-sm font-semibold rounded-lg shadow-lg shadow-indigo-600/20 transition duration-150"
+                                    >
+                                        Create Advertisement
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     </div>

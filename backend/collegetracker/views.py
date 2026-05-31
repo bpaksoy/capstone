@@ -5,7 +5,7 @@ import difflib
 from goose3 import Goose
 import stripe
 import time
-from .models import User, College, Comment, Post, Bookmark, Reply, Like, Friendship, SmartCollege, CollegeProgram, Article, Notification, ChatMessage, DirectMessage, LeadStatus, Review, Service, Meeting, Transaction, AICallLog, AdvisorAvailability
+from .models import User, College, Comment, Post, Bookmark, Reply, Like, Friendship, SmartCollege, CollegeProgram, Article, Notification, ChatMessage, DirectMessage, LeadStatus, Review, Service, Meeting, Transaction, AICallLog, AdvisorAvailability, Advertisement
 
 from django.http import JsonResponse, Http404
 from django.db import IntegrityError
@@ -3719,13 +3719,34 @@ class RevenueAnalyticsView(APIView):
                 revenue_by_month[m] += float(tx.amount)
             total_revenue += float(tx.amount)
 
+        # Add Advertisement Revenues dynamically
+        ads = Advertisement.objects.all()
+        ad_total_revenue = 0.0
+        for ad in ads:
+            ad_rev = 0.0
+            if ad.pricing_model == 'flat_rate':
+                ad_rev = float(ad.price)
+            elif ad.pricing_model == 'cpc':
+                ad_rev = float(ad.clicks) * float(ad.price)
+            elif ad.pricing_model == 'cpm':
+                ad_rev = (float(ad.impressions) / 1000.0) * float(ad.price)
+            
+            ad_total_revenue += ad_rev
+            
+            m = ad.created_at.month
+            if m in revenue_by_month:
+                revenue_by_month[m] += ad_rev
+        
+        total_revenue += ad_total_revenue
+
         hosting_cost = 45.00
         gemini_api_cost = 12.50
-        stripe_fees = total_revenue * 0.029 + (len(transactions) * 0.30)
+        stripe_fees = (total_revenue - ad_total_revenue) * 0.029 + (len(transactions) * 0.30)
         total_costs = hosting_cost + gemini_api_cost + stripe_fees
 
         return Response({
             'total_revenue': total_revenue,
+            'ad_revenue': ad_total_revenue,
             'revenue_by_month': {
                 'May': revenue_by_month[5],
                 'June': revenue_by_month[6],
@@ -3858,5 +3879,175 @@ class UserMeetingsView(APIView):
                 'service_title': service_title,
             })
         return Response(data)
+
+
+class AdvertisementListView(APIView):
+    permission_classes = []
+
+    def get(self, request):
+        ads = Advertisement.objects.filter(is_active=True).order_by('-created_at')
+        data = []
+        for ad in ads:
+            data.append({
+                'id': ad.id,
+                'sponsor_name': ad.sponsor_name,
+                'title': ad.title,
+                'description': ad.description,
+                'image_url': ad.image_url,
+                'target_url': ad.target_url,
+                'ad_type': ad.ad_type,
+                'metric_acceptance_rate': ad.metric_acceptance_rate,
+                'metric_sat_range': ad.metric_sat_range,
+                'pricing_model': ad.pricing_model,
+                'price': float(ad.price),
+                'clicks': ad.clicks,
+                'impressions': ad.impressions
+            })
+        return Response(data)
+
+
+class IncrementAdImpressionView(APIView):
+    permission_classes = []
+
+    def post(self, request, pk):
+        try:
+            ad = Advertisement.objects.get(pk=pk)
+            ad.impressions += 1
+            ad.save()
+            return Response({'status': 'success', 'impressions': ad.impressions})
+        except Advertisement.DoesNotExist:
+            return Response({'error': 'Ad not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class IncrementAdClickView(APIView):
+    permission_classes = []
+
+    def post(self, request, pk):
+        try:
+            ad = Advertisement.objects.get(pk=pk)
+            ad.clicks += 1
+            ad.save()
+            return Response({'status': 'success', 'clicks': ad.clicks})
+        except Advertisement.DoesNotExist:
+            return Response({'error': 'Ad not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class AdminAdvertisementView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def check_admin(self, user):
+        return user.is_staff or user.role == 'admin'
+
+    def get(self, request):
+        if not self.check_admin(request.user):
+            return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
+        ads = Advertisement.objects.all().order_by('-created_at')
+        data = []
+        for ad in ads:
+            data.append({
+                'id': ad.id,
+                'sponsor_name': ad.sponsor_name,
+                'title': ad.title,
+                'description': ad.description,
+                'image_url': ad.image_url,
+                'target_url': ad.target_url,
+                'ad_type': ad.ad_type,
+                'pricing_model': ad.pricing_model,
+                'price': float(ad.price),
+                'clicks': ad.clicks,
+                'impressions': ad.impressions,
+                'metric_acceptance_rate': ad.metric_acceptance_rate,
+                'metric_sat_range': ad.metric_sat_range,
+                'is_active': ad.is_active,
+                'created_at': ad.created_at.isoformat()
+            })
+        return Response(data)
+
+    def post(self, request):
+        if not self.check_admin(request.user):
+            return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
+        
+        try:
+            ad = Advertisement.objects.create(
+                sponsor_name=request.data.get('sponsor_name'),
+                title=request.data.get('title'),
+                description=request.data.get('description'),
+                image_url=request.data.get('image_url'),
+                target_url=request.data.get('target_url'),
+                ad_type=request.data.get('ad_type', 'university_spotlight'),
+                pricing_model=request.data.get('pricing_model', 'flat_rate'),
+                price=request.data.get('price', 0.00),
+                metric_acceptance_rate=request.data.get('metric_acceptance_rate'),
+                metric_sat_range=request.data.get('metric_sat_range'),
+                is_active=request.data.get('is_active', True)
+            )
+            return Response({
+                'id': ad.id,
+                'sponsor_name': ad.sponsor_name,
+                'title': ad.title,
+                'description': ad.description,
+                'image_url': ad.image_url,
+                'target_url': ad.target_url,
+                'ad_type': ad.ad_type,
+                'pricing_model': ad.pricing_model,
+                'price': float(ad.price),
+                'clicks': ad.clicks,
+                'impressions': ad.impressions,
+                'is_active': ad.is_active
+            }, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AdminAdvertisementDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def check_admin(self, user):
+        return user.is_staff or user.role == 'admin'
+
+    def patch(self, request, pk):
+        if not self.check_admin(request.user):
+            return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
+        try:
+            ad = Advertisement.objects.get(pk=pk)
+            
+            if 'is_active' in request.data:
+                ad.is_active = request.data.get('is_active')
+            if 'sponsor_name' in request.data:
+                ad.sponsor_name = request.data.get('sponsor_name')
+            if 'title' in request.data:
+                ad.title = request.data.get('title')
+            if 'description' in request.data:
+                ad.description = request.data.get('description')
+            if 'image_url' in request.data:
+                ad.image_url = request.data.get('image_url')
+            if 'target_url' in request.data:
+                ad.target_url = request.data.get('target_url')
+            if 'ad_type' in request.data:
+                ad.ad_type = request.data.get('ad_type')
+            if 'pricing_model' in request.data:
+                ad.pricing_model = request.data.get('pricing_model')
+            if 'price' in request.data:
+                ad.price = request.data.get('price')
+            if 'metric_acceptance_rate' in request.data:
+                ad.metric_acceptance_rate = request.data.get('metric_acceptance_rate')
+            if 'metric_sat_range' in request.data:
+                ad.metric_sat_range = request.data.get('metric_sat_range')
+                
+            ad.save()
+            return Response({'status': 'updated'})
+        except Advertisement.DoesNotExist:
+            return Response({'error': 'Ad not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    def delete(self, request, pk):
+        if not self.check_admin(request.user):
+            return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
+        try:
+            ad = Advertisement.objects.get(pk=pk)
+            ad.delete()
+            return Response({'status': 'deleted'}, status=status.HTTP_204_NO_CONTENT)
+        except Advertisement.DoesNotExist:
+            return Response({'error': 'Ad not found'}, status=status.HTTP_404_NOT_FOUND)
+
 
 

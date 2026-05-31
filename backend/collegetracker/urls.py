@@ -166,6 +166,11 @@ urlpatterns = [
     path('api/advisors/<int:advisor_id>/availability/', views.AdvisorAvailabilityView.as_view(), name='advisor-availability-public'),
     path('api/advisors/availability/', views.AdvisorAvailabilityView.as_view(), name='advisor-availability-list-create'),
     path('api/advisors/availability/<int:pk>/', views.AdvisorAvailabilityView.as_view(), name='advisor-availability-delete'),
+    path('api/advertisements/', views.AdvertisementListView.as_view(), name='ad-list'),
+    path('api/advertisements/<int:pk>/impression/', views.IncrementAdImpressionView.as_view(), name='ad-impression'),
+    path('api/advertisements/<int:pk>/click/', views.IncrementAdClickView.as_view(), name='ad-click'),
+    path('api/admin/advertisements/', views.AdminAdvertisementView.as_view(), name='admin-ad-list-create'),
+    path('api/admin/advertisements/<int:pk>/', views.AdminAdvertisementDetailView.as_view(), name='admin-ad-detail'),
     path('upload4/', views.UploadApiView4.as_view(), name='upload_file4'),
 
 ]

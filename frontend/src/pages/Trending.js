@@ -94,6 +94,39 @@ function Trending() {
         fetchNews();
     }, []);
 
+    const [ads, setAds] = useState([]);
+    const [adsLoading, setAdsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchAds = async () => {
+            setAdsLoading(true);
+            try {
+                const response = await axios.get(getApiUrl('api/advertisements/'));
+                const adsData = response.data || [];
+                setAds(adsData);
+                
+                // Track impressions
+                adsData.forEach(ad => {
+                    axios.post(getApiUrl(`api/advertisements/${ad.id}/impression/`)).catch(() => {});
+                });
+            } catch (error) {
+                console.error("Error fetching ads:", error);
+            } finally {
+                setAdsLoading(false);
+            }
+        };
+        fetchAds();
+    }, []);
+
+    const handleAdClick = async (adId) => {
+        try {
+            await axios.post(getApiUrl(`api/advertisements/${adId}/click/`));
+        } catch (error) {
+            console.error("Error tracking ad click:", error);
+        }
+    };
+
+
     const handleAddPost = useCallback((scrollToTop = true) => {
         fetchPosts(activeCategory, !scrollToTop, 1);
         if (scrollToTop) {
@@ -336,105 +369,158 @@ function Trending() {
                             <span className="text-[9px] font-black text-white/60 uppercase tracking-widest">Sponsored Spotlights</span>
                         </div>
 
-                        {/* University Spotlight Ad Card 1 (Stanford) */}
-                        <div className="relative group overflow-hidden rounded-[2.5rem] border border-white/10 bg-white/5 backdrop-blur-md p-6 hover:shadow-xl hover:shadow-[#17717d]/10 hover:border-[#17717d]/30 transition-all duration-300">
-                            {/* Background Image / Gradient overlay */}
-                            <div className="absolute inset-0 z-0 bg-cover bg-center opacity-10 group-hover:opacity-20 transition-opacity duration-300" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=400&q=80')` }}></div>
-                            <div className="absolute top-4 right-4 z-10 bg-white/10 border border-white/20 px-2.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider text-white">
-                                Ad
+                        {/* Dynamic Database Advertisements */}
+                        {adsLoading ? (
+                            <div className="flex justify-center p-8 bg-white/5 rounded-[2.5rem] border border-white/10">
+                                <div className="w-8 h-8 border-2 border-[#24adbf] border-t-transparent rounded-full animate-spin"></div>
                             </div>
-                            
-                            <div className="relative z-10 flex flex-col h-full text-left">
-                                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#24adbf]">Stanford University</span>
-                                <h4 className="text-base font-black text-white mt-1 mb-2">Explore the Farm</h4>
-                                <p className="text-xs text-white/60 leading-relaxed mb-4">Discover undergraduate research, global study programs, and a world-class startup ecosystem.</p>
-                                
-                                <div className="grid grid-cols-2 gap-3 mb-5 border-y border-white/10 py-3">
-                                    <div>
-                                        <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest">Acceptance Rate</span>
-                                        <p className="text-xs font-black text-white mt-0.5">3.9%</p>
+                        ) : ads.length > 0 ? (
+                            ads.map(ad => (
+                                <div key={ad.id} className="relative group overflow-hidden rounded-[2.5rem] border border-white/10 bg-white/5 backdrop-blur-md p-6 hover:shadow-xl hover:shadow-[#17717d]/10 hover:border-[#17717d]/30 transition-all duration-300">
+                                    {ad.image_url && (
+                                        <div className="absolute inset-0 z-0 bg-cover bg-center opacity-10 group-hover:opacity-20 transition-opacity duration-300" style={{ backgroundImage: `url('${ad.image_url}')` }}></div>
+                                    )}
+                                    <div className="absolute top-4 right-4 z-10 bg-white/10 border border-white/20 px-2.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider text-white">
+                                        Sponsored
                                     </div>
-                                    <div>
-                                        <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest">Avg. SAT Range</span>
-                                        <p className="text-xs font-black text-white mt-0.5">1500-1570</p>
+                                    
+                                    <div className="relative z-10 flex flex-col h-full text-left">
+                                        <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#24adbf]">{ad.sponsor_name}</span>
+                                        <h4 className="text-base font-black text-white mt-1 mb-2">{ad.title}</h4>
+                                        <p className="text-xs text-white/60 leading-relaxed mb-4">{ad.description}</p>
+                                        
+                                        {ad.ad_type === 'university_spotlight' && (ad.metric_acceptance_rate || ad.metric_sat_range) && (
+                                            <div className="grid grid-cols-2 gap-3 mb-5 border-y border-white/10 py-3">
+                                                {ad.metric_acceptance_rate && (
+                                                    <div>
+                                                        <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest">Acceptance Rate</span>
+                                                        <p className="text-xs font-black text-white mt-0.5">{ad.metric_acceptance_rate}</p>
+                                                    </div>
+                                                )}
+                                                {ad.metric_sat_range && (
+                                                    <div>
+                                                        <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest">Avg. SAT Range</span>
+                                                        <p className="text-xs font-black text-white mt-0.5">{ad.metric_sat_range}</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        <a 
+                                            href={ad.target_url || '#'}
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            onClick={() => handleAdClick(ad.id)}
+                                            className="w-full text-center bg-gradient-to-r from-[#24adbf] to-[#00b4d8] hover:shadow-lg hover:shadow-[#24adbf]/20 text-white font-bold py-3 rounded-xl transition-all active:scale-95 text-xs"
+                                        >
+                                            {ad.ad_type === 'university_spotlight' ? 'Explore Campus' : 'Learn More'}
+                                        </a>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <>
+                                {/* University Spotlight Ad Card 1 (Stanford) */}
+                                <div className="relative group overflow-hidden rounded-[2.5rem] border border-white/10 bg-white/5 backdrop-blur-md p-6 hover:shadow-xl hover:shadow-[#17717d]/10 hover:border-[#17717d]/30 transition-all duration-300">
+                                    {/* Background Image / Gradient overlay */}
+                                    <div className="absolute inset-0 z-0 bg-cover bg-center opacity-10 group-hover:opacity-20 transition-opacity duration-300" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=400&q=80')` }}></div>
+                                    <div className="absolute top-4 right-4 z-10 bg-white/10 border border-white/20 px-2.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider text-white">
+                                        Ad
+                                    </div>
+                                    
+                                    <div className="relative z-10 flex flex-col h-full text-left">
+                                        <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#24adbf]">Stanford University</span>
+                                        <h4 className="text-base font-black text-white mt-1 mb-2">Explore the Farm</h4>
+                                        <p className="text-xs text-white/60 leading-relaxed mb-4">Discover undergraduate research, global study programs, and a world-class startup ecosystem.</p>
+                                        
+                                        <div className="grid grid-cols-2 gap-3 mb-5 border-y border-white/10 py-3">
+                                            <div>
+                                                <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest">Acceptance Rate</span>
+                                                <p className="text-xs font-black text-white mt-0.5">3.9%</p>
+                                            </div>
+                                            <div>
+                                                <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest">Avg. SAT Range</span>
+                                                <p className="text-xs font-black text-white mt-0.5">1500-1570</p>
+                                            </div>
+                                        </div>
+
+                                        <a 
+                                            href="https://admission.stanford.edu"
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="w-full text-center bg-gradient-to-r from-[#24adbf] to-[#00b4d8] hover:shadow-lg hover:shadow-[#24adbf]/20 text-white font-bold py-3 rounded-xl transition-all active:scale-95 text-xs"
+                                        >
+                                            Explore Campus
+                                        </a>
                                     </div>
                                 </div>
 
-                                <a 
-                                    href="https://admission.stanford.edu"
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="w-full text-center bg-gradient-to-r from-[#24adbf] to-[#00b4d8] hover:shadow-lg hover:shadow-[#24adbf]/20 text-white font-bold py-3 rounded-xl transition-all active:scale-95 text-xs"
-                                >
-                                    Explore Campus
-                                </a>
-                            </div>
-                        </div>
-
-                        {/* University Spotlight Ad Card 2 (Boston University) */}
-                        <div className="relative group overflow-hidden rounded-[2.5rem] border border-white/10 bg-white/5 backdrop-blur-md p-6 hover:shadow-xl hover:shadow-[#17717d]/10 hover:border-[#17717d]/30 transition-all duration-300">
-                            {/* Background Image / Gradient overlay */}
-                            <div className="absolute inset-0 z-0 bg-cover bg-center opacity-10 group-hover:opacity-20 transition-opacity duration-300" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=400&q=80')` }}></div>
-                            <div className="absolute top-4 right-4 z-10 bg-white/10 border border-white/20 px-2.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider text-white">
-                                Ad
-                            </div>
-                            
-                            <div className="relative z-10 flex flex-col h-full text-left">
-                                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#24adbf]">Boston University</span>
-                                <h4 className="text-base font-black text-white mt-1 mb-2">Terrier Nation</h4>
-                                <p className="text-xs text-white/60 leading-relaxed mb-4">Learn about BU's urban campus, outstanding study abroad initiatives, and renowned internship network.</p>
-                                
-                                <div className="grid grid-cols-2 gap-3 mb-5 border-y border-white/10 py-3">
-                                    <div>
-                                        <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest">Acceptance Rate</span>
-                                        <p className="text-xs font-black text-white mt-0.5">18.6%</p>
+                                {/* University Spotlight Ad Card 2 (Boston University) */}
+                                <div className="relative group overflow-hidden rounded-[2.5rem] border border-white/10 bg-white/5 backdrop-blur-md p-6 hover:shadow-xl hover:shadow-[#17717d]/10 hover:border-[#17717d]/30 transition-all duration-300">
+                                    {/* Background Image / Gradient overlay */}
+                                    <div className="absolute inset-0 z-0 bg-cover bg-center opacity-10 group-hover:opacity-20 transition-opacity duration-300" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=400&q=80')` }}></div>
+                                    <div className="absolute top-4 right-4 z-10 bg-white/10 border border-white/20 px-2.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider text-white">
+                                        Ad
                                     </div>
-                                    <div>
-                                        <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest">Avg. SAT Range</span>
-                                        <p className="text-xs font-black text-white mt-0.5">1430-1540</p>
-                                    </div>
-                                </div>
+                                    
+                                    <div className="relative z-10 flex flex-col h-full text-left">
+                                        <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#24adbf]">Boston University</span>
+                                        <h4 className="text-base font-black text-white mt-1 mb-2">Terrier Nation</h4>
+                                        <p className="text-xs text-white/60 leading-relaxed mb-4">Learn about BU's urban campus, outstanding study abroad initiatives, and renowned internship network.</p>
+                                        
+                                        <div className="grid grid-cols-2 gap-3 mb-5 border-y border-white/10 py-3">
+                                            <div>
+                                                <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest">Acceptance Rate</span>
+                                                <p className="text-xs font-black text-white mt-0.5">18.6%</p>
+                                            </div>
+                                            <div>
+                                                <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest">Avg. SAT Range</span>
+                                                <p className="text-xs font-black text-white mt-0.5">1430-1540</p>
+                                            </div>
+                                        </div>
 
-                                <a 
-                                    href="https://www.bu.edu/admissions"
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="w-full text-center bg-gradient-to-r from-[#24adbf] to-[#00b4d8] hover:shadow-lg hover:shadow-[#24adbf]/20 text-white font-bold py-3 rounded-xl transition-all active:scale-95 text-xs"
-                                >
-                                    Explore Campus
-                                </a>
-                            </div>
-                        </div>
-
-                        {/* Marketplace Advisor Spotlight Ad */}
-                        <div className="relative group overflow-hidden rounded-[2.5rem] border border-white/10 bg-white/5 backdrop-blur-md p-6 hover:shadow-xl hover:shadow-[#17717d]/10 hover:border-[#17717d]/30 transition-all duration-300">
-                            <div className="absolute top-4 right-4 z-10 bg-white/10 border border-white/20 px-2.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider text-white">
-                                Featured
-                            </div>
-                            
-                            <div className="relative z-10 flex flex-col h-full text-left">
-                                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#A855F7]">1:1 Advising Marketplace</span>
-                                <h4 className="text-base font-black text-white mt-1 mb-2">Ivy League Experts</h4>
-                                <p className="text-xs text-white/60 leading-relaxed mb-4">Connect with elite application advisors. Get tailored guidance on essays, college list building, and interview preparation.</p>
-                                
-                                <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl p-3 mb-4">
-                                    <div className="w-9 h-9 bg-purple-500 rounded-full flex items-center justify-center font-bold text-white text-sm shadow-inner shrink-0">
-                                        🎓
-                                    </div>
-                                    <div>
-                                        <p className="text-xs font-black text-white">Admissions Counselors</p>
-                                        <p className="text-[8px] text-white/40 font-bold uppercase tracking-widest mt-0.5">Top-Rated Coaches</p>
+                                        <a 
+                                            href="https://www.bu.edu/admissions"
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="w-full text-center bg-gradient-to-r from-[#24adbf] to-[#00b4d8] hover:shadow-lg hover:shadow-[#24adbf]/20 text-white font-bold py-3 rounded-xl transition-all active:scale-95 text-xs"
+                                        >
+                                            Explore Campus
+                                        </a>
                                     </div>
                                 </div>
 
-                                <button 
-                                    onClick={() => window.location.href = '/advisors'}
-                                    className="w-full text-center bg-purple-600 hover:bg-purple-700 hover:shadow-lg hover:shadow-purple/20 text-white font-bold py-3 rounded-xl transition-all active:scale-95 text-xs"
-                                >
-                                    Find an Advisor
-                                </button>
-                            </div>
-                        </div>
+                                {/* Marketplace Advisor Spotlight Ad */}
+                                <div className="relative group overflow-hidden rounded-[2.5rem] border border-white/10 bg-white/5 backdrop-blur-md p-6 hover:shadow-xl hover:shadow-[#17717d]/10 hover:border-[#17717d]/30 transition-all duration-300">
+                                    <div className="absolute top-4 right-4 z-10 bg-white/10 border border-white/20 px-2.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider text-white">
+                                        Featured
+                                    </div>
+                                    
+                                    <div className="relative z-10 flex flex-col h-full text-left">
+                                        <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#A855F7]">1:1 Advising Marketplace</span>
+                                        <h4 className="text-base font-black text-white mt-1 mb-2">Ivy League Experts</h4>
+                                        <p className="text-xs text-white/60 leading-relaxed mb-4">Connect with elite application advisors. Get tailored guidance on essays, college list building, and interview preparation.</p>
+                                        
+                                        <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl p-3 mb-4">
+                                            <div className="w-9 h-9 bg-purple-500 rounded-full flex items-center justify-center font-bold text-white text-sm shadow-inner shrink-0">
+                                                🎓
+                                            </div>
+                                            <div>
+                                                <p className="text-xs font-black text-white">Admissions Counselors</p>
+                                                <p className="text-[8px] text-white/40 font-bold uppercase tracking-widest mt-0.5">Top-Rated Coaches</p>
+                                            </div>
+                                        </div>
+
+                                        <button 
+                                            onClick={() => window.location.href = '/advisors'}
+                                            className="w-full text-center bg-purple-600 hover:bg-purple-700 hover:shadow-lg hover:shadow-purple/20 text-white font-bold py-3 rounded-xl transition-all active:scale-95 text-xs"
+                                        >
+                                            Find an Advisor
+                                        </button>
+                                    </div>
+                                </div>
+                            </>
+                        )}
 
                         {/* Premium College Finder Tool Banner */}
                         <div className="relative group overflow-hidden rounded-[2.5rem] border border-purple-500/20 bg-gradient-to-br from-purple-900/40 via-teal-900/40 to-teal-800/40 p-6 hover:shadow-xl hover:shadow-purple-500/10 hover:border-purple-500/40 transition-all duration-300 text-left">

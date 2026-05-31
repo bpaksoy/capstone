@@ -507,3 +507,35 @@ class AdvisorAvailability(models.Model):
         return f"Availability: {self.advisor.username} on {self.date} from {self.start_time} to {self.end_time} (Booked: {self.is_booked})"
 
 
+class Advertisement(models.Model):
+    AD_TYPE_CHOICES = [
+        ('university_spotlight', 'University Spotlight'),
+        ('advisor_showcase', 'Advisor Showcase'),
+        ('other', 'Other Advertisement'),
+    ]
+    PRICING_MODEL_CHOICES = [
+        ('flat_rate', 'Flat Rate'),
+        ('cpc', 'Cost Per Click (CPC)'),
+        ('cpm', 'Cost Per Mille (CPM)'),
+    ]
+
+    sponsor_name = models.CharField(max_length=255)
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    image_url = models.CharField(max_length=1024, blank=True, null=True)
+    target_url = models.CharField(max_length=1024, blank=True, null=True)
+    ad_type = models.CharField(max_length=50, choices=AD_TYPE_CHOICES, default='university_spotlight')
+    pricing_model = models.CharField(max_length=50, choices=PRICING_MODEL_CHOICES, default='flat_rate')
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    clicks = models.IntegerField(default=0)
+    impressions = models.IntegerField(default=0)
+    metric_acceptance_rate = models.CharField(max_length=50, blank=True, null=True)
+    metric_sat_range = models.CharField(max_length=50, blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Ad ({self.sponsor_name}): {self.title} [{self.pricing_model}]"
+
+
+
