@@ -157,6 +157,11 @@ urlpatterns = [
     path('api/reviews/create/', views.CreateReviewView.as_view(), name='review-create'),
     path('api/services/create/', views.CreateServiceView.as_view(), name='service-create'),
     path('api/meetings/book/', views.BookMeetingView.as_view(), name='meeting-book'),
+    path('api/payments/create-session/', views.CreateStripeSessionView.as_view(), name='payments-create-session'),
+    path('api/payments/verify/', views.VerifyStripePaymentView.as_view(), name='payments-verify'),
+    path('api/payments/webhook/', csrf_exempt(views.StripeWebhookView.as_view()), name='payments-webhook'),
+    path('api/admin/ai-telemetry/', views.AITelemetryView.as_view(), name='admin-ai-telemetry'),
+    path('api/admin/revenue/', views.RevenueAnalyticsView.as_view(), name='admin-revenue'),
     path('upload4/', views.UploadApiView4.as_view(), name='upload_file4'),
 ]
 

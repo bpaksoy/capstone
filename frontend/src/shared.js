@@ -1,5 +1,6 @@
 // Use environment variable in production, fallback to localhost for development
-const isProduction = process.env.NODE_ENV === 'production' || window.location.hostname !== 'localhost';
+const isProduction = process.env.NODE_ENV === 'production' || 
+    (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1');
 
 export const baseUrl = isProduction
     ? 'https://collegetracker-api-301955187113.us-central1.run.app/'

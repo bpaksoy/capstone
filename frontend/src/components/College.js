@@ -114,7 +114,7 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
 
     return (
         <div className="college-item h-full flex flex-col group p-3">
-            <div className="relative flex flex-col rounded-3xl bg-white text-gray-700 shadow-xl transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 border border-gray-100 overflow-hidden h-full">
+            <div className="relative flex flex-col rounded-[2rem] bg-slate-950/85 backdrop-blur-xl text-white shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] transition-all duration-500 hover:shadow-[0_8px_32px_rgba(36,173,191,0.4)] hover:-translate-y-1.5 border border-white/10 hover:border-cyan-500/30 overflow-hidden h-full">
                 {/* Image Section */}
                 <div className="relative aspect-video overflow-hidden shrink-0">
                     <img
@@ -131,35 +131,22 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
 
-                    {/* College Logo Overlay */}
-                    {logoUrl && !logoError && (
-                        <div className="absolute top-3 left-3 w-12 h-12 bg-white rounded-2xl p-1.5 shadow-lg flex items-center justify-center border border-white/20 backdrop-blur-sm group-hover:scale-110 transition-transform duration-300">
-                            <img
-                                src={logoUrl}
-                                alt={`${name} logo`}
-                                onError={() => setLogoError(true)}
-                                className="w-full h-full object-contain"
-                            />
-                        </div>
-                    )}
-
                     {/* Location Badge */}
-                    <div className={`absolute bottom-3 ${logoUrl && !logoError ? 'right-3' : 'left-3'} flex items-center gap-1 text-white bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-bold border border-white/10 uppercase tracking-tight`}>
-                        <MapPinIcon className="w-3 h-3" />
+                    <div className="absolute bottom-3 left-3 flex items-center gap-1 text-white bg-slate-900/60 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-bold border border-white/10 uppercase tracking-wider">
+                        <MapPinIcon className="w-3.5 h-3.5 text-cyan-400" />
                         {city}, {state}
                     </div>
 
                     {/* Bookmark Button */}
                     <button
                         onClick={handleBookmarkToggle}
-                        className="absolute top-3 right-3 p-2 rounded-full bg-white/95 backdrop-blur-sm border border-gray-200 transition-all hover:bg-teal-50 shadow-sm group/btn"
+                        className="absolute top-3 right-3 p-2 rounded-full bg-slate-900/60 backdrop-blur-md border border-white/15 transition-all hover:bg-white/10 shadow-sm group/btn"
                         type="button"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 24 24"
-                            className={`w-5 h-5 transition-all duration-300 ${isBookmarked ? 'fill-purple' : 'fill-transparent'}`}
-                            stroke="#17717d"
+                            className={`w-5 h-5 transition-all duration-300 ${isBookmarked ? 'fill-rose-500 stroke-rose-500 scale-110' : 'fill-transparent stroke-white/80 group-hover/btn:stroke-white group-hover/btn:scale-110'}`}
                             strokeWidth="1.5"
                         >
                             <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" />
@@ -168,17 +155,28 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
                 </div>
 
                 {/* Content Section */}
-                <div className="p-4 flex-1 flex flex-col justify-between">
+                <div className={`p-4 flex-1 flex flex-col justify-between relative ${logoUrl && !logoError ? 'pt-8' : 'pt-4'}`}>
+                    {/* College Logo Overlay floating over the cover boundary */}
+                    {logoUrl && !logoError && (
+                        <div className="absolute -top-7 left-4 w-14 h-14 bg-white rounded-2xl p-1.5 shadow-lg flex items-center justify-center border border-white/10 group-hover:scale-105 transition-transform duration-300 z-10">
+                            <img
+                                src={logoUrl}
+                                alt={`${name} logo`}
+                                onError={() => setLogoError(true)}
+                                className="w-full h-full object-contain"
+                            />
+                        </div>
+                    )}
                     <div>
                         {/* Vibe Badges */}
-                        <div className="flex flex-wrap gap-1.5 mb-2">
+                        <div className="flex flex-wrap gap-1.5 mb-3">
                             {control && (
-                                <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider ${control === 1 ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-purple-50 text-purple-700 border border-purple-100'}`}>
+                                <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${control === 1 ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20' : 'bg-purple-500/10 text-purple-300 border border-purple-500/20'}`}>
                                     {control === 1 ? 'Public' : 'Private'}
                                 </span>
                             )}
                             {locale && (
-                                <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-gray-50 text-gray-600 border border-gray-100">
+                                <span className="px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-white/5 text-cyan-300 border border-white/10">
                                     {(() => {
                                         if (locale >= 11 && locale <= 13) return 'City';
                                         if (locale >= 21 && locale <= 23) return 'Suburb';
@@ -189,40 +187,40 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
                                 </span>
                             )}
                             {hbcu && (
-                                <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-100">
+                                <span className="px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-300 border border-amber-500/20">
                                     HBCU
                                 </span>
                             )}
                             {hsi && (
-                                <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-orange-50 text-orange-700 border border-orange-100">
+                                <span className="px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-orange-500/10 text-orange-300 border border-orange-500/20">
                                     HSI
                                 </span>
                             )}
                             {relaffil && relaffil > 0 && (
-                                <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                <span className="px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
                                     Rel. Affil.
                                 </span>
                             )}
                             {loggedIn && user?.sat_score && sat_score > 0 && Math.abs(user.sat_score - sat_score) <= 50 && (
-                                <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-teal-600 text-white border border-teal-500 shadow-sm animate-pulse">
+                                <span className="px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-gradient-to-r from-cyan-500 to-purple-500 text-white shadow-sm animate-pulse">
                                     Competitive Match
                                 </span>
                             )}
                         </div>
 
-                        <h5 className="font-bold text-lg text-gray-900 leading-tight mb-3 group-hover:text-primary transition-colors line-clamp-2 min-h-[3rem]">
+                        <h5 className="font-extrabold text-xl text-white leading-tight mb-3 group-hover:text-cyan-400 transition-colors line-clamp-2 min-h-[3rem]">
                             {name}
                         </h5>
 
-                        {/* Stats Container - Compact version */}
-                        <div className="space-y-2.5 min-h-[200px]">
+                        {/* Stats Container - Grid Version */}
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-3.5 min-h-[160px]">
                             {(() => {
                                 const hasStats = programs_count > 0 || admission_rate > 0 || sat_score > 0 || top_major || grad_rate > 0 || avg_net_price > 0 || cost_of_attendance > 0;
 
                                 if (!hasStats) {
                                     return (
-                                        <div className="flex items-center justify-center h-[200px] border-2 border-dashed border-gray-100 rounded-2xl bg-gray-50/50">
-                                            <p className="text-[11px] font-medium text-gray-400 italic text-center px-4">
+                                        <div className="col-span-2 flex items-center justify-center h-[160px] border border-dashed border-white/10 rounded-2xl bg-white/5">
+                                            <p className="text-[11px] font-medium text-white/40 italic text-center px-4">
                                                 We don't have this information yet. Please check back later.
                                             </p>
                                         </div>
@@ -232,62 +230,48 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
                                 return (
                                     <>
                                         {programs_count > 0 && (
-                                            <div className="flex items-start gap-2.5 text-xs text-gray-500 group/item">
-                                                <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600 group-hover/item:bg-blue-600 group-hover/item:text-white transition-colors shrink-0">
+                                            <div className="flex items-center gap-2 text-xs text-white/70 group/item">
+                                                <div className="p-1.5 rounded-lg bg-white/5 text-cyan-400 group-hover/item:bg-gradient-to-r group-hover/item:from-cyan-400 group-hover/item:to-purple-500 group-hover/item:text-white transition-all shrink-0">
                                                     <BookOpenIcon className="w-3.5 h-3.5" />
                                                 </div>
-                                                <div className="flex flex-col">
-                                                    <p className="text-[9px] uppercase font-bold tracking-tight text-gray-400 leading-none mb-0.5">Majors Offered</p>
-                                                    <p className="font-semibold text-gray-900 leading-none">{programs_count}</p>
+                                                <div className="flex flex-col min-w-0">
+                                                    <p className="text-[9px] uppercase font-bold tracking-wider text-white/40 leading-none mb-0.5">Majors</p>
+                                                    <p className="font-bold text-white text-sm leading-none">{programs_count}</p>
                                                 </div>
                                             </div>
                                         )}
                                         {admission_rate > 0 && (
-                                            <div className="flex items-start gap-2.5 text-xs text-gray-500 group/item">
-                                                <div className="p-1.5 rounded-lg bg-teal-50 text-primary group-hover/item:bg-primary group-hover/item:text-white transition-colors shrink-0">
+                                            <div className="flex items-center gap-2 text-xs text-white/70 group/item">
+                                                <div className="p-1.5 rounded-lg bg-white/5 text-cyan-400 group-hover/item:bg-gradient-to-r group-hover/item:from-cyan-400 group-hover/item:to-purple-500 group-hover/item:text-white transition-all shrink-0">
                                                     <ChartBarIcon className="w-3.5 h-3.5" />
                                                 </div>
-                                                <div className="flex flex-col">
-                                                    <p className="text-[9px] uppercase font-bold tracking-tight text-gray-400 leading-none mb-0.5">Acceptance</p>
-                                                    <p className="font-semibold text-gray-900 leading-none">{(admission_rate * 100).toFixed(1)}%</p>
+                                                <div className="flex flex-col min-w-0">
+                                                    <p className="text-[9px] uppercase font-bold tracking-wider text-white/40 leading-none mb-0.5">Acceptance</p>
+                                                    <p className="font-bold text-white text-sm leading-none">{(admission_rate * 100).toFixed(1)}%</p>
                                                 </div>
                                             </div>
                                         )}
 
                                         {sat_score > 0 && (
-                                            <div className="flex items-start gap-2.5 text-xs text-gray-500 group/item">
-                                                <div className="p-1.5 rounded-lg bg-purple-50 text-purple-600 group-hover/item:bg-purple-600 group-hover/item:text-white transition-colors shrink-0">
+                                            <div className="flex items-center gap-2 text-xs text-white/70 group/item">
+                                                <div className="p-1.5 rounded-lg bg-white/5 text-cyan-400 group-hover/item:bg-gradient-to-r group-hover/item:from-cyan-400 group-hover/item:to-purple-500 group-hover/item:text-white transition-all shrink-0">
                                                     <AcademicCapIcon className="w-3.5 h-3.5" />
                                                 </div>
-                                                <div className="flex flex-col">
-                                                    <p className="text-[9px] uppercase font-bold tracking-tight text-gray-400 leading-none mb-0.5">Avg. SAT</p>
-                                                    <p className="font-semibold text-gray-900 leading-none">{sat_score}</p>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {top_major && (
-                                            <div className="flex items-start gap-2.5 text-xs text-gray-500 group/item">
-                                                <div className="p-1.5 rounded-lg bg-indigo-50 text-indigo-600 group-hover/item:bg-indigo-600 group-hover/item:text-white transition-colors flex-shrink-0">
-                                                    <BookOpenIcon className="w-3.5 h-3.5" />
-                                                </div>
                                                 <div className="flex flex-col min-w-0">
-                                                    <p className="text-[9px] uppercase font-bold tracking-tight text-gray-400 leading-none mb-0.5">Top Major</p>
-                                                    <p className="font-semibold text-gray-900 leading-tight break-words">
-                                                        {top_major}
-                                                    </p>
+                                                    <p className="text-[9px] uppercase font-bold tracking-wider text-white/40 leading-none mb-0.5">Avg. SAT</p>
+                                                    <p className="font-bold text-white text-sm leading-none">{sat_score}</p>
                                                 </div>
                                             </div>
                                         )}
 
                                         {grad_rate > 0 && (
-                                            <div className="flex items-start gap-2.5 text-xs text-gray-500 group/item">
-                                                <div className="p-1.5 rounded-lg bg-green-50 text-green-600 group-hover/item:bg-green-600 group-hover/item:text-white transition-colors shrink-0">
+                                            <div className="flex items-center gap-2 text-xs text-white/70 group/item">
+                                                <div className="p-1.5 rounded-lg bg-white/5 text-cyan-400 group-hover/item:bg-gradient-to-r group-hover/item:from-cyan-400 group-hover/item:to-purple-500 group-hover/item:text-white transition-all shrink-0">
                                                     <ChartBarIcon className="w-3.5 h-3.5" />
                                                 </div>
-                                                <div className="flex flex-col">
-                                                    <p className="text-[9px] uppercase font-bold tracking-tight text-gray-400 leading-none mb-0.5">Graduation Rate</p>
-                                                    <p className="font-semibold text-gray-900 leading-none">
+                                                <div className="flex flex-col min-w-0">
+                                                    <p className="text-[9px] uppercase font-bold tracking-wider text-white/40 leading-none mb-0.5">Grad Rate</p>
+                                                    <p className="font-bold text-white text-sm leading-none">
                                                         {grad_rate > 1 ? grad_rate.toFixed(0) : (grad_rate * 100).toFixed(0)}%
                                                     </p>
                                                 </div>
@@ -295,16 +279,30 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
                                         )}
 
                                         {(avg_net_price > 0 || cost_of_attendance > 0) && (
-                                            <div className="flex items-start gap-2.5 text-xs text-gray-500 group/item">
-                                                <div className="p-1.5 rounded-lg bg-amber-50 text-amber-600 group-hover/item:bg-amber-600 group-hover/item:text-white transition-colors shrink-0">
+                                            <div className="flex items-center gap-2 text-xs text-white/70 group/item">
+                                                <div className="p-1.5 rounded-lg bg-white/5 text-cyan-400 group-hover/item:bg-gradient-to-r group-hover/item:from-cyan-400 group-hover/item:to-purple-500 group-hover/item:text-white transition-all shrink-0">
                                                     <BanknotesIcon className="w-3.5 h-3.5" />
                                                 </div>
-                                                <div className="flex flex-col">
-                                                    <p className="text-[9px] uppercase font-bold tracking-tight text-gray-400 leading-none mb-0.5">
-                                                        {avg_net_price > 0 ? 'Avg. Net Price' : 'Annual Cost'}
+                                                <div className="flex flex-col min-w-0">
+                                                    <p className="text-[9px] uppercase font-bold tracking-wider text-white/40 leading-none mb-0.5">
+                                                        {avg_net_price > 0 ? 'Net Price' : 'Cost'}
                                                     </p>
-                                                    <p className="font-semibold text-gray-900 leading-none">
+                                                    <p className="font-bold text-white text-sm leading-none">
                                                         {formatter.format(avg_net_price > 0 ? avg_net_price : cost_of_attendance)}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {top_major && (
+                                            <div className="col-span-2 flex items-start gap-2 text-xs text-white/70 group/item mt-1">
+                                                <div className="p-1.5 rounded-lg bg-white/5 text-cyan-400 group-hover/item:bg-gradient-to-r group-hover/item:from-cyan-400 group-hover/item:to-purple-500 group-hover/item:text-white transition-all shrink-0">
+                                                    <BookOpenIcon className="w-3.5 h-3.5" />
+                                                </div>
+                                                <div className="flex flex-col min-w-0">
+                                                    <p className="text-[9px] uppercase font-bold tracking-wider text-white/40 leading-none mb-0.5">Top Major</p>
+                                                    <p className="font-bold text-white text-xs leading-tight break-words">
+                                                        {top_major}
                                                     </p>
                                                 </div>
                                             </div>
@@ -318,7 +316,7 @@ const College = ({ id: collegeId, name, city, state, admission_rate, sat_score, 
                     <div className="mt-5">
                         <button
                             onClick={handleClickMore}
-                            className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary py-3 px-4 text-xs font-bold text-white shadow-sm transition-all hover:bg-teal-700 active:scale-95"
+                            className="w-full flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#24adbf] to-[#00b4d8] hover:from-[#2ac4d9] hover:to-[#00c4eb] py-3 px-4 text-xs font-bold text-white shadow-[0_4px_20px_rgba(36,173,191,0.4)] transition-all hover:scale-[1.02] active:scale-95"
                         >
                             View Details
                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>

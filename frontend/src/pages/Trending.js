@@ -272,7 +272,7 @@ function Trending() {
                             key={cat.key}
                             onClick={() => handleCategoryChange(cat.key)}
                             className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold transition-all whitespace-nowrap ${activeCategory === cat.key
-                                ? 'bg-white text-gray-900 shadow-lg shadow-white/20 scale-105'
+                                ? 'bg-gradient-to-r from-[#24adbf] to-[#00b4d8] text-white shadow-[0_4px_15px_rgba(36,173,191,0.4)] scale-105'
                                 : 'bg-white/10 text-white/80 hover:bg-white/20 border border-white/10'
                                 }`}
                         >

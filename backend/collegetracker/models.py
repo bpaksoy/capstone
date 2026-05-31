@@ -462,3 +462,32 @@ class Meeting(models.Model):
 
     def __str__(self):
         return f"Meeting: {self.advisor.username} & {self.student.username} at {self.scheduled_at}"
+
+
+class Transaction(models.Model):
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='transactions')
+    advisor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='advisor_transactions')
+    service = models.ForeignKey(Service, on_delete=models.SET_NULL, null=True)
+    meeting = models.ForeignKey(Meeting, on_delete=models.SET_NULL, null=True, blank=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    stripe_session_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('completed', 'Completed'), ('failed', 'Failed')], default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Transaction: {self.student.username} paid {self.amount} to {self.advisor.username} - {self.status}"
+
+
+class AICallLog(models.Model):
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='ai_logs')
+    prompt_summary = models.TextField(blank=True, null=True)
+    response_summary = models.TextField(blank=True, null=True)
+    latency_ms = models.IntegerField(default=0)
+    success = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        username = self.user.username if self.user else "Anonymous"
+        return f"AI Log ({username}) at {self.created_at} - Latency: {self.latency_ms}ms"
+

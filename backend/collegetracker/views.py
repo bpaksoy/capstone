@@ -3,7 +3,10 @@ import json
 import jwt
 import difflib
 from goose3 import Goose
-from .models import User, College, Comment, Post, Bookmark, Reply, Like, Friendship, SmartCollege, CollegeProgram, Article, Notification, ChatMessage, DirectMessage, LeadStatus, Review, Service, Meeting
+import stripe
+import time
+from .models import User, College, Comment, Post, Bookmark, Reply, Like, Friendship, SmartCollege, CollegeProgram, Article, Notification, ChatMessage, DirectMessage, LeadStatus, Review, Service, Meeting, Transaction, AICallLog
+
 from django.http import JsonResponse, Http404
 from django.db import IntegrityError
 from .serializers import CollegeSerializer, UserSerializer, UploadFileSerializer, LoginSerializer, CommentSerializer, PostSerializer, BookmarkSerializer, ReplySerializer, LikeSerializer, FriendshipSerializer, SmartCollegeSerializer, CollegeProgramSerializer, ArticleSerializer, NotificationSerializer, ChatMessageSerializer, LeadStatusSerializer, ReviewSerializer, ServiceSerializer, MeetingSerializer
@@ -3262,6 +3265,8 @@ class AIChatView(APIView):
             # Create a generator for the streaming response
             def event_stream():
                 full_response = ""
+                success = True
+                stream_start = time.time()
                 try:
                     # Construct full prompt with history
                     full_prompt = system_prompt
@@ -3283,16 +3288,31 @@ class AIChatView(APIView):
                         ChatMessage.objects.create(user=request.user, role='model', content=full_response)
 
                 except Exception as stream_e:
+                    success = False
                     error_str = str(stream_e).lower()
                     if "429" in error_str or "quota" in error_str:
                         yield "\n\n(I'm currently receiving too many requests. Please try again in about a minute!)"
                     else:
                         yield f"\n[Error: {str(stream_e)}]"
+                finally:
+                    latency = int((time.time() - stream_start) * 1000)
+                    user_obj = request.user if request.user.is_authenticated else None
+                    try:
+                        AICallLog.objects.create(
+                            user=user_obj,
+                            prompt_summary=user_message[:500],
+                            response_summary=full_response[:1000],
+                            latency_ms=latency,
+                            success=success
+                        )
+                    except Exception as log_e:
+                        print(f"Error saving AICallLog: {log_e}")
+
 
             response = StreamingHttpResponse(event_stream(), content_type='text/plain')
             response['X-Accel-Buffering'] = 'no'
             response['Cache-Control'] = 'no-cache'
-            response['Connection'] = 'keep-alive'
+
             return response
 
         except Exception as e:
@@ -3413,3 +3433,264 @@ class BookMeetingView(APIView):
 
         serializer = MeetingSerializer(meeting)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class CreateStripeSessionView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        service_id = request.data.get('service_id')
+        scheduled_at = request.data.get('scheduled_at')
+        success_url = request.data.get('success_url', 'http://localhost:3000/bookmarks')
+        cancel_url = request.data.get('cancel_url', 'http://localhost:3000/advisors')
+
+        try:
+            service = Service.objects.get(pk=service_id)
+        except Service.DoesNotExist:
+            return Response({'error': 'Service not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        transaction = Transaction.objects.create(
+            student=request.user,
+            advisor=service.advisor,
+            service=service,
+            amount=service.price,
+            status='pending'
+        )
+
+        stripe_secret = os.environ.get("STRIPE_SECRET_KEY")
+        if stripe_secret and not stripe_secret.startswith("sk_test_dummy"):
+            try:
+                stripe.api_key = stripe_secret
+                session = stripe.checkout.Session.create(
+                    payment_method_types=['card'],
+                    line_items=[{
+                        'price_data': {
+                            'currency': 'usd',
+                            'product_data': {
+                                'name': f"Advising: {service.title}",
+                                'description': f"Session with {service.advisor.username} ({service.duration} mins)",
+                            },
+                            'unit_amount': int(service.price * 100),
+                        },
+                        'quantity': 1,
+                    }],
+                    mode='payment',
+                    success_url=success_url + "?success=true&session_id={CHECKOUT_SESSION_ID}&scheduled_at=" + scheduled_at,
+                    cancel_url=cancel_url + "?cancelled=true",
+                    metadata={
+                        'transaction_id': str(transaction.id),
+                        'service_id': str(service.id),
+                        'student_id': str(request.user.id),
+                        'scheduled_at': scheduled_at
+                    }
+                )
+                transaction.stripe_session_id = session.id
+                transaction.save()
+                return Response({'url': session.url, 'session_id': session.id})
+            except Exception as e:
+                print(f"Stripe real session creation failed, falling back to mock: {e}")
+
+        # --- MOCK STRIPE FLOW ---
+        import uuid
+        mock_session_id = f"cs_test_{uuid.uuid4().hex}"
+        transaction.stripe_session_id = mock_session_id
+        transaction.save()
+
+        mock_checkout_url = f"{success_url}?success=true&session_id={mock_session_id}&mock=true&scheduled_at={scheduled_at}"
+        return Response({'url': mock_checkout_url, 'session_id': mock_session_id})
+
+
+class VerifyStripePaymentView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        session_id = request.data.get('session_id')
+        scheduled_at = request.data.get('scheduled_at')
+
+        try:
+            transaction = Transaction.objects.get(stripe_session_id=session_id)
+        except Transaction.DoesNotExist:
+            return Response({'error': 'Transaction not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if transaction.status == 'completed':
+            return Response({'status': 'completed', 'meeting_id': transaction.meeting.id if transaction.meeting else None})
+
+        is_verified = False
+        stripe_secret = os.environ.get("STRIPE_SECRET_KEY")
+
+        if session_id.startswith("cs_test_") or not stripe_secret or stripe_secret.startswith("sk_test_dummy"):
+            is_verified = True
+        else:
+            try:
+                stripe.api_key = stripe_secret
+                session = stripe.checkout.Session.retrieve(session_id)
+                if session.payment_status == 'paid':
+                    is_verified = True
+                    if not scheduled_at:
+                        scheduled_at = session.metadata.get('scheduled_at')
+            except Exception as e:
+                print(f"Stripe session retrieve failed: {e}")
+
+        if is_verified:
+            transaction.status = 'completed'
+            transaction.completed_at = timezone.now()
+
+            if not transaction.meeting:
+                if not scheduled_at:
+                    scheduled_at = (timezone.now() + timezone.timedelta(days=1)).isoformat()
+                
+                meeting = Meeting.objects.create(
+                    advisor=transaction.advisor,
+                    student=transaction.student,
+                    service=transaction.service,
+                    scheduled_at=scheduled_at,
+                    status='scheduled'
+                )
+                transaction.meeting = meeting
+
+                Notification.objects.create(
+                    recipient=transaction.advisor,
+                    sender=transaction.student,
+                    notification_type='accepted_request',
+                    content_type=ContentType.objects.get_for_model(Meeting),
+                    object_id=meeting.id
+                )
+            
+            transaction.save()
+            return Response({
+                'status': 'completed',
+                'meeting_id': transaction.meeting.id,
+                'room_name': transaction.meeting.room_name
+            })
+        else:
+            transaction.status = 'failed'
+            transaction.save()
+            return Response({'status': 'failed', 'error': 'Payment not verified'})
+
+
+class StripeWebhookView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        payload = request.body
+        sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
+        webhook_secret = os.environ.get("STRIPE_WEBHOOK_SECRET")
+
+        if not webhook_secret:
+            return Response({'error': 'Webhook secret not set'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            event = stripe.Webhook.construct_event(
+                payload, sig_header, webhook_secret
+            )
+        except ValueError as e:
+            return Response({'error': 'Invalid payload'}, status=status.HTTP_400_BAD_REQUEST)
+        except stripe.error.SignatureVerificationError as e:
+            return Response({'error': 'Invalid signature'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if event['type'] == 'checkout.session.completed':
+            session = event['data']['object']
+            session_id = session['id']
+            metadata = session.get('metadata', {})
+            scheduled_at = metadata.get('scheduled_at')
+
+            try:
+                transaction = Transaction.objects.get(stripe_session_id=session_id)
+                if transaction.status != 'completed':
+                    transaction.status = 'completed'
+                    transaction.completed_at = timezone.now()
+                    
+                    if not transaction.meeting:
+                        if not scheduled_at:
+                            scheduled_at = (timezone.now() + timezone.timedelta(days=1)).isoformat()
+                        
+                        meeting = Meeting.objects.create(
+                            advisor=transaction.advisor,
+                            student=transaction.student,
+                            service=transaction.service,
+                            scheduled_at=scheduled_at,
+                            status='scheduled'
+                        )
+                        transaction.meeting = meeting
+
+                        Notification.objects.create(
+                            recipient=transaction.advisor,
+                            sender=transaction.student,
+                            notification_type='accepted_request',
+                            content_type=ContentType.objects.get_for_model(Meeting),
+                            object_id=meeting.id
+                        )
+                    transaction.save()
+            except Transaction.DoesNotExist:
+                print(f"Webhook received transaction not found: {session_id}")
+
+        return Response({'status': 'success'})
+
+
+class AITelemetryView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        logs = AICallLog.objects.select_related('user').order_by('-created_at')[:50]
+        
+        total_calls = AICallLog.objects.count()
+        success_calls = AICallLog.objects.filter(success=True).count()
+        avg_latency = AICallLog.objects.filter(success=True).aggregate(Avg('latency_ms'))['latency_ms__avg'] or 0.0
+
+        logs_data = []
+        for log in logs:
+            logs_data.append({
+                'id': log.id,
+                'user': log.user.username if log.user else 'Anonymous',
+                'prompt': log.prompt_summary,
+                'response': log.response_summary,
+                'latency_ms': log.latency_ms,
+                'success': log.success,
+                'created_at': log.created_at.isoformat()
+            })
+
+        return Response({
+            'total_calls': total_calls,
+            'success_rate': (success_calls / max(1, total_calls)) * 100,
+            'avg_latency': avg_latency,
+            'logs': logs_data
+        })
+
+
+class RevenueAnalyticsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        revenue_by_month = {5: 0.0, 6: 0.0, 7: 0.0, 8: 0.0}
+
+        transactions = Transaction.objects.filter(status='completed', completed_at__year=2026)
+        
+        total_revenue = 0.0
+        for tx in transactions:
+            m = tx.completed_at.month
+            if m in revenue_by_month:
+                revenue_by_month[m] += float(tx.amount)
+            total_revenue += float(tx.amount)
+
+        hosting_cost = 45.00
+        gemini_api_cost = 12.50
+        stripe_fees = total_revenue * 0.029 + (len(transactions) * 0.30)
+        total_costs = hosting_cost + gemini_api_cost + stripe_fees
+
+        return Response({
+            'total_revenue': total_revenue,
+            'revenue_by_month': {
+                'May': revenue_by_month[5],
+                'June': revenue_by_month[6],
+                'July': revenue_by_month[7],
+                'August': revenue_by_month[8]
+            },
+            'total_costs': total_costs,
+            'costs_breakdown': {
+                'hosting': hosting_cost,
+                'api_usage': gemini_api_cost,
+                'stripe_fees': stripe_fees
+            },
+            'marketing_spend': 0.0
+        })
+

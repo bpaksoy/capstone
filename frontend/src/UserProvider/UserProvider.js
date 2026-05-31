@@ -52,6 +52,18 @@ export const UserProvider = ({ children }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    // Safety timeout to prevent hanging on localhost if Clerk fails/is blocked
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (!isClerkLoaded) {
+                console.warn("Clerk loading timed out. Setting appLoading to false to unblock rendering.");
+                setAppLoading(false);
+            }
+        }, 3000);
+        return () => clearTimeout(timer);
+    }, [isClerkLoaded]);
+
+
     // Sync Clerk Session with Backend
     // Only re-runs when the actual Clerk user identity changes (not on every render)
     useEffect(() => {

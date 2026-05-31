@@ -208,7 +208,7 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
                     const post = item;
 
                     return (
-                        <div key={post.id} className="bg-white rounded-xl shadow-sm border border-gray-200 max-w-2xl w-full mb-6 relative overflow-hidden">
+                        <div key={post.id} className="bg-white/90 backdrop-blur-md text-slate-800 rounded-2xl shadow-xl border border-white/30 max-w-2xl w-full mb-6 relative overflow-hidden">
                             {post.is_announcement && (
                                 <div className="bg-[#17717d] w-full py-1.5 px-6 flex items-center justify-between shadow-sm z-10 relative">
                                     <div className="flex items-center gap-2">
@@ -245,7 +245,7 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
                                     />
                                     <div>
                                         <div className="flex items-center gap-1.5">
-                                            <p className="text-gray-900 font-semibold text-sm hover:underline">{post.author?.username || 'Official'}</p>
+                                            <p className="text-slate-900 font-semibold text-sm hover:underline">{post.author?.username || 'Official'}</p>
                                             {post.author?.role === 'college_staff' && post.author?.is_verified && (
                                                 <span className="flex items-center gap-0.5 bg-teal-50 text-primary text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-teal-100 uppercase tracking-tighter">
                                                     <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24"><path d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 12c0 3.839 2.302 7.144 5.575 8.556a12.017 12.017 0 0 0 12.85 0c3.273-1.412 5.575-4.717 5.575-8.556 0-3.14-1.382-5.957-3.598-7.882M12 21V10.332" /></svg>
@@ -253,7 +253,7 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
                                                 </span>
                                             )}
                                         </div>
-                                        <p className="text-gray-500 text-xs">{timeSince(post.created_at)}</p>
+                                        <p className="text-slate-400 text-xs">{timeSince(post.created_at)}</p>
                                         {post.category && post.category !== 'general' && (
                                             <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${{
                                                 acceptance: 'bg-green-50 text-green-600 border border-green-200',
@@ -292,10 +292,10 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
                             </div>
 
                             {/* Inner Content Container */}
-                            <div className="mx-6 mb-4 bg-gray-50 rounded-lg border border-gray-100 overflow-hidden">
+                            <div className="mx-6 mb-4 bg-slate-100/85 rounded-xl border border-slate-200/80 overflow-hidden text-slate-700">
                                 {/* Content */}
                                 <div className="p-4">
-                                    {post.title && <h3 className="text-lg font-bold text-gray-900 mb-1 leading-snug">{post.title}</h3>}
+                                    {post.title && <h3 className="text-lg font-bold text-slate-900 mb-1 leading-snug">{post.title}</h3>}
                                     {(() => {
                                         const isExpanded = expandedPosts[post.id];
                                         const content = post.content || "";
@@ -309,12 +309,12 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
 
                                         return (
                                             <>
-                                                <p className="text-gray-800 text-base leading-relaxed whitespace-pre-wrap">{displayContent}</p>
+                                                <p className="text-slate-700 text-base leading-relaxed whitespace-pre-wrap">{displayContent}</p>
                                                 {shouldTruncate && (
                                                     <button
                                                         type="button"
                                                         onClick={(e) => { e.stopPropagation(); toggleExpandPost(post.id); }}
-                                                        className="text-blue-500 hover:text-blue-700 text-sm font-semibold mt-2 focus:outline-none"
+                                                        className="text-[#17717d] hover:text-[#24adbf] text-sm font-semibold mt-2 focus:outline-none"
                                                     >
                                                         {isExpanded ? 'See less' : 'See more...'}
                                                     </button>
@@ -337,7 +337,7 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
                             </div>
 
                             {/* Stats Row */}
-                            <div className="px-6 py-3 flex items-center justify-between text-sm text-gray-500 border-b border-gray-50">
+                            <div className="px-6 py-3 flex items-center justify-between text-sm text-slate-400 border-b border-slate-100/50">
                                 <div className="flex items-center gap-1">
                                     {(postLikeCounts[post.id] !== undefined ? postLikeCounts[post.id] : post.likes_count) > 0 && (
                                         <>
@@ -358,13 +358,13 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
                             </div>
 
                             {/* Action Buttons */}
-                            <div className="flex items-center justify-between px-6 py-2 border-b border-gray-100">
+                            <div className="flex items-center justify-between px-6 py-2 border-b border-slate-100/50">
                                 {user ? (
                                     <LikeButton
                                         contentType="post"
                                         objectId={post.id}
                                         onLikeStatusChange={updateLikeStatus}
-                                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg transition-colors ${postLikes[post.id] ? 'text-black-100 font-semibold' : 'text-gray-600 hover:bg-gray-100'}`}
+                                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg transition-colors ${postLikes[post.id] ? 'text-[#17717d] font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'}`}
                                     >
                                         <svg className={`w-5 h-5 ${postLikes[post.id] ? 'fill-current' : 'fill-none stroke-current'}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                             <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
@@ -375,7 +375,7 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
                                     <button
                                         type="button"
                                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/login'); }}
-                                        className="flex-1 flex items-center justify-center gap-2 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors font-medium text-sm"
+                                        className="flex-1 flex items-center justify-center gap-2 py-2 text-slate-500 hover:bg-slate-50 hover:text-slate-800 rounded-lg transition-colors font-medium text-sm"
                                     >
                                         <svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
@@ -387,7 +387,7 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
                                 <button
                                     type="button"
                                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleComments(post.id); }}
-                                    className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium text-sm"
+                                    className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-colors font-medium text-sm"
                                 >
                                     <svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -398,7 +398,7 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
                                 <button
                                     type="button"
                                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleShare(post); }}
-                                    className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium text-sm"
+                                    className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-colors font-medium text-sm"
                                 >
                                     <svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
@@ -409,7 +409,7 @@ const PostList = ({ posts, onAddPost, onOpenPostModal }) => {
 
                             {/* Comments Section */}
                             {visibleComments[post.id] && (
-                                <div className="px-6 py-4 bg-gray-50 rounded-b-xl border-t border-gray-100" onClick={(e) => e.stopPropagation()}>
+                                <div className="px-6 py-4 bg-slate-100/90 rounded-b-2xl border-t border-slate-200/60" onClick={(e) => e.stopPropagation()}>
                                     {user && (
                                         <div className="mb-6">
                                             <CommentModal postId={post.id} onAddComment={updateComments} />

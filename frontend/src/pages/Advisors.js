@@ -27,6 +27,54 @@ const Advisors = () => {
     const [selectedAdvisor, setSelectedAdvisor] = useState(null);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [errorMsg, setErrorMsg] = useState(null);
+    const [selectedService, setSelectedService] = useState(null);
+    const [bookingDate, setBookingDate] = useState('');
+    const [bookingTime, setBookingTime] = useState('');
+    const [bookingLoading, setBookingLoading] = useState(false);
+
+    const handleBookingSubmit = async () => {
+        if (!loggedIn) {
+            navigate('/login');
+            return;
+        }
+        setBookingLoading(true);
+        const scheduledAt = new Date(`${bookingDate}T${bookingTime}:00`).toISOString();
+        const token = localStorage.getItem('access');
+        
+        try {
+            const res = await fetch(getApiUrl('api/payments/create-session/'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    service_id: selectedService.id,
+                    scheduled_at: scheduledAt,
+                    success_url: window.location.origin + '/bookmarks',
+                    cancel_url: window.location.origin + '/advisors'
+                })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                if (data.url) {
+                    window.location.href = data.url;
+                } else {
+                    alert("Failed to initiate payment session.");
+                    setBookingLoading(false);
+                }
+            } else {
+                alert("Payment error. Please try again.");
+                setBookingLoading(false);
+            }
+        } catch (err) {
+            console.error("Booking error:", err);
+            alert("Network error booking session.");
+            setBookingLoading(false);
+        }
+    };
+
 
     const specializations = [
         { value: "", label: "All Specializations" },
@@ -198,7 +246,9 @@ const Advisors = () => {
                                         <div className="flex items-start gap-4 mb-6">
                                             <div className="relative flex-shrink-0">
                                                 <img 
-                                                    src={advisor.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${advisor.username}`}
+                                                    src={advisor.image 
+                                                        ? (advisor.image.startsWith('http') ? advisor.image : `${baseUrl}${advisor.image.startsWith('/') ? advisor.image.substring(1) : advisor.image}`)
+                                                        : `https://api.dicebear.com/7.x/avataaars/svg?seed=${advisor.username}`}
                                                     alt={advisor.username} 
                                                     className="w-20 h-20 rounded-3xl object-cover shadow-lg bg-gray-50"
                                                 />
@@ -249,9 +299,22 @@ const Advisors = () => {
 
                                         {advisor.services && advisor.services.length > 0 && (
                                             <div className="mb-6 space-y-2">
-                                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2">Available Packages</p>
+                                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2">Available Packages (Click to Book)</p>
                                                 {advisor.services.map(service => (
-                                                    <div key={service.id} className="flex items-center justify-between p-3 bg-teal-50/50 rounded-xl border border-teal-100/50 group/service hover:bg-teal-50 transition-colors">
+                                                    <div 
+                                                        key={service.id} 
+                                                        onClick={() => {
+                                                            if (!loggedIn) {
+                                                                navigate('/login');
+                                                                return;
+                                                            }
+                                                            setSelectedService({
+                                                                ...service,
+                                                                advisor_name: advisor.first_name || advisor.username
+                                                            });
+                                                        }}
+                                                        className="flex items-center justify-between p-3 bg-teal-50/50 rounded-xl border border-teal-100/50 group/service hover:bg-teal-50 hover:border-teal-400 cursor-pointer transition-colors"
+                                                    >
                                                         <div className="flex flex-col">
                                                             <span className="text-xs font-bold text-gray-800">{service.title}</span>
                                                             <div className="flex items-center gap-1 text-[10px] text-gray-500">
@@ -306,6 +369,68 @@ const Advisors = () => {
                     advisor={selectedAdvisor}
                     onReviewSubmitted={fetchAdvisors}
                 />
+            )}
+            {selectedService && (
+                <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-[2rem] max-w-md w-full p-6 border border-gray-100 shadow-2xl relative animate-in fade-in zoom-in duration-200 text-slate-800">
+                        <button 
+                            onClick={() => setSelectedService(null)}
+                            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 font-bold text-xl p-1"
+                        >
+                            ✕
+                        </button>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-teal-600 bg-teal-50 px-3 py-1 rounded-full">
+                            Confirm Booking
+                        </span>
+                        <h3 className="text-2xl font-black text-gray-900 mt-3 mb-1">
+                            {selectedService.title}
+                        </h3>
+                        <p className="text-xs text-gray-500 mb-6">
+                            Advisor: {selectedService.advisor_name}
+                        </p>
+                        
+                        <div className="space-y-4 mb-6">
+                            <div>
+                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                                    Select Date
+                                </label>
+                                <input 
+                                    type="date"
+                                    min={new Date().toISOString().split('T')[0]}
+                                    value={bookingDate}
+                                    onChange={(e) => setBookingDate(e.target.value)}
+                                    className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-teal-500/40 text-sm font-semibold"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                                    Select Time
+                                </label>
+                                <input 
+                                    type="time"
+                                    value={bookingTime}
+                                    onChange={(e) => setBookingTime(e.target.value)}
+                                    className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-teal-500/40 text-sm font-semibold"
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex items-center justify-between p-4 bg-teal-50/50 rounded-2xl mb-6">
+                            <span className="text-sm font-semibold text-gray-600">Total Price:</span>
+                            <span className="text-xl font-black text-teal-700">${parseFloat(selectedService.price).toFixed(2)}</span>
+                        </div>
+
+                        <button
+                            onClick={handleBookingSubmit}
+                            disabled={!bookingDate || !bookingTime || bookingLoading}
+                            className="w-full bg-[#17717d] hover:bg-[#135f69] disabled:opacity-50 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-[#17717d]/20"
+                        >
+                            {bookingLoading ? 'Redirecting to Checkout...' : '💳 Pay with Stripe'}
+                        </button>
+                    </div>
+                </div>
             )}
         </>
     );

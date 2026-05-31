@@ -121,7 +121,7 @@ function AddPostModal({ onAddPost, isOpen: externalIsOpen, onClose: externalOnCl
 
             <div
                 onClick={handleOpenModal}
-                className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 cursor-pointer hover:shadow-md transition-shadow"
+                className="bg-white/90 backdrop-blur-md text-slate-800 rounded-2xl shadow-lg border border-white/30 p-4 cursor-pointer hover:shadow-xl transition-shadow"
             >
                 <div className="flex items-center gap-3">
                     <img

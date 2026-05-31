@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSignIn } from "@clerk/clerk-react";
 import { useNavigate, Link, Navigate } from 'react-router-dom';
 import graduation from "../assets/images/graduation.jpg";
@@ -6,6 +6,8 @@ import { images } from "../constants";
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { useCurrentUser } from '../UserProvider/UserProvider';
 import Loader from '../components/Loader';
+import { getApiUrl } from '../shared';
+
 
 export default function Login() {
     const { isLoaded, signIn, setActive } = useSignIn();
@@ -17,13 +19,25 @@ export default function Login() {
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState(null);
     const [isLoggingIn, setIsLoggingIn] = useState(false);
+    const [clerkTimeout, setClerkTimeout] = useState(false);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (!isLoaded) {
+                console.warn("Clerk authentication module timed out.");
+                setClerkTimeout(true);
+            }
+        }, 3000);
+        return () => clearTimeout(timer);
+    }, [isLoaded]);
+
 
     // If already logged in, redirect
     if (loggedIn) {
         return <Navigate to="/" replace />;
     }
 
-    if (appLoading || !isLoaded || isLoggingIn) {
+    if ((appLoading || !isLoaded || isLoggingIn) && !clerkTimeout) {
         return <Loader text="Loading..." />;
     }
 
@@ -44,7 +58,46 @@ export default function Login() {
 
     const login = async (e) => {
         e.preventDefault();
+        
+        setIsLoggingIn(true);
+        setError(null);
+
+        // Fallback: direct Django login if Clerk is timed out/unavailable
+        if (!isLoaded && clerkTimeout) {
+            try {
+                const response = await fetch(getApiUrl('api/login/'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: identifier.trim(),
+                        password: password
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.access) {
+                        localStorage.setItem('access', data.access);
+                        localStorage.setItem('refresh', data.refresh);
+                        window.location.href = '/';
+                        return;
+                    } else {
+                        setError("Invalid username or password.");
+                    }
+                } else {
+                    setError("Direct login failed. Check credentials.");
+                }
+            } catch (err) {
+                console.error("Direct login error:", err);
+                setError("Failed to connect to backend login service.");
+            } finally {
+                setIsLoggingIn(false);
+            }
+            return;
+        }
+
         if (!isLoaded) return;
+
 
         setIsLoggingIn(true);
         setError(null);
@@ -113,6 +166,12 @@ export default function Login() {
                         <span className="text-xs text-center text-gray-500 uppercase">or login with email</span>
                         <span className="border-b w-1/5 lg:w-1/4"></span>
                     </div>
+
+                    {clerkTimeout && !isLoaded && (
+                        <div className="p-4 mb-4 mt-4 text-sm text-amber-800 rounded-lg bg-amber-50 border border-amber-200" role="alert">
+                            ⚠️ Authentication service (Clerk) is taking too long to load. If you are offline or using local development, please make sure your network and Clerk configs are valid.
+                        </div>
+                    )}
 
                     {error && (
                         <div className="p-4 mb-4 mt-4 text-sm text-red-800 rounded-lg bg-red-50 border border-red-200" role="alert">
