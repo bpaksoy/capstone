@@ -80,7 +80,7 @@ const Advisors = () => {
                 body: JSON.stringify({
                     service_id: selectedService.id,
                     scheduled_at: scheduledAt,
-                    success_url: window.location.origin + '/bookmarks',
+                    success_url: window.location.origin + '/profile',
                     cancel_url: window.location.origin + '/advisors'
                 })
             });

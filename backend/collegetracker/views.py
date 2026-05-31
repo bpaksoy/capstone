@@ -3466,7 +3466,7 @@ class CreateStripeSessionView(APIView):
     def post(self, request):
         service_id = request.data.get('service_id')
         scheduled_at = request.data.get('scheduled_at')
-        success_url = request.data.get('success_url', 'http://localhost:3000/bookmarks')
+        success_url = request.data.get('success_url', 'http://localhost:3000/profile')
         cancel_url = request.data.get('cancel_url', 'http://localhost:3000/advisors')
 
         try:
