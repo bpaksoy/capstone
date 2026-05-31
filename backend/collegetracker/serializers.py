@@ -55,13 +55,14 @@ class UserSerializer(serializers.ModelSerializer):
 
     reviews_count = serializers.SerializerMethodField()
     services = serializers.SerializerMethodField()
+    is_online = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = ('id', 'username', 'email', 'password', 'first_name', 'last_name',
                   'city', 'state', 'country', 'major', 'education', 'gpa', 'sat_score', 
                   'bio', 'image', 'friends', 'is_private', 'role', 'associated_college', 'is_verified', 'has_selected_role',
-                  'hourly_rate', 'specialization', 'advisor_bio', 'rating', 'reviews_count', 'services')
+                  'hourly_rate', 'specialization', 'advisor_bio', 'rating', 'reviews_count', 'services', 'is_online')
 
     def get_reviews_count(self, obj):
         return obj.reviews_received.count()
@@ -70,6 +71,14 @@ class UserSerializer(serializers.ModelSerializer):
         if obj.role == 'advisor':
             return ServiceSerializer(obj.services.all(), many=True).data
         return []
+
+    def get_is_online(self, obj):
+        if obj.last_active:
+            from django.utils import timezone
+            from datetime import timedelta
+            return obj.last_active >= timezone.now() - timedelta(minutes=5)
+        return False
+
 
     def create(self, validated_data):
         password = validated_data.pop('password', None)

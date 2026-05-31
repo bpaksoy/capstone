@@ -281,10 +281,17 @@ const Advisors = () => {
                                                     alt={advisor.username} 
                                                     className="w-20 h-20 rounded-3xl object-cover shadow-lg bg-gray-50"
                                                 />
-                                                <div className="absolute -bottom-2 -right-2 bg-green-500 w-6 h-6 rounded-full border-4 border-white shadow-sm flex items-center justify-center">
-                                                    <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                                                </div>
+                                                {advisor.is_online ? (
+                                                    <div className="absolute -bottom-2 -right-2 bg-green-500 w-6 h-6 rounded-full border-4 border-white shadow-sm flex items-center justify-center" title="Online">
+                                                        <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="absolute -bottom-2 -right-2 bg-gray-300 w-6 h-6 rounded-full border-4 border-white shadow-sm flex items-center justify-center" title="Offline">
+                                                        <div className="w-2 h-2 bg-white/60 rounded-full"></div>
+                                                    </div>
+                                                )}
                                             </div>
+
                                             <div className="flex-1 min-w-0">
                                                 <h3 className="text-xl font-bold text-gray-900 group-hover:text-purple transition-colors truncate">
                                                     {advisor.first_name} {advisor.last_name || advisor.username}
@@ -358,25 +365,52 @@ const Advisors = () => {
                                             </div>
                                         )}
 
-                                        <button 
-                                            onClick={() => {
-                                                if (!loggedIn) {
-                                                    navigate('/login');
-                                                    return;
-                                                }
-                                                navigate('/messages', { 
-                                                    state: { 
-                                                        openChatWithUserId: advisor.id,
-                                                        openChatWithUserName: advisor.first_name || advisor.username,
-                                                        draftText: `Hi ${advisor.first_name || advisor.username}, I saw your profile on the Advisor Marketplace and I'm interested in your services!` 
-                                                    } 
-                                                });
-                                            }}
-                                            className="w-full bg-[#17717d] hover:bg-[#135f69] text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-[#17717d]/20 mt-auto"
-                                        >
-                                            <ChatBubbleLeftRightIcon className="w-5 h-5" />
-                                            Book Consultation
-                                        </button>
+                                        <div className="flex gap-3 mt-auto w-full">
+                                            <button 
+                                                onClick={() => {
+                                                    if (!loggedIn) {
+                                                        navigate('/login');
+                                                        return;
+                                                    }
+                                                    navigate('/messages', { 
+                                                        state: { 
+                                                            openChatWithUserId: advisor.id,
+                                                            openChatWithUserName: advisor.first_name || advisor.username,
+                                                            draftText: `Hi ${advisor.first_name || advisor.username}, I saw your profile on the Advisor Marketplace and I'd like to ask a few questions before booking!` 
+                                                        } 
+                                                    });
+                                                }}
+                                                className="flex-1 max-w-[80px] bg-white border border-[#17717d]/20 text-[#17717d] hover:bg-teal-50 py-4 rounded-2xl font-bold flex items-center justify-center transition-all active:scale-95 shadow-sm"
+                                                title="Chat with Advisor"
+                                            >
+                                                <ChatBubbleLeftRightIcon className="w-5 h-5" />
+                                            </button>
+                                            <button 
+                                                onClick={() => {
+                                                    if (!loggedIn) {
+                                                        navigate('/login');
+                                                        return;
+                                                    }
+                                                    const generalService = advisor.services?.find(s => s.title.toLowerCase().includes('general') || s.title.toLowerCase().includes('introductory')) 
+                                                        || advisor.services?.[0];
+                                                    
+                                                    if (generalService) {
+                                                        setSelectedService({
+                                                            ...generalService,
+                                                            advisor_id: advisor.id,
+                                                            advisor_name: advisor.first_name || advisor.username
+                                                        });
+                                                    } else {
+                                                        alert("No consultation services available for this advisor yet.");
+                                                    }
+                                                }}
+                                                className="flex-1 bg-[#17717d] hover:bg-[#135f69] text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-[#17717d]/20"
+                                            >
+                                                <VideoCameraIcon className="w-5 h-5" />
+                                                Book Session
+                                            </button>
+                                        </div>
+
                                     </div>
                                 ))
                             ) : (
