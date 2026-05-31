@@ -339,7 +339,7 @@ const AIAgent = () => {
         }
     };
 
-    const handleSendMessage = async (e, retryMessage = null) => {
+    const handleSendMessage = useCallback(async (e, retryMessage = null) => {
         if (e) e.preventDefault();
         
         const messageToSend = retryMessage || message.trim();
@@ -432,7 +432,28 @@ const AIAgent = () => {
             setIsThinking(false);
             abortControllerRef.current = null;
         }
-    };
+    }, [message, isThinking, chatHistory, location.pathname]);
+
+    useEffect(() => {
+        const handleBookingSuccess = (e) => {
+            const { advisorName, scheduledAt } = e.detail;
+            setIsOpen(true);
+            setUnreadWormieMessage(null);
+            setShowTooltip(false);
+
+            const queryText = `I just successfully scheduled a consultation session with Advisor ${advisorName} on ${new Date(scheduledAt).toLocaleString()}! Can you confirm my schedule and give me tips on how to prepare?`;
+            
+            setTimeout(() => {
+                handleSendMessage(null, queryText);
+            }, 600);
+        };
+
+        window.addEventListener('wormie-booking-success', handleBookingSuccess);
+        return () => {
+            window.removeEventListener('wormie-booking-success', handleBookingSuccess);
+        };
+    }, [handleSendMessage]);
+
 
     return (
         <div

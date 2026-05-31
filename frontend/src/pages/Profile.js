@@ -151,6 +151,110 @@ const Profile = () => {
         fetchPendingRequests();
     }, []);
 
+    const [meetings, setMeetings] = useState([]);
+    const [meetingsLoading, setMeetingsLoading] = useState(false);
+    const [availabilities, setAvailabilities] = useState([]);
+    const [availabilitiesLoading, setAvailabilitiesLoading] = useState(false);
+
+    // Availability form state
+    const [availDate, setAvailDate] = useState('');
+    const [availStart, setAvailStart] = useState('');
+    const [availEnd, setAvailEnd] = useState('');
+    const [availError, setAvailError] = useState('');
+    const [availSuccess, setAvailSuccess] = useState('');
+
+    const fetchMeetings = async () => {
+        setMeetingsLoading(true);
+        try {
+            const res = await axios.get(`${baseUrl}api/meetings/`, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('access')}` }
+            });
+            setMeetings(res.data);
+        } catch (error) {
+            console.error("Error fetching meetings:", error);
+        } finally {
+            setMeetingsLoading(false);
+        }
+    };
+
+    const fetchAvailabilities = async () => {
+        if (user?.role !== 'advisor') return;
+        setAvailabilitiesLoading(true);
+        try {
+            const res = await axios.get(`${baseUrl}api/advisors/availability/`, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('access')}` }
+            });
+            setAvailabilities(res.data);
+        } catch (error) {
+            console.error("Error fetching availabilities:", error);
+        } finally {
+            setAvailabilitiesLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (user?.id) {
+            fetchMeetings();
+            if (user?.role === 'advisor') {
+                fetchAvailabilities();
+            }
+        }
+    }, [user]);
+
+    const handleAddAvailability = async (e) => {
+        e.preventDefault();
+        setAvailError('');
+        setAvailSuccess('');
+
+        if (!availDate || !availStart) {
+            setAvailError('All fields are required');
+            return;
+        }
+
+        let endTimeCalculated = availEnd;
+        if (!endTimeCalculated) {
+            try {
+                const [hours, minutes] = availStart.split(':').map(Number);
+                const endHours = (hours + 1) % 24;
+                endTimeCalculated = `${String(endHours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+            } catch (err) {
+                setAvailError('Invalid start time format');
+                return;
+            }
+        }
+
+        try {
+            const res = await axios.post(`${baseUrl}api/advisors/availability/`, {
+                date: availDate,
+                start_time: availStart,
+                end_time: endTimeCalculated
+            }, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('access')}` }
+            });
+
+            setAvailSuccess('Availability slot added!');
+            setAvailDate('');
+            setAvailStart('');
+            setAvailEnd('');
+            fetchAvailabilities();
+        } catch (err) {
+            setAvailError(err.response?.data?.error || 'Failed to add availability slot');
+        }
+    };
+
+    const handleDeleteAvailability = async (id) => {
+        if (!window.confirm("Are you sure you want to remove this availability slot?")) return;
+        try {
+            await axios.delete(`${baseUrl}api/advisors/availability/${id}/`, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('access')}` }
+            });
+            fetchAvailabilities();
+        } catch (err) {
+            alert(err.response?.data?.error || 'Failed to delete slot');
+        }
+    };
+
+
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-primary via-teal-700 to-teal-900">
@@ -419,6 +523,19 @@ const Profile = () => {
                                 >
                                     My Comments
                                 </button>
+                                <button
+                                    className={`pb-4 font-bold text-xs sm:text-sm uppercase tracking-wider transition-all duration-300 border-b-2 focus:outline-none focus:border-primary ${activeTab === 'appointments' ? 'border-primary text-gray-900' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+                                    onClick={() => {
+                                        setActiveTab('appointments');
+                                        setTimeout(() => {
+                                            const yOffset = -20;
+                                            const y = tabsRef.current?.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                                            window.scrollTo({ top: y, behavior: 'smooth' });
+                                        }, 50);
+                                    }}
+                                >
+                                    Appointments
+                                </button>
                             </div>
 
                             <div className="mt-8 pb-10 min-h-[300px]">
@@ -511,6 +628,170 @@ const Profile = () => {
                                                 You haven't commented on anything yet.
                                             </div>
                                         )}
+                                    </div>
+                                )}
+
+                                {activeTab === 'appointments' && (
+                                    <div className="w-full max-w-3xl mx-auto space-y-8 animate-in fade-in duration-300 text-left">
+                                        {/* Advisor-only Availability Manager */}
+                                        {user?.role === 'advisor' && (
+                                            <div className="bg-[#17717d]/5 border border-[#17717d]/10 rounded-[2.5rem] p-6 sm:p-8 shadow-sm">
+                                                <div className="flex items-center gap-2 mb-6">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 text-[#17717d]">
+                                                      <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                                                    </svg>
+                                                    <h3 className="text-xl font-black text-gray-900">Manage Availability Slots</h3>
+                                                </div>
+
+                                                <form onSubmit={handleAddAvailability} className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6 items-end bg-white p-5 rounded-2xl border border-gray-100 shadow-sm text-slate-800">
+                                                    <div className="sm:col-span-1">
+                                                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Select Date</label>
+                                                        <input 
+                                                            type="date"
+                                                            min={new Date().toISOString().split('T')[0]}
+                                                            value={availDate}
+                                                            onChange={(e) => setAvailDate(e.target.value)}
+                                                            className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-teal-500/40 text-sm font-semibold"
+                                                            required
+                                                        />
+                                                    </div>
+                                                    <div className="sm:col-span-1">
+                                                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Start Time</label>
+                                                        <input 
+                                                            type="time"
+                                                            value={availStart}
+                                                            onChange={(e) => setAvailStart(e.target.value)}
+                                                            className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-teal-500/40 text-sm font-semibold"
+                                                            required
+                                                        />
+                                                    </div>
+                                                    <div className="sm:col-span-1">
+                                                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">End Time (Optional)</label>
+                                                        <input 
+                                                            type="time"
+                                                            value={availEnd}
+                                                            onChange={(e) => setAvailEnd(e.target.value)}
+                                                            placeholder="Auto 1-hour"
+                                                            className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-teal-500/40 text-sm font-semibold"
+                                                        />
+                                                    </div>
+                                                    <div className="sm:col-span-1">
+                                                        <button 
+                                                            type="submit"
+                                                            className="w-full bg-[#17717d] hover:bg-[#135f69] text-white p-3 rounded-xl font-bold transition-all active:scale-95 text-sm flex items-center justify-center gap-2"
+                                                        >
+                                                            Add Slot
+                                                        </button>
+                                                    </div>
+                                                </form>
+
+                                                {availError && <p className="text-red-500 text-xs font-bold mb-4">{availError}</p>}
+                                                {availSuccess && <p className="text-green-600 text-xs font-bold mb-4">{availSuccess}</p>}
+
+                                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Your Availability Calendar</h4>
+                                                {availabilitiesLoading ? (
+                                                    <div className="flex justify-center p-4"><div className="w-6 h-6 rounded-full border-2 border-primary border-t-transparent animate-spin"></div></div>
+                                                ) : availabilities.length > 0 ? (
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                                                        {availabilities.map(slot => (
+                                                            <div key={slot.id} className={`p-4 rounded-2xl border flex items-center justify-between ${slot.is_booked ? 'bg-teal-50/50 border-teal-100' : 'bg-white border-gray-100 hover:border-gray-200'} transition-all shadow-sm`}>
+                                                                <div>
+                                                                    <p className="text-sm font-black text-gray-800">{new Date(slot.date + 'T00:00:00').toLocaleDateString(undefined, {month: 'short', day: 'numeric', weekday: 'short'})}</p>
+                                                                    <p className="text-xs text-gray-500 font-bold mt-0.5">{slot.start_time.substring(0, 5)} - {slot.end_time.substring(0, 5)}</p>
+                                                                    <span className={`text-[8px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full inline-block mt-2 ${slot.is_booked ? 'bg-teal-100 text-teal-700' : 'bg-gray-100 text-gray-600'}`}>
+                                                                        {slot.is_booked ? 'Booked' : 'Available'}
+                                                                    </span>
+                                                                </div>
+                                                                {!slot.is_booked && (
+                                                                    <button 
+                                                                        onClick={() => handleDeleteAvailability(slot.id)}
+                                                                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                                                                        title="Delete Slot"
+                                                                    >
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                                                                          <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                                                                        </svg>
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-center py-8 text-gray-400 font-medium italic bg-gray-50/50 rounded-[1.5rem] border border-dashed border-gray-200">
+                                                        No availability slots configured yet. Let students know when you are available!
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {/* Scheduled Consultation Meetings List */}
+                                        <div className="space-y-4">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 text-gray-500">
+                                                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                                                </svg>
+                                                <h3 className="text-lg font-black text-gray-900">Upcoming Consultation Meetings</h3>
+                                            </div>
+
+                                            {meetingsLoading ? (
+                                                <div className="flex justify-center p-8"><div className="w-8 h-8 rounded-full border-4 border-primary border-t-transparent animate-spin"></div></div>
+                                            ) : meetings.length > 0 ? (
+                                                <div className="space-y-4">
+                                                    {meetings.map(meeting => (
+                                                        <div key={meeting.id} className="p-6 bg-white rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 text-slate-800">
+                                                            <div className="flex items-center gap-4">
+                                                                <img
+                                                                    src={meeting.other_party_image ? (meeting.other_party_image.startsWith('http') ? meeting.other_party_image : `${baseUrl}${meeting.other_party_image.startsWith('/') ? meeting.other_party_image.substring(1) : meeting.other_party_image}`) : images.avatar}
+                                                                    onError={(e) => { e.target.onerror = null; e.target.src = images.avatar; }}
+                                                                    alt=""
+                                                                    className="w-12 h-12 rounded-full object-cover border border-gray-100 shrink-0"
+                                                                />
+                                                                <div>
+                                                                    <span className="text-[9px] font-black uppercase tracking-wider text-teal-600 bg-teal-50 px-2 py-0.5 rounded-md">
+                                                                        {meeting.service_title}
+                                                                    </span>
+                                                                    <h4 className="text-base font-black text-gray-900 mt-1">
+                                                                        Session with {meeting.other_party_role === 'advisor' ? 'Advisor' : 'Student'} {meeting.other_party_name}
+                                                                    </h4>
+                                                                    <div className="flex items-center gap-4 text-xs text-gray-500 font-bold mt-1">
+                                                                        <span className="flex items-center gap-1.5">
+                                                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-gray-400">
+                                                                              <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                                                                            </svg>
+                                                                            {new Date(meeting.scheduled_at).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+                                                                        </span>
+                                                                        <span className="flex items-center gap-1.5">
+                                                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-gray-400">
+                                                                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                                            </svg>
+                                                                            {new Date(meeting.scheduled_at).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex items-center gap-3 shrink-0">
+                                                                <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full ${meeting.status === 'scheduled' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-gray-100 text-gray-600'}`}>
+                                                                    {meeting.status}
+                                                                </span>
+                                                                <button
+                                                                    onClick={() => navigate(`/video/${meeting.room_name}`)}
+                                                                    className="bg-[#17717d] hover:bg-[#135f69] text-white text-xs font-bold py-2.5 px-4 rounded-xl shadow-sm transition-all active:scale-95 flex items-center gap-2"
+                                                                >
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
+                                                                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" />
+                                                                    </svg>
+                                                                    Join Room
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="text-center py-12 text-gray-400 font-medium italic bg-gray-50 rounded-[2rem] border border-gray-100">
+                                                    You don't have any upcoming consultation sessions scheduled.
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 )}
                             </div>

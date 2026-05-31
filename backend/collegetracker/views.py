@@ -5,7 +5,7 @@ import difflib
 from goose3 import Goose
 import stripe
 import time
-from .models import User, College, Comment, Post, Bookmark, Reply, Like, Friendship, SmartCollege, CollegeProgram, Article, Notification, ChatMessage, DirectMessage, LeadStatus, Review, Service, Meeting, Transaction, AICallLog
+from .models import User, College, Comment, Post, Bookmark, Reply, Like, Friendship, SmartCollege, CollegeProgram, Article, Notification, ChatMessage, DirectMessage, LeadStatus, Review, Service, Meeting, Transaction, AICallLog, AdvisorAvailability
 
 from django.http import JsonResponse, Http404
 from django.db import IntegrityError
@@ -3133,6 +3133,24 @@ class AIChatView(APIView):
             if request.user.is_authenticated:
                 u = request.user
                 
+                # Fetch upcoming meetings
+                from django.utils import timezone
+                upcoming_meetings = Meeting.objects.filter(
+                    models.Q(student=u) | models.Q(advisor=u),
+                    status='scheduled',
+                    scheduled_at__gte=timezone.now()
+                ).select_related('advisor', 'student')
+                
+                meetings_text = ""
+                if upcoming_meetings.exists():
+                    meetings_text = "Upcoming Consultation Sessions:\n"
+                    for m in upcoming_meetings:
+                        other_party = m.advisor.username if u == m.student else m.student.username
+                        role_str = "Advisor" if u == m.student else "Student"
+                        meetings_text += f"- Meeting with {role_str} {other_party} at {m.scheduled_at.strftime('%Y-%m-%d %H:%M UTC')} (Room Name: {m.room_name})\n"
+                else:
+                    meetings_text = "No upcoming scheduled meetings."
+
                 if u.role == 'college_staff' and u.associated_college:
                     college = u.associated_college
                     # 1. Fans: Students who have bookmarked this college
@@ -3151,6 +3169,9 @@ class AIChatView(APIView):
                     - TOP PROSPECTS (Bookmarked your college): {', '.join(fan_names) if fan_names else 'None identified yet'}
                     - SMART MATCHES (High potential for your college): {', '.join(match_names) if match_names else 'None identified yet'}
                     
+                    UPCOMING APPOINTMENTS:
+                    {meetings_text}
+
                     MISSION: Help the staff member identify the best students to recruit and suggest personalized outreach messages. 
                     Focus on the students listed above.
                     """
@@ -3192,9 +3213,13 @@ class AIChatView(APIView):
                     - Bookmarked Colleges: {', '.join(bookmark_names) if bookmark_names else 'None yet'}
                     {bookmark_details}
                     
+                    UPCOMING APPOINTMENTS:
+                    {meetings_text}
+
                     PROACTIVE RECOMMENDATIONS:
                     {recommendations_text if recommendations_text else 'No specific suggestions yet.'}
                     """
+
         except Exception as memory_e:
             print(f"Memory processing error: {memory_e}")
             user_memory = "Error gathering user context."
@@ -3557,15 +3582,36 @@ class VerifyStripePaymentView(APIView):
                 )
             
             transaction.save()
+
+            # Mark advisor availability slot as booked
+            try:
+                from django.utils import dateparse
+                scheduled_dt = dateparse.parse_datetime(scheduled_at)
+                if scheduled_dt:
+                    slot = AdvisorAvailability.objects.filter(
+                        advisor=transaction.advisor,
+                        date=scheduled_dt.date(),
+                        start_time=scheduled_dt.time(),
+                        is_booked=False
+                    ).first()
+                    if slot:
+                        slot.is_booked = True
+                        slot.save()
+            except Exception as slot_err:
+                print(f"Error marking availability slot: {slot_err}")
+
             return Response({
                 'status': 'completed',
                 'meeting_id': transaction.meeting.id,
-                'room_name': transaction.meeting.room_name
+                'room_name': transaction.meeting.room_name,
+                'advisor_name': transaction.advisor.first_name or transaction.advisor.username,
+                'scheduled_at': transaction.meeting.scheduled_at.isoformat()
             })
         else:
             transaction.status = 'failed'
             transaction.save()
             return Response({'status': 'failed', 'error': 'Payment not verified'})
+
 
 
 class StripeWebhookView(APIView):
@@ -3693,4 +3739,123 @@ class RevenueAnalyticsView(APIView):
             },
             'marketing_spend': 0.0
         })
+
+
+class AdvisorAvailabilityView(APIView):
+    def get_permissions(self):
+        if self.request.method == 'GET' and 'advisor_id' in self.kwargs:
+            return []  # Public
+        return [IsAuthenticated()]
+
+    def get(self, request, advisor_id=None):
+        if advisor_id is not None:
+            # Public endpoint for student booking: only unbooked slots, starting from today
+            from django.utils import timezone
+            today = timezone.localdate()
+            slots = AdvisorAvailability.objects.filter(advisor_id=advisor_id, is_booked=False, date__gte=today)
+            data = [{
+                'id': slot.id,
+                'date': slot.date.isoformat(),
+                'start_time': slot.start_time.strftime('%H:%M'),
+                'end_time': slot.end_time.strftime('%H:%M'),
+            } for slot in slots]
+            return Response(data)
+        
+        # Authenticated endpoint for the advisor themselves
+        if request.user.role != 'advisor':
+            return Response({'error': 'Only advisors can access this endpoint'}, status=status.HTTP_403_FORBIDDEN)
+        
+        slots = AdvisorAvailability.objects.filter(advisor=request.user)
+        data = [{
+            'id': slot.id,
+            'date': slot.date.isoformat(),
+            'start_time': slot.start_time.strftime('%H:%M'),
+            'end_time': slot.end_time.strftime('%H:%M'),
+            'is_booked': slot.is_booked
+        } for slot in slots]
+        return Response(data)
+
+    def post(self, request):
+        if request.user.role != 'advisor':
+            return Response({'error': 'Only advisors can set availability'}, status=status.HTTP_403_FORBIDDEN)
+
+        date_str = request.data.get('date')
+        start_time_str = request.data.get('start_time')
+        end_time_str = request.data.get('end_time')
+
+        if not date_str or not start_time_str or not end_time_str:
+            return Response({'error': 'Date, start_time, and end_time are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            from datetime import datetime
+            parsed_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+            parsed_start = datetime.strptime(start_time_str, '%H:%M').time()
+            parsed_end = datetime.strptime(end_time_str, '%H:%M').time()
+
+            if parsed_start >= parsed_end:
+                return Response({'error': 'Start time must be before end time'}, status=status.HTTP_400_BAD_REQUEST)
+
+            slot, created = AdvisorAvailability.objects.get_or_create(
+                advisor=request.user,
+                date=parsed_date,
+                start_time=parsed_start,
+                end_time=parsed_end
+            )
+
+            if not created:
+                return Response({'error': 'Availability slot already exists'}, status=status.HTTP_400_BAD_REQUEST)
+
+            return Response({
+                'id': slot.id,
+                'date': slot.date.isoformat(),
+                'start_time': slot.start_time.strftime('%H:%M'),
+                'end_time': slot.end_time.strftime('%H:%M'),
+                'is_booked': slot.is_booked
+            }, status=status.HTTP_201_CREATED)
+
+        except ValueError as ve:
+            return Response({'error': f'Invalid format: {str(ve)}. Formats should be YYYY-MM-DD and HH:MM'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def delete(self, request, pk=None):
+        if request.user.role != 'advisor':
+            return Response({'error': 'Only advisors can delete availability'}, status=status.HTTP_403_FORBIDDEN)
+
+        try:
+            slot = AdvisorAvailability.objects.get(pk=pk, advisor=request.user)
+            if slot.is_booked:
+                return Response({'error': 'Cannot delete a slot that has already been booked'}, status=status.HTTP_400_BAD_REQUEST)
+            slot.delete()
+            return Response({'status': 'deleted'}, status=status.HTTP_204_NO_CONTENT)
+        except AdvisorAvailability.DoesNotExist:
+            return Response({'error': 'Slot not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class UserMeetingsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        if user.role == 'advisor':
+            meetings = Meeting.objects.filter(advisor=user).order_by('scheduled_at')
+        else:
+            meetings = Meeting.objects.filter(student=user).order_by('scheduled_at')
+
+        data = []
+        for m in meetings:
+            other_party = m.student if user.role == 'advisor' else m.advisor
+            service_title = m.service.title if m.service else 'General Consultation'
+            data.append({
+                'id': m.id,
+                'status': m.status,
+                'scheduled_at': m.scheduled_at.isoformat(),
+                'room_name': m.room_name,
+                'other_party_name': other_party.first_name or other_party.last_name or other_party.username,
+                'other_party_role': other_party.role,
+                'other_party_image': other_party.image.url if other_party.image else None,
+                'service_title': service_title,
+            })
+        return Response(data)
+
 

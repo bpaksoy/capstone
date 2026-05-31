@@ -23,6 +23,68 @@ const Bookmarks = () => {
   const [isRecommending, setIsRecommending] = useState(false);
   const [loadingStep, setLoadingStep] = useState("Initializing...");
   const [sliderRef, setSliderRef] = useState(null);
+  const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
+  const [verificationResult, setVerificationResult] = useState(null);
+
+  // Check URL parameters for booking checkout redirection
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const success = params.get('success');
+    const sessionId = params.get('session_id');
+    const scheduledAt = params.get('scheduled_at');
+
+    if (success === 'true' && sessionId) {
+      verifyPayment(sessionId, scheduledAt);
+    }
+  }, []);
+
+  const verifyPayment = async (sessionId, scheduledAt) => {
+    setIsVerifyingPayment(true);
+    const token = localStorage.getItem('access');
+    try {
+      const response = await fetch(`${baseUrl}api/payments/verify/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          session_id: sessionId,
+          scheduled_at: scheduledAt
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.status === 'completed') {
+          setVerificationResult({
+            success: true,
+            advisorName: data.advisor_name,
+            scheduledAt: data.scheduled_at
+          });
+          // Dispatch custom event for Wormie to handle
+          window.dispatchEvent(new CustomEvent('wormie-booking-success', {
+            detail: {
+              advisorName: data.advisor_name,
+              scheduledAt: data.scheduled_at
+            }
+          }));
+        } else {
+          setVerificationResult({ success: false, error: data.error || 'Payment not verified' });
+        }
+      } else {
+        setVerificationResult({ success: false, error: 'Verification request failed' });
+      }
+    } catch (err) {
+      console.error('Error verifying payment:', err);
+      setVerificationResult({ success: false, error: 'Network error during verification' });
+    } finally {
+      setIsVerifyingPayment(false);
+      // Clean up URL query parameters from history
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  };
+
 
   // Immediate redirect if explicitly logged out
   useEffect(() => {
@@ -241,6 +303,96 @@ const Bookmarks = () => {
         </div>
       )}
       <ScrollToTop />
+
+      {/* Booking Verification Overlay */}
+      {isVerifyingPayment && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-300">
+          <div className="bg-white/10 border border-white/20 rounded-[2.5rem] p-10 max-w-md w-full text-center shadow-2xl backdrop-blur-xl text-white">
+            <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+            <h3 className="text-2xl font-black mb-2">Verifying Consultation Booking</h3>
+            <p className="text-gray-300 text-sm">Please wait while we confirm your Stripe checkout transaction with our database...</p>
+          </div>
+        </div>
+      )}
+
+      {verificationResult && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
+          <div className="bg-white rounded-[2.5rem] p-8 max-w-md w-full text-center shadow-2xl border border-gray-100 relative animate-in fade-in zoom-in duration-200 text-slate-800">
+            <button 
+              onClick={() => setVerificationResult(null)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 font-bold text-xl p-1"
+            >
+              ✕
+            </button>
+            {verificationResult.success ? (
+              <>
+                <div className="w-20 h-20 bg-teal-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-teal-100 shadow-inner">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-10 h-10 text-teal-600">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                  </svg>
+                </div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-teal-600 bg-teal-50 px-3 py-1 rounded-full">
+                  Booking Confirmed
+                </span>
+                <h3 className="text-3xl font-black text-gray-900 mt-4 mb-2">
+                  Session Scheduled!
+                </h3>
+                <p className="text-sm text-gray-600 mb-6 leading-relaxed">
+                  Your appointment with <span className="font-extrabold text-[#17717d]">Advisor {verificationResult.advisorName}</span> has been successfully booked for:
+                  <br />
+                  <span className="font-bold text-gray-900 block mt-2 text-base">
+                    {new Date(verificationResult.scheduledAt).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                    <br />
+                    at {new Date(verificationResult.scheduledAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </p>
+                <div className="bg-purple-50/50 border border-purple-200/50 p-4 rounded-2xl mb-6 text-left">
+                  <div className="flex gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 text-[#A855F7] shrink-0 mt-0.5 animate-pulse">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6.75 6.75 0 100-13.5 6.75 6.75 0 000 13.5zM12 7.5v4.5l3 1.5" />
+                    </svg>
+                    <div>
+                      <p className="text-xs font-black text-[#A855F7] uppercase tracking-wider">Message from Wormie</p>
+                      <p className="text-xs text-purple/80 mt-0.5 leading-relaxed font-medium">Check your chat! I have loaded your appointment info and am ready to help you prepare.</p>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setVerificationResult(null)}
+                  className="w-full bg-[#17717d] hover:bg-[#135f69] text-white py-4 rounded-2xl font-bold transition-all active:scale-95 shadow-lg shadow-[#17717d]/20"
+                >
+                  Awesome, thank you!
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-100 shadow-inner">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-10 h-10 text-red-600">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-red-600 bg-red-50 px-3 py-1 rounded-full">
+                  Verification Failed
+                </span>
+                <h3 className="text-2xl font-black text-gray-900 mt-4 mb-2">
+                  Couldn't Verify Payment
+                </h3>
+                <p className="text-sm text-gray-600 mb-6 leading-relaxed">
+                  We ran into an issue confirming your checkout:
+                  <br />
+                  <span className="font-bold text-red-500 block mt-1">{verificationResult.error}</span>
+                </p>
+                <button
+                  onClick={() => setVerificationResult(null)}
+                  className="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-2xl font-bold transition-all active:scale-95 shadow-lg"
+                >
+                  Close
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -162,7 +162,12 @@ urlpatterns = [
     path('api/payments/webhook/', csrf_exempt(views.StripeWebhookView.as_view()), name='payments-webhook'),
     path('api/admin/ai-telemetry/', views.AITelemetryView.as_view(), name='admin-ai-telemetry'),
     path('api/admin/revenue/', views.RevenueAnalyticsView.as_view(), name='admin-revenue'),
+    path('api/meetings/', views.UserMeetingsView.as_view(), name='user-meetings'),
+    path('api/advisors/<int:advisor_id>/availability/', views.AdvisorAvailabilityView.as_view(), name='advisor-availability-public'),
+    path('api/advisors/availability/', views.AdvisorAvailabilityView.as_view(), name='advisor-availability-list-create'),
+    path('api/advisors/availability/<int:pk>/', views.AdvisorAvailabilityView.as_view(), name='advisor-availability-delete'),
     path('upload4/', views.UploadApiView4.as_view(), name='upload_file4'),
+
 ]
 
 # Serve media files in production (OK for demo/Cloud Run if ephemeral storage is used)

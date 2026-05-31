@@ -491,3 +491,19 @@ class AICallLog(models.Model):
         username = self.user.username if self.user else "Anonymous"
         return f"AI Log ({username}) at {self.created_at} - Latency: {self.latency_ms}ms"
 
+
+class AdvisorAvailability(models.Model):
+    advisor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='availabilities')
+    date = models.DateField()
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    is_booked = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('advisor', 'date', 'start_time', 'end_time')
+        ordering = ['date', 'start_time']
+
+    def __str__(self):
+        return f"Availability: {self.advisor.username} on {self.date} from {self.start_time} to {self.end_time} (Booked: {self.is_booked})"
+
+

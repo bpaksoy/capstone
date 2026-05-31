@@ -28,17 +28,46 @@ const Advisors = () => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [errorMsg, setErrorMsg] = useState(null);
     const [selectedService, setSelectedService] = useState(null);
-    const [bookingDate, setBookingDate] = useState('');
-    const [bookingTime, setBookingTime] = useState('');
     const [bookingLoading, setBookingLoading] = useState(false);
+    const [selectedSlot, setSelectedSlot] = useState(null);
+    const [availabilities, setAvailabilities] = useState([]);
+    const [availabilitiesLoading, setAvailabilitiesLoading] = useState(false);
+
+    useEffect(() => {
+        if (selectedService && selectedService.advisor_id) {
+            fetchAdvisorAvailability(selectedService.advisor_id);
+        } else {
+            setAvailabilities([]);
+            setSelectedSlot(null);
+        }
+    }, [selectedService]);
+
+    const fetchAdvisorAvailability = async (advisorId) => {
+        setAvailabilitiesLoading(true);
+        try {
+            const res = await fetch(getApiUrl(`api/advisors/${advisorId}/availability/`));
+            if (res.ok) {
+                const data = await res.json();
+                setAvailabilities(data);
+            }
+        } catch (error) {
+            console.error("Error fetching advisor availability:", error);
+        } finally {
+            setAvailabilitiesLoading(false);
+        }
+    };
 
     const handleBookingSubmit = async () => {
         if (!loggedIn) {
             navigate('/login');
             return;
         }
+        if (!selectedSlot) {
+            alert("Please select an availability slot.");
+            return;
+        }
         setBookingLoading(true);
-        const scheduledAt = new Date(`${bookingDate}T${bookingTime}:00`).toISOString();
+        const scheduledAt = new Date(`${selectedSlot.date}T${selectedSlot.start_time}`).toISOString();
         const token = localStorage.getItem('access');
         
         try {
@@ -310,6 +339,7 @@ const Advisors = () => {
                                                             }
                                                             setSelectedService({
                                                                 ...service,
+                                                                advisor_id: advisor.id,
                                                                 advisor_name: advisor.first_name || advisor.username
                                                             });
                                                         }}
@@ -390,41 +420,48 @@ const Advisors = () => {
                         </p>
                         
                         <div className="space-y-4 mb-6">
-                            <div>
-                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-                                    Select Date
-                                </label>
-                                <input 
-                                    type="date"
-                                    min={new Date().toISOString().split('T')[0]}
-                                    value={bookingDate}
-                                    onChange={(e) => setBookingDate(e.target.value)}
-                                    className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-teal-500/40 text-sm font-semibold"
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-                                    Select Time
-                                </label>
-                                <input 
-                                    type="time"
-                                    value={bookingTime}
-                                    onChange={(e) => setBookingTime(e.target.value)}
-                                    className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-teal-500/40 text-sm font-semibold"
-                                    required
-                                />
-                            </div>
+                            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                                Select Available Consultation Slot
+                            </label>
+                            {availabilitiesLoading ? (
+                                <div className="flex justify-center p-4"><div className="w-6 h-6 rounded-full border-2 border-teal-600 border-t-transparent animate-spin"></div></div>
+                            ) : availabilities.length > 0 ? (
+                                <div className="max-h-48 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                                    {availabilities.map(slot => (
+                                        <button
+                                            key={slot.id}
+                                            type="button"
+                                            onClick={() => setSelectedSlot(slot)}
+                                            className={`w-full p-3.5 rounded-xl border text-left transition-all text-xs font-bold ${
+                                                selectedSlot?.id === slot.id
+                                                    ? 'bg-teal-50 border-[#17717d] text-[#17717d] shadow-sm'
+                                                    : 'bg-gray-50 border-gray-100 hover:border-gray-200 text-gray-700'
+                                            }`}
+                                        >
+                                            <div className="flex justify-between items-center">
+                                                <span>{new Date(slot.date + 'T00:00:00').toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+                                                <span className="bg-white/80 px-2 py-0.5 rounded border text-[10px] text-[#17717d]">{slot.start_time.substring(0, 5)}</span>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="p-4 bg-amber-50 border border-amber-100 rounded-xl text-center">
+                                    <p className="text-xs text-amber-700 font-bold">
+                                        This advisor has no upcoming availability slots listed. Please contact them via chat to request a meeting!
+                                    </p>
+                                </div>
+                            )}
                         </div>
 
                         <div className="flex items-center justify-between p-4 bg-teal-50/50 rounded-2xl mb-6">
                             <span className="text-sm font-semibold text-gray-600">Total Price:</span>
-                            <span className="text-xl font-black text-teal-700">${parseFloat(selectedService.price).toFixed(2)}</span>
+                            <span className="text-xl font-black text-[#17717d]">${parseFloat(selectedService.price).toFixed(2)}</span>
                         </div>
 
                         <button
                             onClick={handleBookingSubmit}
-                            disabled={!bookingDate || !bookingTime || bookingLoading}
+                            disabled={!selectedSlot || bookingLoading}
                             className="w-full bg-[#17717d] hover:bg-[#135f69] disabled:opacity-50 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-[#17717d]/20"
                         >
                             {bookingLoading ? 'Redirecting to Checkout...' : '💳 Pay with Stripe'}
