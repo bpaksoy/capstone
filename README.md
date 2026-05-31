@@ -51,6 +51,127 @@ It also features a built-in social network where students can join "College Hubs
 
 ---
 
+## 🏗️ Component & Agentic Architecture
+
+Worm integrates a modular client-server architecture with semantic database indices and real-time LLM-driven actions to create a unified discovery platform.
+
+### System Components
+
+```mermaid
+graph TD
+    subgraph Client [React Frontend - Firebase Hosting]
+        App[App.js / React Router]
+        UserProv[UserProvider - Clerk Auth]
+        AIAgent[AIAgent.js - Wormie Floating UI]
+        Portal[CollegePortal.js - Recruitment Workspace]
+    end
+
+    subgraph Service [Django Backend - Google Cloud Run]
+        DRF[Django REST Framework]
+        Views[views.py - Controller Logic]
+        Serializers[serializers.py - Data Validation]
+    end
+
+    subgraph Storage [Database & Search Engine]
+        DB[(PostgreSQL / SQLite)]
+        FAISS[langchain FAISS - Vector Index]
+    end
+
+    subgraph AI [Generative AI]
+        Gemini[Google Gemini API]
+    end
+
+    App -->|APIs| DRF
+    UserProv -->|Auth Sync| DRF
+    AIAgent -->|Streaming Chat API| DRF
+    DRF --> Views
+    Views --> Serializers
+    Views -->|Query / Write| DB
+    Views -->|Vector Similarity Search| FAISS
+    Views -->|Generate Content / Embeddings| Gemini
+```
+
+---
+
+### Wormie AI & RAG Engine
+
+Wormie utilizes a hybrid RAG (Retrieval-Augmented Generation) pipeline. It combines semantic vector queries on an IPEDS description index with keyword acronym matching (e.g. mapping "MIT" or "UCLA") to construct highly relevant contextual prompts:
+
+```mermaid
+sequenceDiagram
+    participant User as React Frontend
+    participant ChatView as AIChatView
+    participant FAISS as FAISS Index
+    participant DB as Django DB
+    participant Gemini as Gemini Model (gemini-flash-latest)
+
+    User->>ChatView: POST /api/ai/chat/ (message + context)
+    opt Similarity Search
+        ChatView->>FAISS: Search keywords / query description
+        FAISS-->>ChatView: Return top 3 matching college documents
+    end
+    opt Acronym & Exact String Matching
+        ChatView->>DB: Query Q(name__icontains=term)
+        DB-->>ChatView: Return matched college metadata
+    end
+    opt Profile Memory Enrichment
+        ChatView->>DB: Retrieve User info (Bookmarks, GPA, SAT, Major, Role)
+        DB-->>ChatView: Return user attributes & stats
+    end
+    ChatView->>ChatView: Synthesize System Prompt with context & instructions
+    ChatView->>Gemini: generate_content(stream=True)
+    loop Stream Responses
+        Gemini-->>ChatView: Yield chunk.text
+        ChatView-->>User: Streaming event stream (text/plain)
+    end
+    ChatView->>DB: Save full AI response to ChatMessage history
+```
+
+---
+
+### Agentic Tool-Calling & Recruitment CRM
+
+Wormie functions as an active agent, executing database operations based on natural language chat commands. By outputting special bracketed action tags, the assistant can bookmark schools or submit student profiles as recruitment leads:
+
+```mermaid
+sequenceDiagram
+    participant User as Student (Chat Panel)
+    participant ChatView as AIChatView (Django)
+    participant Gemini as Gemini API
+    participant DB as Postgres Database
+    participant Recruiter as Recruiter (College Portal)
+
+    User->>ChatView: "Bookmark Boston University and submit my profile lead"
+    ChatView->>Gemini: generate_content() with Agentic Instructions
+    Gemini-->>ChatView: Yields response text + [[ACTION: BOOKMARK, College: Boston University]] + [[ACTION: SUBMIT_LEAD, College: Boston University]]
+    ChatView->>ChatView: Intercepts & parses action tags post-stream
+    critical Database Execution
+        ChatView->>DB: get_or_create Bookmark(user, BU)
+        ChatView->>DB: get_or_create LeadStatus(BU, student, status='new')
+    end
+    ChatView-->>User: Streams response (tags stripped out)
+    User->>User: Displays message + custom glassmorphic action badges
+    Recruiter->>DB: Refreshes Portal Dashboard (Interested Students list)
+    DB-->>Recruiter: Returns student profile in lead CRM (status: new)
+```
+
+1. **Bookmark College**: Intercepting `[[ACTION: BOOKMARK, College: <Name>]]` adds institutions to the student's personal bookmarks list.
+2. **Submit Recruitment Lead**: Intercepting `[[ACTION: SUBMIT_LEAD, College: <Name>]]` submits student credentials to recruiters, placing the student directly into the university's recruitment CRM funnel inside the **College Portal**.
+
+---
+
+### Monetization & Operations Telemetry
+
+To ensure business viability, Worm incorporates a dynamic advertisement campaign engine for sponsored university spotlights:
+* **Real-time Telemetry Tracking**: Logs impressions on feed renders and tracks click-through events on CTA redirects.
+* **Flexible Pricing Models**: Admins can configure campaigns using three models:
+  * **Flat Rate**: Charged as a flat fee (e.g. $150.00).
+  * **Cost Per Click (CPC)**: Dynamic revenue computed as `clicks * price`.
+  * **Cost Per Mille (CPM)**: Dynamic revenue computed as `(impressions / 1000) * price`.
+* **Integrated Finance Dashboard**: Aggregates sponsored ad revenues with transactional marketplace sales into unified monthly analytics charts.
+
+---
+
 ## 🛠️ How to Run Locally
 
 ### 1. Clone the Repository
