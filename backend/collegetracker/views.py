@@ -3383,7 +3383,7 @@ class AIChatView(APIView):
 
 
 class AdvisorListView(APIView):
-    permission_classes = []  # Publicly viewable marketplace
+    permission_classes = [AllowAny]  # Publicly viewable marketplace
 
     def get(self, request):
         search_query = request.query_params.get('search', '')
@@ -3801,7 +3801,7 @@ class RevenueAnalyticsView(APIView):
 class AdvisorAvailabilityView(APIView):
     def get_permissions(self):
         if self.request.method == 'GET' and 'advisor_id' in self.kwargs:
-            return []  # Public
+            return [AllowAny()]  # Public
         return [IsAuthenticated()]
 
     def get(self, request, advisor_id=None):
