@@ -237,10 +237,10 @@ function Trending() {
                         </div>
                     }
                     endMessage={
-                        (!postsLoading && !newsLoading) ? (
-                            <p className="text-white text-center mt-8 pb-8">
-                                <b className="opacity-80">You have seen all trends!</b>
-                            </p>
+                        (!postsLoading && !newsLoading && displayFeed.length > 0) ? (
+                            <div className="w-full flex justify-center mt-8 pb-8">
+                                <b className="text-white opacity-80">You have seen all trends!</b>
+                            </div>
                         ) : null
                     }
                     scrollThreshold={0.9}
