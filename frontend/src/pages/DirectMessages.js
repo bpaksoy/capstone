@@ -486,7 +486,7 @@ const DirectMessages = () => {
                                     </div>
                                 </div>
 
-                                <div className="flex-auto min-h-0 overflow-y-auto p-4 md:p-6 space-y-4 custom-scrollbar bg-gray-50/10">
+                                <div className="flex-auto min-h-0 overflow-y-auto p-4 md:p-6 pb-32 md:pb-32 space-y-4 custom-scrollbar bg-gray-50/10">
                                     {messages.map((m, idx) => {
                                         const isMine = String(m.sender_id) === String(user?.id);
                                         return (
