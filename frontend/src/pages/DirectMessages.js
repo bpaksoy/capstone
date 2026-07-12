@@ -633,11 +633,32 @@ const DirectMessages = () => {
                                 </form>
                             </>
                         ) : (
-                            <div className="flex-1 flex flex-col items-center justify-center text-center p-12 space-y-4 opacity-40">
-                                <ChatBubbleLeftRightIcon className="w-20 h-20 text-gray-200" />
-                                <div>
-                                    <h3 className="text-xl font-bold text-gray-900">Your Conversations</h3>
-                                    <p className="text-sm text-gray-500 max-w-sm mx-auto">Select a chat from the left to view your messages with students or college representatives.</p>
+                            <div className="flex-1 flex flex-col items-center justify-center text-center p-8 relative overflow-hidden bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-teal-50/50 via-white to-purple-50/30">
+                                {/* Decorative Background Elements */}
+                                <div className="absolute top-1/4 -right-20 w-72 h-72 bg-teal-200/20 rounded-full blur-3xl"></div>
+                                <div className="absolute bottom-1/4 -left-20 w-72 h-72 bg-[#A855F7]/10 rounded-full blur-3xl"></div>
+
+                                <div className="relative z-10 flex flex-col items-center">
+                                    <div className="relative mb-8">
+                                        <div className="absolute inset-0 bg-[#17717d]/10 rounded-full animate-ping [animation-duration:3s]"></div>
+                                        <div className="absolute inset-2 bg-[#A855F7]/10 rounded-full animate-ping [animation-duration:4s] [animation-delay:1s]"></div>
+                                        <div className="relative w-24 h-24 bg-white/60 backdrop-blur-md border border-white rounded-[2rem] shadow-xl shadow-teal-900/5 flex items-center justify-center transform hover:scale-105 transition-transform duration-500">
+                                            <ChatBubbleLeftRightIcon className="w-10 h-10 text-[#17717d]" />
+                                            <div className="absolute -top-2 -right-2 w-6 h-6 bg-[#A855F7] rounded-full border-2 border-white flex items-center justify-center shadow-md">
+                                                <div className="w-2 h-2 bg-white rounded-full"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="space-y-3 max-w-sm">
+                                        <span className="inline-block px-3 py-1 bg-white border border-gray-100 rounded-full text-[10px] font-black uppercase tracking-widest text-[#17717d] shadow-sm">
+                                            Wormie Connect
+                                        </span>
+                                        <h3 className="text-3xl font-black text-gray-900 tracking-tight">Your Inbox</h3>
+                                        <p className="text-sm font-medium text-gray-500 leading-relaxed">
+                                            Select an active conversation from the sidebar to continue chatting, or start a new message with an advisor.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         )}
