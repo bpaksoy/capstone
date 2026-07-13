@@ -3136,7 +3136,7 @@ class AIChatView(APIView):
                 # Fetch upcoming meetings
                 from django.utils import timezone
                 upcoming_meetings = Meeting.objects.filter(
-                    models.Q(student=u) | models.Q(advisor=u),
+                    Q(student=u) | Q(advisor=u),
                     status='scheduled',
                     scheduled_at__gte=timezone.now()
                 ).select_related('advisor', 'student')
