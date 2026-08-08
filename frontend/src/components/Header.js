@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
-import { Bars3Icon, BellIcon, XMarkIcon, UserIcon, Cog6ToothIcon, ArrowRightOnRectangleIcon, ArrowLeftOnRectangleIcon, AcademicCapIcon, ShieldCheckIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon, BellIcon, XMarkIcon, UserIcon, Cog6ToothIcon, ArrowRightOnRectangleIcon, ArrowLeftOnRectangleIcon, AcademicCapIcon, ShieldCheckIcon, MagnifyingGlassIcon, UserPlusIcon } from '@heroicons/react/24/outline';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { images } from "../constants";
 import { useCurrentUser } from '../UserProvider/UserProvider';
@@ -259,68 +259,68 @@ const Header = (props) => {
                                 </MenuItems>
                             </Menu>
 
-                            {/* Profile dropdown */}
-                            <Menu as="div" className="relative ml-3">
-                                <div>
-                                    <MenuButton className="relative flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
-                                        <span className="absolute -inset-1.5" />
-                                        <span className="sr-only">Open user menu</span>
-                                        {user &&
-                                            <img
-                                                alt=""
-                                                src={user.image ? (user.image.startsWith('http') ? user.image : baseUrl + user.image) : images.avatar}
-                                                className="h-8 w-8 rounded-full enhanced-image"
-                                            />
-                                        }
-                                    </MenuButton>
-                                </div>
-                                <MenuItems
-                                    transition
-                                    className="absolute right-0 z-[100] mt-3 w-64 origin-top-right rounded-2xl bg-white p-2 shadow-2xl ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
-                                >
-                                    {loggedIn && user && (
-                                        <div className="px-4 py-3 border-b border-gray-100 mb-2">
-                                            <p className="text-sm font-bold text-gray-900 truncate">{user.username}</p>
-                                            <p className="text-xs font-medium text-gray-500 truncate">{user.email || 'Member'}</p>
-                                        </div>
-                                    )}
+                            {/* Profile dropdown / Mobile Sign In */}
+                            {loggedIn ? (
+                                <Menu as="div" className="relative ml-3">
+                                    <div>
+                                        <MenuButton className="relative flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
+                                            <span className="absolute -inset-1.5" />
+                                            <span className="sr-only">Open user menu</span>
+                                            {user && (
+                                                <img
+                                                    alt=""
+                                                    src={user.image ? (user.image.startsWith('http') ? user.image : baseUrl + user.image) : images.avatar}
+                                                    className="h-8 w-8 rounded-full enhanced-image"
+                                                />
+                                            )}
+                                        </MenuButton>
+                                    </div>
+                                    <MenuItems
+                                        transition
+                                        className="absolute right-0 z-[100] mt-3 w-64 origin-top-right rounded-2xl bg-white p-2 shadow-2xl ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
+                                    >
+                                        {user && (
+                                            <div className="px-4 py-3 border-b border-gray-100 mb-2">
+                                                <p className="text-sm font-bold text-gray-900 truncate">{user.username}</p>
+                                                <p className="text-xs font-medium text-gray-500 truncate">{user.email || 'Member'}</p>
+                                            </div>
+                                        )}
 
-                                    <MenuItem>
-                                        <NavLink
-                                            to="/profile"
-                                            className="group flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 rounded-xl transition-all hover:bg-teal-50 hover:text-primary data-[focus]:bg-teal-50 data-[focus]:text-primary"
-                                        >
-                                            <UserIcon className="h-4 w-4 text-gray-400 group-hover:text-primary" />
-                                            Your Profile
-                                        </NavLink>
-                                    </MenuItem>
-
-                                    {user?.role === 'college_staff' && (
                                         <MenuItem>
                                             <NavLink
-                                                to="/college/portal"
+                                                to="/profile"
                                                 className="group flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 rounded-xl transition-all hover:bg-teal-50 hover:text-primary data-[focus]:bg-teal-50 data-[focus]:text-primary"
                                             >
-                                                <AcademicCapIcon className="h-4 w-4 text-gray-400 group-hover:text-primary" />
-                                                College Portal
+                                                <UserIcon className="h-4 w-4 text-gray-400 group-hover:text-primary" />
+                                                Your Profile
                                             </NavLink>
                                         </MenuItem>
-                                    )}
 
-                                    <MenuItem>
-                                        <NavLink
-                                            to="/settings"
-                                            className="group flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 rounded-xl transition-all hover:bg-teal-50 hover:text-primary data-[focus]:bg-teal-50 data-[focus]:text-primary"
-                                        >
-                                            <Cog6ToothIcon className="h-4 w-4 text-gray-400 group-hover:text-primary" />
-                                            Settings
-                                        </NavLink>
-                                    </MenuItem>
+                                        {user?.role === 'college_staff' && (
+                                            <MenuItem>
+                                                <NavLink
+                                                    to="/college/portal"
+                                                    className="group flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 rounded-xl transition-all hover:bg-teal-50 hover:text-primary data-[focus]:bg-teal-50 data-[focus]:text-primary"
+                                                >
+                                                    <AcademicCapIcon className="h-4 w-4 text-gray-400 group-hover:text-primary" />
+                                                    College Portal
+                                                </NavLink>
+                                            </MenuItem>
+                                        )}
 
-                                    <div className="my-1 border-t border-gray-100"></div>
+                                        <MenuItem>
+                                            <NavLink
+                                                to="/settings"
+                                                className="group flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 rounded-xl transition-all hover:bg-teal-50 hover:text-primary data-[focus]:bg-teal-50 data-[focus]:text-primary"
+                                            >
+                                                <Cog6ToothIcon className="h-4 w-4 text-gray-400 group-hover:text-primary" />
+                                                Settings
+                                            </NavLink>
+                                        </MenuItem>
 
-                                    <MenuItem>
-                                        {loggedIn ? (
+                                        <div className="my-1 border-t border-gray-100"></div>
+
+                                        <MenuItem>
                                             <button
                                                 onClick={(e) => {
                                                     e.preventDefault();
@@ -331,38 +331,93 @@ const Header = (props) => {
                                                 <ArrowRightOnRectangleIcon className="h-4 w-4 text-red-400 group-hover:text-red-600" />
                                                 Logout
                                             </button>
-                                        ) : (
-                                            <NavLink
-                                                to="/login"
-                                                className="group flex w-full items-center gap-3 px-4 py-2.5 text-sm font-medium text-teal-600 rounded-xl transition-all hover:bg-teal-50 data-[focus]:bg-teal-50"
-                                            >
-                                                <ArrowLeftOnRectangleIcon className="h-4 w-4 text-teal-400 group-hover:text-teal-600" />
-                                                Login
-                                            </NavLink>
-                                        )}
-                                    </MenuItem>
-                                </MenuItems>
-                            </Menu>
+                                        </MenuItem>
+                                    </MenuItems>
+                                </Menu>
+                            ) : (
+                                <NavLink
+                                    to="/login"
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-teal-500/10 text-teal-400 border border-teal-500/30 hover:bg-teal-500 hover:text-white text-xs font-semibold transition-all shadow-sm"
+                                >
+                                    <ArrowLeftOnRectangleIcon className="h-4 w-4" />
+                                    <span>Sign In</span>
+                                </NavLink>
+                            )}
                         </div>
                     </div>
                 </div>
 
-                <DisclosurePanel className="sm:hidden">
-                    <div className="space-y-1 px-2 pb-3 pt-2">
+                {/* Mobile Menu Panel */}
+                <DisclosurePanel className="sm:hidden border-t border-gray-700/50 bg-gray-850">
+                    <div className="space-y-1 px-3 pb-3 pt-3">
                         {navigation.map((item) => (
                             <DisclosureButton
                                 key={item.name}
-                                as="a"
-                                href={item.href}
+                                as={NavLink}
+                                to={item.href}
                                 aria-current={item.current ? 'page' : undefined}
-                                className={classNames(
-                                    item.current ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white',
-                                    'block rounded-md px-3 py-2 text-base font-medium',
+                                className={({ isActive }) => classNames(
+                                    isActive ? 'bg-gray-900 text-white shadow-sm' : 'text-gray-300 hover:bg-gray-700 hover:text-white',
+                                    'block rounded-xl px-3 py-2.5 text-base font-medium transition-all',
                                 )}
                             >
                                 {item.name}
                             </DisclosureButton>
                         ))}
+
+                        {/* Mobile Auth Actions */}
+                        {loggedIn ? (
+                            <div className="border-t border-gray-700/60 pt-4 pb-2 mt-3 space-y-1">
+                                {user && (
+                                    <div className="flex items-center gap-3 px-3 py-2.5 mb-2 bg-gray-750/70 rounded-xl border border-gray-700/50">
+                                        <img
+                                            alt=""
+                                            src={user.image ? (user.image.startsWith('http') ? user.image : baseUrl + user.image) : images.avatar}
+                                            className="h-10 w-10 rounded-full enhanced-image"
+                                        />
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-bold text-white truncate">{user.username}</p>
+                                            <p className="text-xs text-gray-400 truncate">{user.email || 'Member'}</p>
+                                        </div>
+                                    </div>
+                                )}
+                                <DisclosureButton
+                                    as={NavLink}
+                                    to="/settings"
+                                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white transition-all"
+                                >
+                                    <Cog6ToothIcon className="h-5 w-5 text-gray-400" />
+                                    Settings
+                                </DisclosureButton>
+                                <DisclosureButton
+                                    as="button"
+                                    onClick={() => setIsLogoutModalOpen(true)}
+                                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-base font-medium text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all"
+                                >
+                                    <ArrowRightOnRectangleIcon className="h-5 w-5 text-red-400" />
+                                    Log out
+                                </DisclosureButton>
+                            </div>
+                        ) : (
+                            <div className="border-t border-gray-700/60 pt-4 pb-2 mt-3 space-y-2">
+                                <DisclosureButton
+                                    as={NavLink}
+                                    to="/login"
+                                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-teal-600 px-4 py-3 text-base font-semibold text-white shadow-lg hover:bg-teal-500 transition-all"
+                                >
+                                    <ArrowLeftOnRectangleIcon className="h-5 w-5" />
+                                    Sign In
+                                </DisclosureButton>
+                                <DisclosureButton
+                                    as={NavLink}
+                                    to="/register"
+                                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-gray-700 px-4 py-3 text-base font-semibold text-gray-200 hover:bg-gray-600 hover:text-white transition-all border border-gray-600/50"
+                                >
+                                    <UserPlusIcon className="h-5 w-5 text-gray-300" />
+                                    Create Account
+                                </DisclosureButton>
+                            </div>
+                        )}
                     </div>
                 </DisclosurePanel>
             </Disclosure>
