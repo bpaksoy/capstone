@@ -16,6 +16,13 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+try:
+    from dotenv import load_dotenv
+    load_dotenv(BASE_DIR / '.env')
+except ImportError:
+    pass
+
 MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
 
@@ -28,7 +35,7 @@ SECRET_KEY = 'django-insecure-new-secret-key-to-force-logout-all-users-12345'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['wormie.app', 'www.wormie.app', 'collegetracker-api-301955187113.us-central1.run.app', 'collegetracker-api-xeqdgwi3iq-uc.a.run.app', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['wormie.app', 'www.wormie.app', 'collegetracker-api-301955187113.us-central1.run.app', 'collegetracker-api-xeqdgwi3iq-uc.a.run.app', 'localhost', '127.0.0.1', 'testserver']
 
 
 SIMPLE_JWT = {

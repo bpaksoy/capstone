@@ -2897,7 +2897,6 @@ class CollegeAutoCompleteView(APIView):
             'name', flat=True).distinct()[:10]
         return Response(list(colleges))
 
-import google.generativeai as genai
 from django.http import StreamingHttpResponse
 from langchain_community.vectorstores import FAISS
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
@@ -2905,9 +2904,18 @@ import os
 
 # Configure Gemini once at module level and cache the model
 # Re-initializing on every request adds ~1-2s overhead
+from collegetracker.agent_engine import WormieManagedAgent
+
 _GEMINI_MODEL = None
 _VECTOR_STORE = None
 _EMBEDDINGS = None
+_MANAGED_AGENT = None
+
+def _get_managed_agent():
+    global _MANAGED_AGENT
+    if _MANAGED_AGENT is None:
+        _MANAGED_AGENT = WormieManagedAgent(model_name="gemini-2.0-flash")
+    return _MANAGED_AGENT
 
 def _get_gemini_model():
     global _GEMINI_MODEL
@@ -3269,11 +3277,9 @@ class AIChatView(APIView):
         User Query: {user_message}
         """
 
-        # --- 3. CALL GEMINI & STREAM (using cached model) ---
+        # --- 3. CALL WORMIE MANAGED AGENT & STREAM ---
         try:
-            model = _get_gemini_model()
-            if not model:
-                raise Exception("GEMINI_API_KEY not configured.")
+            agent = _get_managed_agent()
 
             # Parse history for Gemini
             raw_history = request.data.get('history', [])
@@ -3295,82 +3301,14 @@ class AIChatView(APIView):
                         "parts": [m.content]
                     })
 
-            # Create a generator for the streaming response
-            def event_stream():
-                full_response = ""
-                success = True
-                stream_start = time.time()
-                try:
-                    # Construct full prompt with history
-                    full_prompt = system_prompt
-                    if gemini_history:
-                        history_text = "\n\nCHAT HISTORY:\n"
-                        for msg in gemini_history:
-                            role = "User" if msg['role'] == 'user' else "Wormie"
-                            history_text += f"{role}: {msg['parts'][0]}\n"
-                        full_prompt = history_text + "\n" + system_prompt
+            user_obj = request.user if request.user.is_authenticated else None
+            stream_gen = agent.stream_chat(
+                user_message=user_message,
+                user=user_obj,
+                chat_history=gemini_history
+            )
 
-                    response = model.generate_content(full_prompt, stream=True)
-                    for chunk in response:
-                        if hasattr(chunk, 'text') and chunk.text:
-                            full_response += chunk.text
-                            yield chunk.text
-                    
-                    # Save AI response once done
-                    if request.user.is_authenticated and full_response:
-                        ChatMessage.objects.create(user=request.user, role='model', content=full_response)
-                        
-                        # Parse and execute agentic actions
-                        import re
-                        from collegetracker.models import College, Bookmark, LeadStatus
-                        
-                        # A. Bookmark Action
-                        bookmark_matches = re.findall(r'\[\[ACTION:\s*BOOKMARK,\s*College:\s*([^\]]+)\]\]', full_response, re.IGNORECASE)
-                        for col_name in bookmark_matches:
-                            col_name = col_name.strip()
-                            try:
-                                college_obj = College.objects.filter(name__icontains=col_name).first()
-                                if college_obj:
-                                    Bookmark.objects.get_or_create(user=request.user, college=college_obj)
-                                    print(f"Agentic Action: Bookmarked {college_obj.name} for {request.user.username}")
-                            except Exception as act_e:
-                                print(f"Agentic Action Error: Failed to bookmark {col_name}: {act_e}")
-
-                        # B. Submit Recruiter Lead Action
-                        lead_matches = re.findall(r'\[\[ACTION:\s*SUBMIT_LEAD,\s*College:\s*([^\]]+)\]\]', full_response, re.IGNORECASE)
-                        for col_name in lead_matches:
-                            col_name = col_name.strip()
-                            try:
-                                college_obj = College.objects.filter(name__icontains=col_name).first()
-                                if college_obj:
-                                    LeadStatus.objects.get_or_create(college=college_obj, student=request.user, defaults={'status': 'new'})
-                                    print(f"Agentic Action: Created Lead for {college_obj.name} / student {request.user.username}")
-                            except Exception as act_e:
-                                print(f"Agentic Action Error: Failed to submit lead to {col_name}: {act_e}")
-
-                except Exception as stream_e:
-                    success = False
-                    error_str = str(stream_e).lower()
-                    if "429" in error_str or "quota" in error_str:
-                        yield "\n\n(I'm currently receiving too many requests. Please try again in about a minute!)"
-                    else:
-                        yield f"\n[Error: {str(stream_e)}]"
-                finally:
-                    latency = int((time.time() - stream_start) * 1000)
-                    user_obj = request.user if request.user.is_authenticated else None
-                    try:
-                        AICallLog.objects.create(
-                            user=user_obj,
-                            prompt_summary=user_message[:500],
-                            response_summary=full_response[:1000],
-                            latency_ms=latency,
-                            success=success
-                        )
-                    except Exception as log_e:
-                        print(f"Error saving AICallLog: {log_e}")
-
-
-            response = StreamingHttpResponse(event_stream(), content_type='text/plain')
+            response = StreamingHttpResponse(stream_gen, content_type='text/plain')
             response['X-Accel-Buffering'] = 'no'
             response['Cache-Control'] = 'no-cache'
 
