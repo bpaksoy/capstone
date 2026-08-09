@@ -129,34 +129,38 @@ sequenceDiagram
 
 ---
 
-### Agentic Tool-Calling & Recruitment CRM
+### Gemini 2.0 Managed Agent & Recruitment CRM
 
-Wormie functions as an active agent, executing database operations based on natural language chat commands. By outputting special bracketed action tags, the assistant can bookmark schools or submit student profiles as recruitment leads:
+Wormie is powered by a **Gemini 2.0 Managed Agent architecture** using the official `google-genai` SDK. Instead of relying on passive text completion, Wormie utilizes **Native Function Calling** to autonomously execute multi-step database operations.
+
+We defined strongly-typed Python tool functions (`get_college_details`, `search_colleges`, `calculate_admission_chances`, `bookmark_college`, `submit_lead`) that Gemini actively inspects and invokes. When a user chats with Wormie, the agent evaluates their intent and executes backend tools on their behalf—such as saving a bookmark or routing a verified candidate profile into a university's CRM pipeline.
 
 ```mermaid
 sequenceDiagram
     participant User as Student (Chat Panel)
     participant ChatView as AIChatView (Django)
-    participant Gemini as Gemini API
+    participant Agent as WormieManagedAgent (Gemini 2.0)
     participant DB as Postgres Database
     participant Recruiter as Recruiter (College Portal)
 
     User->>ChatView: "Bookmark Boston University and submit my profile lead"
-    ChatView->>Gemini: generate_content() with Agentic Instructions
-    Gemini-->>ChatView: Yields response text + [[ACTION: BOOKMARK, College: Boston University]] + [[ACTION: SUBMIT_LEAD, College: Boston University]]
-    ChatView->>ChatView: Intercepts & parses action tags post-stream
-    critical Database Execution
-        ChatView->>DB: get_or_create Bookmark(user, BU)
-        ChatView->>DB: get_or_create LeadStatus(BU, student, status='new')
+    ChatView->>Agent: stream_chat() with user message
+    Agent->>Agent: Analyzes intent & selects tools
+    
+    critical Autonomous Tool Execution
+        Agent->>DB: execute bookmark_college(user, 'Boston University')
+        DB-->>Agent: Returns ToolResult (Success)
+        Agent->>DB: execute submit_lead(user, 'Boston University')
+        DB-->>Agent: Returns ToolResult (Created Lead)
     end
-    ChatView-->>User: Streams response (tags stripped out)
-    User->>User: Displays message + custom glassmorphic action badges
-    Recruiter->>DB: Refreshes Portal Dashboard (Interested Students list)
-    DB-->>Recruiter: Returns student profile in lead CRM (status: new)
+    
+    Agent-->>ChatView: Yields synthesized natural language response stream
+    ChatView-->>User: Streaming chat output (SSE)
+    DB->>Recruiter: New Candidate Lead Appears in Portal
 ```
 
-1. **Bookmark College**: Intercepting `[[ACTION: BOOKMARK, College: <Name>]]` adds institutions to the student's personal bookmarks list.
-2. **Submit Recruitment Lead**: Intercepting `[[ACTION: SUBMIT_LEAD, College: <Name>]]` submits student credentials to recruiters, placing the student directly into the university's recruitment CRM funnel inside the **College Portal**.
+1. **Bookmark College**: Adds institutions to the student's personal bookmarks list via tool execution.
+2. **Submit Recruitment Lead**: Submits student credentials to recruiters, placing the student directly into the university's recruitment CRM funnel inside the **College Portal**.
 
 ---
 
